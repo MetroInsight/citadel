@@ -5,7 +5,7 @@ A simple flask web service to store and retrieve data
 
 * Spark
   * Local Spark Cluster is set up at UCLA.
-  * Total RAM available to the cluster is ~60GB and 24 cores.
+  * Total RAM available to the cluster is ~60GB and 24 cores each of 2.40GHz.
   * pyspark is used to submit the jobs from the Webservice to the Spark Cluster.
 
 * Python Code

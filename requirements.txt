@@ -1,0 +1,5 @@
+mongodb
+influxdb
+python3
+
+See pip_packages for python dependencies

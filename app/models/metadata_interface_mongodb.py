@@ -28,7 +28,7 @@ def schema_projection(metadata):
             if isinstance(data_type, enum.EnumMeta):
                 schema_value = data_type[metadata[tag]].name
             else:
-                schema_value = str(data_type(metadata[tag]))
+                schema_value = data_type(metadata[tag])
             norm_metadata[tag] = schema_value
             del metadata[tag]
     except KeyError as e:

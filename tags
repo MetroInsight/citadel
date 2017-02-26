@@ -1,0 +1,67 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+DEBUG	config.py	/^DEBUG = True$/;"	v
+INFLUXDB_DATABASE	config.py	/^INFLUXDB_DATABASE = 'metroinsight'$/;"	v
+INFLUXDB_HOST	config.py	/^INFLUXDB_HOST = '127.0.0.1'$/;"	v
+INFLUXDB_PASSWORD	config.py	/^INFLUXDB_PASSWORD = 'root'$/;"	v
+INFLUXDB_PORT	config.py	/^INFLUXDB_PORT = 8086$/;"	v
+INFLUXDB_USERNAME	config.py	/^INFLUXDB_USERNAME = 'root'$/;"	v
+METADATA_DB_TYPE	app/models/metadata_interface.py	/^METADATA_DB_TYPE = config.METADATA_DB_TYPE$/;"	v
+METADATA_DB_TYPE	config.py	/^METADATA_DB_TYPE = 'mongodb'$/;"	v
+MONGODB_DATABASE	config.py	/^MONGODB_DATABASE = 'metroinsight'$/;"	v
+MONGODB_HOST	config.py	/^MONGODB_HOST = '127.0.0.1'$/;"	v
+MONGODB_PORT	config.py	/^MONGODB_PORT = 27017$/;"	v
+NAME	config.py	/^NAME = 'citadel'$/;"	v
+Point	app/models/metadata_interface_mongodb.py	/^class Point(Document):$/;"	c
+PointAPI	app/rest_api/point.py	/^class PointAPI(Resource):$/;"	c
+PointListAPI	app/rest_api/point.py	/^class PointListAPI(Resource):$/;"	c
+SECRET_KEY	config.py	/^SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"$/;"	v
+TOKEN_EXPIRATION	config.py	/^TOKEN_EXPIRATION = 3600$/;"	v
+TimeSeriesAPI	app/rest_api/timeseries.py	/^class TimeSeriesAPI(Resource):$/;"	c
+api	app/rest_api/__init__.py	/^api = Api(api_blueprint)$/;"	v
+api_blueprint	app/rest_api/__init__.py	/^api_blueprint = Blueprint('api', __name__)$/;"	v
+app	WebService.py	/^app = Flask(__name__)$/;"	v
+app	app/__init__.py	/^app = Flask(__name__)$/;"	v
+base_url	test.py	/^base_url = 'http:\/\/127.0.0.1:8080'$/;"	v
+conf	WebService.py	/^conf = SparkConf()$/;"	v
+database	app/__init__.py	/^        database=app.config['INFLUXDB_DATABASE']$/;"	v
+description	app/rest_api/point.py	/^            description='Unique human redable identifier of point')$/;"	v
+duplicate_error	app/rest_api/responses.py	/^duplicate_error = {'success': 'False', 'error': 'Entry already exists'}$/;"	v
+get	app/rest_api/point.py	/^    def get(self):$/;"	m	class:PointListAPI
+get	app/rest_api/point.py	/^    def get(self, id):$/;"	m	class:PointAPI
+get	app/rest_api/timeseries.py	/^    def get(self, uuid):$/;"	m	class:TimeSeriesAPI
+hello	run.py	/^def hello():$/;"	f
+hello_world	WebService.py	/^def hello_world():$/;"	f
+host	app/__init__.py	/^        host=app.config['INFLUXDB_HOST'],$/;"	v
+jsonString	app/rest_api/helper.py	/^def jsonString(obj, pretty=False):$/;"	f
+metadata_initialization	app/models/metadata_interface_mongodb.py	/^def metadata_initialization(app):$/;"	f
+missing_data	app/rest_api/responses.py	/^missing_data = {'success':'False', 'error': 'Missing data'}$/;"	v
+missing_parameters	app/rest_api/responses.py	/^missing_parameters = {'success':'False', 'error': 'Missing parameters'}$/;"	v
+name	app/models/metadata_interface_mongodb.py	/^    name = StringField(required=True, unique=True)$/;"	v	class:Point
+ns	app/rest_api/metadata.py	/^ns = Namespace('metadata', description='Operations related to metadata')/;"	v
+ns	app/rest_api/timeseries.py	/^ns = Namespace('timeseries', description='Operations related to timeseries')$/;"	v
+oauth	app/__init__.py	/^oauth = OAuth2Provider()$/;"	v
+parser	app/rest_api/point.py	/^parser = point_api.parser()$/;"	v
+password	app/__init__.py	/^        password=app.config['INFLUXDB_PASSWORD'],$/;"	v
+point	app/rest_api/point.py	/^point = api.model('Point',{$/;"	v
+point_api	app/rest_api/point.py	/^point_api = Namespace('point', description='Operations related to points')$/;"	v
+port	app/__init__.py	/^        port=app.config['INFLUXDB_PORT'],$/;"	v
+post	app/rest_api/point.py	/^    def post(self):$/;"	m	class:PointListAPI
+post	app/rest_api/timeseries.py	/^    def post(self, uuid):$/;"	m	class:TimeSeriesAPI
+resolution_high	app/rest_api/responses.py	/^resolution_high = {'success':'False', 'error': 'Too many points for this resolution'}$/;"	v
+sc	WebService.py	/^sc = SparkContext(conf=conf)$/;"	v
+success_false	app/rest_api/responses.py	/^success_false = {'success':'False'}$/;"	v
+success_true	app/rest_api/responses.py	/^success_true = {'success':'True'}$/;"	v
+tag	app/rest_api/point.py	/^tag = api.model('Tag',{$/;"	v
+tags	app/models/metadata_interface_mongodb.py	/^    tags = DictField() $/;"	v	class:Point
+test_mongodb	test.py	/^def test_mongodb():$/;"	f
+test_point_api	test.py	/^def test_point_api():$/;"	f
+test_timeseries	test.py	/^def test_timeseries():$/;"	f
+timeseriesdb	app/__init__.py	/^timeseriesdb = InfluxDBClient($/;"	v
+timestamp_to_time_string	app/rest_api/helper.py	/^def timestamp_to_time_string(t):$/;"	f
+username	app/__init__.py	/^        username=app.config['INFLUXDB_USERNAME'],$/;"	v
+uuid	app/models/metadata_interface_mongodb.py	/^    uuid = UUIDField(required=True, unique=True)$/;"	v	class:Point

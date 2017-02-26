@@ -1,0 +1,5 @@
+Flask=0.12
+mongoengine=0.11.0
+flask-oauth2lib=0.9.3
+influxdb
+flask-restplus

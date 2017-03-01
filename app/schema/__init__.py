@@ -3,15 +3,15 @@ import pdb
 
 from .unit import Unit
 from .point_type import PointType
-from ...common_exceptions import NoMatchedSchemaError
+from ..common_exceptions import NoMatchedSchemaError
 
 # Read schema file (temporaily define here)
 # TODO: This should be generated from a formal schema file
 schema = {
         'unit': Unit,
-        'point_type': PointType,
-#        'location_altitude': float,
-#        'location_longitude', float,
+        #'point_type': PointType,
+        'location_altitude': float,
+        'location_longitude': float,
         }
 
 def schema_validation_deprecated(metadata):

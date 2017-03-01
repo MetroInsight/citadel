@@ -90,3 +90,5 @@ ENV/
 
 # Database
 database/
+
+.backup

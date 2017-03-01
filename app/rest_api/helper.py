@@ -1,5 +1,7 @@
+import time
+import json
+
 from flask import request
-import time, json
 
 def jsonString(obj, pretty=False):
     """

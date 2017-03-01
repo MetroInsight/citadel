@@ -1,0 +1,793 @@
+# baseURI: http://qudt.org/2.0/vocab/unit/base
+# imports: http://qudt.org/2.0/schema/qudt
+# imports: http://qudt.org/2.0/vocab/quantitykind/base
+# imports: http://www.linkedmodel.org/schema/vaem
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix dimension: <http://qudt.org/vocab/dimension/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
+@prefix qudt: <http://qudt.org/schema/qudt/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
+@prefix vaem: <http://www.linkedmodel.org/schema/vaem#> .
+@prefix voag: <http://voag.linkedmodel.org/schema/voag#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://qudt.org/2.0/vocab/unit/base>
+  rdf:type owl:Ontology ;
+  vaem:hasGraphMetadata unit:GMD_QUDT-UNITS-BASE ;
+  rdfs:label "QUDT Unit" ;
+  owl:imports <http://qudt.org/2.0/schema/qudt> ;
+  owl:imports <http://qudt.org/2.0/vocab/quantitykind/base> ;
+  owl:imports <http://www.linkedmodel.org/schema/vaem> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  owl:versionIRI <http://qudt.org/2.0/vocab/unit/base> ;
+.
+qudt:GMD_QUDT-QUANTITIES-BASE
+  vaem:latestPublishedVersion "http://qudt.org/doc/2017/DOC_VOCAB-UNITS-BASE.html"^^xsd:anyURI ;
+.
+qudt:PhysicsForums
+  rdf:type qudt:Organization ;
+  qudt:url "http://www.physicsforums.com"^^xsd:anyURI ;
+  rdfs:label "Physics Forums" ;
+.
+qudt:Wikipedia
+  rdf:type qudt:Organization ;
+  rdfs:label "Wikipedia" ;
+.
+unit:Atto
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "atto" ;
+  qudt:conversionMultiplier 1.0E-18 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"atto\" is a decimal prefix for expressing a value with a scaling of \\(10^{-18}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N18" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "a" ;
+  qudt:ucumCode "A"^^qudt:UCUMci-term ;
+  qudt:ucumCode "a"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Atto" ;
+  skos:exactMatch <http://dbpedia.org/resource/Atto> ;
+  skos:prefLabel "atto" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Atto?oldid=412748080> ;
+.
+unit:Centi
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "centi" ;
+  qudt:conversionMultiplier 1.0E-2 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'centi' is a decimal prefix for expressing a value with a scaling of \\(10^{-2}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N02" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "c" ;
+  qudt:ucumCode "C"^^qudt:UCUMci-term ;
+  qudt:ucumCode "c"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Centi" ;
+  skos:exactMatch <http://dbpedia.org/resource/Centi-> ;
+  skos:prefLabel "Centi" ;
+  skos:prefLabel "centi" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Centi-?oldid=480291808> ;
+.
+unit:DECADE
+  rdf:type qudt:DimensionlessUnit ;
+  rdf:type qudt:LogarithmicUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "Dec" ;
+  qudt:code "0508" ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "One decade is a factor of 10 difference between two numbers (an order of magnitude difference) measured on a logarithmic scale. It is especially useful when referring to frequencies and when describing frequency response of electronic systems, such as audio amplifiers and filters. The factor-of-ten in a decade can be in either direction: so one decade up from 100 Hz is 1000 Hz, and one decade down is 10 Hz. The factor-of-ten is what is important, not the unit used, so $3.14 rad/s$ is one decade down from \\(31.4 rad/s\\)."^^rdf:HTML ;
+  qudt:id "U-150-0508" ;
+  qudt:symbol "oct" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Dec" ;
+  skos:prefLabel "dec" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Decade_(log_scale)> ;
+.
+unit:Deca
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "deca" ;
+  qudt:conversionMultiplier 1.0E1 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:symbol "da" ;
+  qudt:ucumCode "DA"^^qudt:UCUMci-term ;
+  qudt:ucumCode "da"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Deca" ;
+  skos:exactMatch <http://dbpedia.org/resource/Deca> ;
+  skos:prefLabel "deca" ;
+.
+unit:Deci
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "deci" ;
+  qudt:conversionMultiplier 1.0E-1 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"deci\" is a decimal prefix for expressing a value with a scaling of \\(10^{-1}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N01" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "d" ;
+  qudt:ucumCode "D"^^qudt:UCUMci-term ;
+  qudt:ucumCode "d"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Deci" ;
+  skos:exactMatch <http://dbpedia.org/resource/Deci-> ;
+  skos:prefLabel "deci" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Deci-?oldid=469980160> ;
+.
+unit:Deka
+  rdf:type qudt:DecimalPrefixUnit ;
+  qudt:conversionMultiplier "10.0"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "<strong>deka</strong> is a decimal prefix for expressing a value with a scaling of \\(10^{1}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P01" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "da" ;
+  qudt:ucumCode "DA"^^qudt:UCUMci-term ;
+  qudt:ucumCode "da"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:label "Deka" ;
+  skos:exactMatch <http://dbpedia.org/resource/Deca> ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Deca?oldid=480093935> ;
+.
+unit:Exa
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "exa" ;
+  qudt:conversionMultiplier 1.0E18 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'exa' is a decimal prefix for expressing a value with a scaling of \\(10^{18}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P18" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "E" ;
+  qudt:ucumCode "E"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "EX"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Exa" ;
+  skos:exactMatch <http://dbpedia.org/resource/Exa-> ;
+  skos:prefLabel "exa" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Exa-?oldid=494400216> ;
+.
+unit:Exbi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "152921504606846976.0"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{6}\\), or \\(2^{60}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B60" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Ei" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Exbi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "exbi" ;
+.
+unit:Femto
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "femto" ;
+  qudt:conversionMultiplier 1.0E-15 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'femto' is a decimal prefix for expressing a value with a scaling of \\(10^{-15}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N15" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "f" ;
+  qudt:ucumCode "F"^^qudt:UCUMci-term ;
+  qudt:ucumCode "f"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Femto" ;
+  skos:exactMatch <http://dbpedia.org/resource/Femto-> ;
+  skos:prefLabel "femto" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Femto-?oldid=467211359> ;
+.
+unit:GMD_QUDT-UNITS-BASE
+  rdf:type vaem:GraphMetaData ;
+  dct:author "Ralph Hodgson" ;
+  dct:contributor "Jack Hodges" ;
+  dct:contributor "Steve Ray" ;
+  dct:created "2016-07-04"^^xsd:date ;
+  dct:creator "Ralph Hodgson" ;
+  dct:description "Base Units Ontology Version 2.0" ;
+  dct:rights "The QUDT Ontologies are issued under a Creative Commons Attribution Share Alike 3.0 United States License. Attribution should be made to NASA Ames Research Center and TopQuadrant, Inc." ;
+  dct:subject "Base Units Ontology" ;
+  dct:title "Base Units Ontology Version 2.0" ;
+  vaem:hasGraphRole vaem:VocabularyGraph ;
+  vaem:hasLicenseType voag:CC-SHAREALIKE_3PT0-US ;
+  vaem:hasOwner vaem:QUDT ;
+  vaem:hasSteward vaem:QUDT ;
+  vaem:intent "The intent of this graph is the specification of base units." ;
+  vaem:isMetadataFor <http://qudt.org/2.0/vocab/unit/base> ;
+  vaem:latestPublishedVersion "http://www.qudt.org/doc/2017/DOC_VOCAB-UNITS-BASE"^^xsd:anyURI ;
+  vaem:logo "http://www.linkedmodel.org/lib/lm/images/logos/qudt_logo-300x110.png"^^xsd:anyURI ;
+  vaem:name "qudt" ;
+  vaem:namespace "http://qudt.org/vocab/unit/" ;
+  vaem:namespacePrefix "unit" ;
+  vaem:owner "qudt.org" ;
+  vaem:revision "2.0" ;
+  vaem:title "Base Units Ontology Version 2.0" ;
+  vaem:turtleFileURL "http://qudt.org/2.0/vocab/VOCAB_QUDT-UNITS-BASE-v2.0.ttl"^^xsd:anyURI ;
+  vaem:usesNonImportedResource dct:abstract ;
+  vaem:usesNonImportedResource dct:author ;
+  vaem:usesNonImportedResource dct:contributor ;
+  vaem:usesNonImportedResource dct:created ;
+  vaem:usesNonImportedResource dct:description ;
+  vaem:usesNonImportedResource dct:modified ;
+  vaem:usesNonImportedResource dct:rights ;
+  vaem:usesNonImportedResource dct:source ;
+  vaem:usesNonImportedResource dct:subject ;
+  vaem:usesNonImportedResource dct:title ;
+  vaem:usesNonImportedResource voag:QUDT-Attribution ;
+  vaem:usesNonImportedResource <http://voag.linkedmodel.org/voag/CC-SHAREALIKE_3PT0-US> ;
+  vaem:usesNonImportedResource skos:closeMatch ;
+  vaem:usesNonImportedResource skos:exactMatch ;
+  vaem:usesNonImportedResource prov:wasInfluencedBy ;
+  vaem:withAttributionTo voag:QUDT-Attribution ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Base Units Ontology Metadata Version 2.0" ;
+  owl:versionIRI <http://qudt.org/2.0/vocab/unit/base> ;
+.
+unit:Gibi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1073741824"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{3}\\), or \\(2^{30}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B30" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Gi" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Gibi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "gibi" ;
+.
+unit:Giga
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "giga" ;
+  qudt:conversionMultiplier 1.0E9 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'giga' is a decimal prefix for expressing a value with a scaling of \\(10^{9}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P09" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "G" ;
+  qudt:ucumCode "G"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "GA"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Giga" ;
+  skos:exactMatch <http://dbpedia.org/resource/Giga-> ;
+  skos:prefLabel "giga" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Giga-?oldid=473222816> ;
+.
+unit:Hecto
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "hecto" ;
+  qudt:conversionMultiplier 1.0E2 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'hecta' is a decimal prefix for expressing a value with a scaling of \\(10^{2}\"\\)."^^rdf:HTML ;
+  qudt:fieldCode "P02" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "h" ;
+  qudt:ucumCode "H"^^qudt:UCUMci-term ;
+  qudt:ucumCode "h"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Hecto" ;
+  skos:exactMatch <http://dbpedia.org/resource/Hecto-> ;
+  skos:prefLabel "hecto" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Hecto-?oldid=494711166> ;
+.
+unit:Kibi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1024"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024\\), or \\(2^{10}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B10" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Ki" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Kibi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "Kibi" ;
+  skos:prefLabel "kibi" ;
+.
+unit:Kilo
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "kilo" ;
+  qudt:conversionMultiplier 1.0E3 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"kilo\" is a decimal prefix for expressing a value with a scaling of \\(10^{3}\"\\)."^^rdf:HTML ;
+  qudt:fieldCode "P03" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "k" ;
+  qudt:ucumCode "K"^^qudt:UCUMci-term ;
+  qudt:ucumCode "k"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Kilo" ;
+  skos:exactMatch <http://dbpedia.org/resource/Kilo> ;
+  skos:prefLabel "kilo" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Kilo?oldid=461428121> ;
+.
+unit:Mebi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1048576"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{2}\\), or \\(2^{20}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B20" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Mi" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Mebi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "mebi" ;
+.
+unit:Mega
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "mega" ;
+  qudt:conversionMultiplier 1.0E6 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'mega' is a decimal prefix for expressing a value with a scaling of \\(10^{6}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P06" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "M" ;
+  qudt:ucumCode "M"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "MA"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Mega" ;
+  skos:exactMatch <http://dbpedia.org/resource/Mega> ;
+  skos:prefLabel "mega" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Mega?oldid=494040441> ;
+.
+unit:Micro
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "micro" ;
+  qudt:conversionMultiplier 1.0E-6 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"micro\" is a decimal prefix for expressing a value with a scaling of \\(10^{-6}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N06" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "\\mu" ;
+  qudt:ucumCode "U"^^qudt:UCUMci-term ;
+  qudt:ucumCode "u"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Micro" ;
+  skos:exactMatch <http://dbpedia.org/resource/Micro> ;
+  skos:prefLabel "micro" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Micro?oldid=491618374> ;
+.
+unit:Milli
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "milli" ;
+  qudt:conversionMultiplier 1.0E-3 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'milli' is a decimal prefix for expressing a value with a scaling of \\(10^{-3}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N03" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "m" ;
+  qudt:ucumCode "M"^^qudt:UCUMci-term ;
+  qudt:ucumCode "m"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Milli" ;
+  skos:exactMatch <http://dbpedia.org/resource/Milli-> ;
+  skos:prefLabel "milli" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Milli-?oldid=467190544> ;
+.
+unit:NUM
+  rdf:type qudt:CGS-Unit ;
+  rdf:type qudt:CountingUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "\\#" ;
+  qudt:code "1250" ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"Number\" is a C.G.S System unit for  'Dimensionless' expressed as (\\\\#\\)."^^rdf:HTML ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:symbol "\\#" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Number" ;
+  skos:closeMatch <http://dbpedia.org/resource/Number> ;
+  skos:prefLabel "number" ;
+.
+unit:NUM-PER-YR
+  rdf:type qudt:CGS-Unit ;
+  rdf:type qudt:CountingUnit ;
+  rdf:type qudt:DerivedUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "\\#/yr" ;
+  qudt:code "1255" ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"Number per Year\" is a unit for  'Frequency' expressed as \\(#/yr\\)."^^rdf:HTML ;
+  qudt:hasQuantityKind quantitykind:Frequency ;
+  qudt:symbol "\\#/yr" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Number per Year" ;
+  skos:prefLabel "number-per-year" ;
+.
+unit:Nano
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "nano" ;
+  qudt:conversionMultiplier 1.0E-9 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'nano' is a  decimal prefix for expressing a value with a scaling of \\(10^{-9}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N09" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "n" ;
+  qudt:ucumCode "N"^^qudt:UCUMci-term ;
+  qudt:ucumCode "n"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Nano" ;
+  skos:exactMatch <http://dbpedia.org/resource/Nano> ;
+  skos:prefLabel "nano" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Nano?oldid=489001692> ;
+.
+unit:PERCENT
+  rdf:type qudt:CGS-Unit ;
+  rdf:type qudt:CountingUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "\\%" ;
+  qudt:code "1345" ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "\"Percent\" is a C.G.S System unit for  'Dimensionless Ratio' expressed as \\(\\%\\)."^^rdf:HTML ;
+  qudt:hasQuantityKind quantitykind:DimensionlessRatio ;
+  qudt:symbol "\\%" ;
+  qudt:ucumCode "%"^^qudt:UCUMci-term ;
+  qudt:ucumCode "%"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Percent" ;
+  skos:exactMatch <http://dbpedia.org/resource/Percentage> ;
+  skos:prefLabel "percent" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Percentage?oldid=495284540> ;
+.
+unit:PPB
+  rdf:type qudt:DimensionlessConcentrationUnit ;
+  qudt:abbreviation "PPB" ;
+  qudt:conversionMultiplier 1.0e-9 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "Dimensionless unit for concentration. Recommended practice is to use specific units such as \\(ug/l\\)."^^rdf:HTML ;
+  qudt:symbol "ppb" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Parts per billion" ;
+  prov:wasInfluencedBy <http://aurora.regenstrief.org/~ucum/ucum.html#section-Derived-Unit-Atoms> ;
+.
+unit:PPM
+  rdf:type qudt:DimensionlessConcentrationUnit ;
+  qudt:abbreviation "PPM" ;
+  qudt:conversionMultiplier 1.0e-6 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "Dimensionless unit for concentration. Recommended practice is to use specific units such as \\(ug/l\\)."^^rdf:HTML ;
+  qudt:symbol "ppm" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Parts per million" ;
+  prov:wasInfluencedBy <http://aurora.regenstrief.org/~ucum/ucum.html#section-Derived-Unit-Atoms> ;
+.
+unit:PPTH
+  rdf:type qudt:DimensionlessConcentrationUnit ;
+  qudt:abbreviation "ppth" ;
+  qudt:conversionMultiplier "0.001"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "Dimensionless unit for concentration. Recommended practice is to use specific units such as \\(ug/l\\)."^^rdf:HTML ;
+  qudt:symbol "ppth" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Parts per thousand" ;
+  prov:wasInfluencedBy <http://aurora.regenstrief.org/~ucum/ucum.html#section-Derived-Unit-Atoms> ;
+.
+unit:PPTR
+  rdf:type qudt:DimensionlessConcentrationUnit ;
+  qudt:abbreviation "PPTR" ;
+  qudt:conversionMultiplier 1.0e-12 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "Dimensionless unit for concentration. Recommended practice is to use specific units such as \\(ug/l\\)."^^rdf:HTML ;
+  qudt:symbol "pptr" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Parts per trillion" ;
+  prov:wasInfluencedBy <http://aurora.regenstrief.org/~ucum/ucum.html#section-Derived-Unit-Atoms> ;
+.
+unit:Pebi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "125899906842624"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{5}\\), or \\(2^{50}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B50" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Pi" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Pebi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "pebi" ;
+.
+unit:Peta
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "peta" ;
+  qudt:conversionMultiplier 1.0E15 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'peta' is a decimal prefix for expressing a value with a scaling of \\(10^{15}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P15" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "P" ;
+  qudt:ucumCode "P"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "PT"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Peta" ;
+  skos:exactMatch <http://dbpedia.org/resource/Peta> ;
+  skos:prefLabel "peta" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Peta?oldid=488263435> ;
+.
+unit:Pico
+  rdf:type qudt:DecimalPrefixUnit ;
+  qudt:abbreviation "pico" ;
+  qudt:conversionMultiplier 1.0E-12 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'pico' is a decimal prefix for expressing a value with a scaling of \\(10^{-12}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N12" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "p" ;
+  qudt:ucumCode "P"^^qudt:UCUMci-term ;
+  qudt:ucumCode "p"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Pico" ;
+  skos:exactMatch <http://dbpedia.org/resource/Pico> ;
+  skos:prefLabel "pico" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Pico?oldid=485697614> ;
+.
+unit:SAMPLE-PER-SEC
+  rdf:type qudt:CountingUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "sample-per-sec" ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "The number of discrete samples of some thing per second."^^rdf:HTML ;
+  qudt:hasQuantityKind quantitykind:Frequency ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Sample per second" ;
+  skos:prefLabel "sample-per-second" ;
+.
+unit:Tebi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1099511627776"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^4}\\), or \\(2^{40}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B40" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Ti" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Tebi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "tebi" ;
+.
+unit:Tera
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "tera" ;
+  qudt:conversionMultiplier 1.0E12 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'tera' is a decimal prefix for expressing a value with a scaling of \\(10^{12}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P12" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "T" ;
+  qudt:ucumCode "T"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "TR"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Tera" ;
+  skos:exactMatch <http://dbpedia.org/resource/Tera> ;
+  skos:prefLabel "tera" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Tera?oldid=494204788> ;
+.
+unit:UNITLESS
+  rdf:type qudt:BaseUnit ;
+  rdf:type qudt:CGS-Unit ;
+  rdf:type qudt:DimensionlessUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "unitless" ;
+  qudt:conversionMultiplier "1.0"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "An explicit unit to say something has no units."^^rdf:HTML ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:id "U-000-0000" ;
+  qudt:symbol "U" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Unitless" ;
+  skos:prefLabel "unitless" ;
+.
+unit:Yobi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1208925819614629174706176"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{8}\\), or \\(2^{80}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B80" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Yi" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Yobi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "yobi" ;
+.
+unit:Yocto
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "yocto" ;
+  qudt:conversionMultiplier 1.0E-24 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'yocto' is a decimal prefix for expressing a value with a scaling of \\(10^{-24}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N24" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "y" ;
+  qudt:ucumCode "YO"^^qudt:UCUMci-term ;
+  qudt:ucumCode "y"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Yocto" ;
+  skos:exactMatch <http://dbpedia.org/resource/Yocto-> ;
+  skos:prefLabel "yocto" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Yocto-?oldid=488155799> ;
+.
+unit:Yotta
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "yotta" ;
+  qudt:conversionMultiplier 1.0E24 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'yotta' is a decimal prefix for expressing a value with a scaling of \\(10^{24}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P24" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Y" ;
+  qudt:ucumCode "Y"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "YA"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Yotta" ;
+  skos:exactMatch <http://dbpedia.org/resource/Yotta-> ;
+  skos:prefLabel "yotta" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Yotta-?oldid=494538119> ;
+.
+unit:Zebi
+  rdf:type qudt:BinaryPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:conversionMultiplier "1180591620717411303424"^^xsd:double ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "A binary prefix for expressing a value with a scaling of \\(1024^{7}\\), or \\(2^{70}\\)."^^rdf:HTML ;
+  qudt:fieldCode "B70" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Zi" ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Zebi" ;
+  skos:closeMatch <http://dbpedia.org/resource/Binary_prefix> ;
+  skos:prefLabel "zebi" ;
+.
+unit:Zepto
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "zepto" ;
+  qudt:conversionMultiplier 1.0E-21 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'zepto' is a decimal prefix for expressing a value with a scaling of \\(10^{-21}\\)."^^rdf:HTML ;
+  qudt:fieldCode "N21" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "z" ;
+  qudt:ucumCode "ZO"^^qudt:UCUMci-term ;
+  qudt:ucumCode "z"^^qudt:UCUMcs-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Zepto" ;
+  skos:exactMatch <http://dbpedia.org/resource/Zepto-> ;
+  skos:prefLabel "zepto" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Zepto-?oldid=476974663> ;
+.
+unit:Zetta
+  rdf:type qudt:DecimalPrefixUnit ;
+  rdf:type qudt:Unit ;
+  qudt:abbreviation "zetta" ;
+  qudt:conversionMultiplier 1.0E21 ;
+  qudt:conversionOffset "0.0"^^xsd:double ;
+  qudt:description "'zetta' is a decimal prefix for expressing a value with a scaling of \\(10^{21}\\)."^^rdf:HTML ;
+  qudt:fieldCode "P21" ;
+  qudt:hasQuantityKind quantitykind:Dimensionless ;
+  qudt:isUnitOfSystem qudt:SOU_SI ;
+  qudt:symbol "Z" ;
+  qudt:ucumCode "Z"^^qudt:UCUMcs-term ;
+  qudt:ucumCode "ZA"^^qudt:UCUMci-term ;
+  rdfs:isDefinedBy <http://qudt.org/2.0/vocab/unit/base> ;
+  rdfs:isDefinedBy unit:base ;
+  rdfs:label "Zetta" ;
+  skos:exactMatch <http://dbpedia.org/resource/Zetta-> ;
+  skos:prefLabel "zetta" ;
+  prov:wasInfluencedBy <http://en.wikipedia.org/wiki/Zetta-?oldid=495223080> ;
+.
+voag:hasCatalogEntry
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has catalog entry" ;
+.
+voag:hasLicenseType
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "has license type"@en-US ;
+.
+voag:withAttributionTo
+  rdf:type owl:ObjectProperty ;
+  rdfs:label "with attribution to" ;
+.
+skos:closeMatch
+  rdf:type rdf:Property ;
+.
+skos:exactMatch
+  rdf:type rdf:Property ;
+.

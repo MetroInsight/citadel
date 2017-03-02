@@ -8,8 +8,7 @@ from flask_restplus import Api, Resource, Namespace, fields
 from flask_restplus import reqparse
 
 from . import responses
-from ..models.ts_data_interface import ts_db
-from .helper import jsonString, timestamp_to_time_string
+from .. import timeseriesdb as ts_db
 
 ns = Namespace('timeseries', description='Operations related to timeseries')
 

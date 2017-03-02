@@ -14,7 +14,7 @@ from flask_restplus import Api, Resource, Namespace, fields
 
 from . import api
 from . import responses
-from ..models.metadata_interface import *
+from ..models.metadata import Point
 
 point_api = Namespace('point', description='Operations related to points')
 tag = api.model('Tag',{

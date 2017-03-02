@@ -15,6 +15,8 @@ from flask_restplus import Api, Resource, Namespace, fields
 from . import api
 from . import responses
 from ..models.metadata import Point
+from ..schema.converters import schema_converter
+
 
 point_api = Namespace('point', description='Operations related to points')
 tag = api.model('Tag',{
@@ -60,7 +62,7 @@ class PointListAPI(Resource):
         tags = data['tags']
         uuid = str(uuid4())
         try:
-            normalized_tags = schema_projection(tags)
+            normalized_tags = schema_converter(tags)
         except KeyError as err:
             resp_data = {
                     'msg': point_create_fail_msg,

@@ -4,8 +4,8 @@ from flask_oauthlib.provider import OAuth2Provider
 from flask_restplus import Api, Resource
 
 import config
-from models.metadata_interface import metadata_db_init
-from models.ts_data_interface import ts_db_init
+from .models.metadata_interface import metadata_db_init
+from .models.ts_data_interface import ts_db_init
 
 oauth = OAuth2Provider()
 

@@ -15,10 +15,10 @@ def test_mongodb():
 def test_point_api():
 	response = post(base_url+'/api/point/',
 		json = {'name': 'example_point_7',
-				'tags': [
-							{'key':'z1', 'value': 'v3'},
-							{'key':'z2', 'value': 'v4'} 
-						]
+				'tags': { 
+                            'point_type':'Temperature',
+						    'unit':'F'
+                        } 
 		})
 
 	print (response)
@@ -40,4 +40,5 @@ def test_timeseries():
 
 	print(response)
 
-test_timeseries()
+test_point_api()
+#test_timeseries()

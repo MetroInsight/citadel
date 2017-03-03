@@ -1,5 +1,5 @@
 from enum import Enum
 
 class PointType(Enum):
-    TemperatureSensor = 1
-    AirFlowSensor = 2
+    Temperature = 1
+    AirFlow = 2

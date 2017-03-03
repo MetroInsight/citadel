@@ -20,7 +20,7 @@ from ..schema.converters import schema_converter
 
 point_api = Namespace('point', description='Operations related to points')
 tag = api.model('Tag',{
-    fields.String(required=True, description='tag key'): 
+        fields.String(required=True, description='tag key'): 
         fields.String(required=True, description='tag value')
     })
 m_point = api.model('Point',{

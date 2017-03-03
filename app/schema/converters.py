@@ -1,3 +1,5 @@
+import enum
+
 from . import schema
 
 def schema_converter(metadata):

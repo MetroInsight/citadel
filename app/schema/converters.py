@@ -20,8 +20,7 @@ def schema_converter(metadata):
         norm_metadata[tag] = value
 
     #schema_validation(norm_metadata) # Jason: Do we need this? Maybe not.
-
-return norm_metadata
+    return norm_metadata
 
 # Define Exceptions
 # TODO: names should be normalized across different implementations later.

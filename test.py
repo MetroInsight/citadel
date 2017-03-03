@@ -10,7 +10,7 @@ def test_mongodb():
 
 	from app.models.metadata import Point
 
-	print (Point.objects)
+	print (Point.objects())
 
 def test_point_api():
 	response = post(base_url+'/api/point/',

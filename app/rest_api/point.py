@@ -19,25 +19,23 @@ from ..schema.converters import schema_converter
 from mongoengine import NotUniqueError
 
 point_api = Namespace('point', description='Operations related to points')
-tag = api.model('Tag',{
-        fields.String(required=True, description='tag key'): 
-        fields.String(required=True, description='tag value')
-    })
+
 m_point = api.model('Point',{
         'uuid': fields.String(description='Unique identifier of point'),
-        'tags': fields.List(fields.Nested(tag)),
+        'tags': fields.Raw(description='key, value pairs in dictionary format'),
         'name': fields.String(
             description='Unique human readable identifier of point')
     })
-
-parser = point_api.parser()
-parser.add_argument('name', required=True)
 
 m_message = {
         'msg': fields.String(),
         'reason': fields.String(),
         'uuid': fields.String()
         }
+
+
+parser = point_api.parser()
+parser.add_argument('name', required=True)
 
 point_created_msg = 'Point created'
 point_create_fail_msg = 'Failed to create point'

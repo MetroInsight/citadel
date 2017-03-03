@@ -62,9 +62,7 @@ class PointListAPI(Resource):
         tags = data['tags']
         uuid = str(uuid4())
         try:
-            print(tags)
             normalized_tags = schema_converter(tags)
-            print(normalized_tags)
         except KeyError as err:
             resp_data = {
                     'msg': point_create_fail_msg,

@@ -8,8 +8,6 @@ def schema_converter(metadata):
     Output: Normalized metadata (dict)
     """
     norm_metadata = dict()
-    print(metadata)
-    print(schema.items())
     try:
         for tag, data_type in schema.items():
             if isinstance(data_type, enum.EnumMeta):

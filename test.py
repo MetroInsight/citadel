@@ -8,7 +8,7 @@ def test_mongodb():
 
 	m = ("metroinsight", "127.0.0.1", 27017)
 
-	from app.models import Point
+	from app.models.metadata import Point
 
 	print (Point.objects)
 
@@ -42,5 +42,6 @@ def test_timeseries():
 
 	print(response)
 
-test_point_api()
+#test_point_api()
 #test_timeseries()
+test_mongodb()

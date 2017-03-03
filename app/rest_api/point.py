@@ -16,7 +16,7 @@ from . import api
 from . import responses
 from ..models.metadata import Point
 from ..schema.converters import schema_converter
-
+from mongoengine import NotUniqueError
 
 point_api = Namespace('point', description='Operations related to points')
 tag = api.model('Tag',{
@@ -27,7 +27,7 @@ m_point = api.model('Point',{
         'uuid': fields.String(description='Unique identifier of point'),
         'tags': fields.List(fields.Nested(tag)),
         'name': fields.String(
-            description='Unique human redable identifier of point')
+            description='Unique human readable identifier of point')
     })
 
 parser = point_api.parser()
@@ -53,7 +53,7 @@ class PointListAPI(Resource):
 
     @point_api.response(201, point_created_msg)
     @point_api.response(409, point_create_fail_msg)
-#    @point_api.expect(m_point)
+    #@point_api.expect(m_point)
     @point_api.marshal_with(m_message)
     def post(self):
         """Creates a point"""
@@ -62,7 +62,9 @@ class PointListAPI(Resource):
         tags = data['tags']
         uuid = str(uuid4())
         try:
+            print(tags)
             normalized_tags = schema_converter(tags)
+            print(normalized_tags)
         except KeyError as err:
             resp_data = {
                     'msg': point_create_fail_msg,

@@ -14,10 +14,12 @@ def test_mongodb():
 
 def test_point_api():
 	response = post(base_url+'/api/point/',
-		json = {'name': 'example_point_7',
+		json = {'name': 'example_point_8',
 				'tags': { 
                             'point_type':'Temperature',
-						    'unit':'F'
+						    'unit':'DEG_F',
+                            'latitude': 0,
+                            'longitude': 0
                         } 
 		})
 

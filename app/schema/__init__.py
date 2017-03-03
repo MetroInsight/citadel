@@ -10,8 +10,8 @@ from ..common_exceptions import NoMatchedSchemaError
 schema = {
         'unit': Unit,
         #'point_type': PointType,
-        'location_altitude': float,
-        'location_longitude': float,
+        'latitude': float,
+        'longitude': float,
         }
 
 def schema_validation_deprecated(metadata):

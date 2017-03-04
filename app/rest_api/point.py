@@ -16,6 +16,7 @@ from flask_restplus import Api, Resource, Namespace, fields
 
 from . import api
 from . import responses
+from . import ts_db
 from ..models.metadata import Point
 from ..schema.converters import schema_converter
 from mongoengine import NotUniqueError

@@ -13,10 +13,11 @@ from flask import request, jsonify
 from flask.views import MethodView
 #from ..models import Point
 from flask_restplus import Api, Resource, Namespace, fields
+import arrow
 
 from . import api
 from . import responses
-from . import ts_db
+from .. import timeseriesdb
 from ..models.metadata import Point
 from ..schema.converters import schema_converter
 from mongoengine import NotUniqueError
@@ -31,9 +32,15 @@ m_point = api.model('Point',{
     })
 
 m_message = {
-        'msg': fields.String(),
+        'success': fields.Boolean(),
         'reason': fields.String(),
         'uuid': fields.String()
+        }
+
+m_timeseries = {
+        'msg': fields.String(),
+        'reason': fields.String(),
+        'uuid': fields.String(),
         }
 
 
@@ -44,6 +51,8 @@ point_create_success_msg = 'Point created'
 point_create_fail_msg = 'Failed to create point'
 point_delete_success_msg = 'Point deleted'
 point_delete_fail_msg = 'Failed to delete point'
+
+influxdb_time_format = "2009-11-10T23:00:00Z"
 
 
 @point_api.route('/')
@@ -73,7 +82,7 @@ class PointListAPI(Resource):
             normalized_tags = schema_converter(tags)
         except KeyError as err:
             resp_data = {
-                    'msg': point_create_fail_msg,
+                    'success': False,
                     'reason': 'Not matched to the schema: ' + str(err)
                     }
             status_code = 409
@@ -81,7 +90,7 @@ class PointListAPI(Resource):
         try:
             res = Point(name=point_name, uuid=uuid, tags=normalized_tags).save()
             resp_data = {
-                'msg': point_create_success_msg,
+                'success': True,
                 'reason': '',
                 'uuid': uuid,
                 }
@@ -116,13 +125,13 @@ class PointAPI(Resource):
         point = Point.objects(uuid=uuid)
         if len(point)==0:
             resp_data = {
-                    'msg': point_delete_fail_msg,
+                    'success': False,
                     'reason': 'UUID Not found: {0}'.format(uuid)
                 }
             status_code = 404
         else:
             resp_data = {
-                    'msg': point_delete_success_msg,
+                    'success': True
                 }
             point.get().delete()
             status_code = 200
@@ -131,6 +140,7 @@ class PointAPI(Resource):
 @point_api.param('uuid', 'Unique identifier of point')
 @point_api.route('/<string:uuid>/timeseries')
 class TimeSeriesAPI(Resource):
+
     def get(self, uuid):
         """
         Reads the time series data of a point for the requested range
@@ -154,7 +164,7 @@ class TimeSeriesAPI(Resource):
 
         """
 
-        query_string = 'select * from "{0}"'.format(uuid)
+        query_string = 'select * from "{0}" '.format(uuid)
                         #influxdb only take double quotes in query
         print(query_string) 
         start_time = request.args.get('start_time')
@@ -162,11 +172,14 @@ class TimeSeriesAPI(Resource):
         if not start_time:
             query_string += "order by time desc limit 1"
         elif not end_time:
-            query_string += "where time >= {0}".format(str(start_time))
+            end_time_str = arrow.get(end_time).format(influxdb_time_format)
+            query_string += "where time >= {0}".format(start_time_STR)
         else:
+#            start_time_str = arrow.get(start_time).format(influxdb_time_format)
+#            end_time_str = arrow.get(end_time).format(influxdb_time_format)
             query_string += "where time >= {0} and time < {1}"\
-                            .format(str(start_time), str(end_time))
-        data = ts_db.query(query_string)
+                            .format(str(start_time)+'s', str(end_time)+'s')
+        data = timeseriesdb.query(query_string, epoch='s')
         response = dict(responses.success_true)
         response.update({'data': data.raw})
         return response
@@ -190,20 +203,26 @@ class TimeSeriesAPI(Resource):
             "error": error message
         }
         """
-        points = []
+        #points = []
         data = request.get_json(force=True)
-        for sample in data['samples']:
-            data_dict = {
-                    'measurement': uuid,
-                    'time': sample['time'],
-                    'fields':{
-                            'value': sample['value']         
-                        }
+        #for sample in data['samples']:
+        #    data_dict = {
+        #            'measurement': uuid,
+        #            'time': sample['time'],
+        #            'fields':{
+        #                    'value': sample['value']         
+        #                }
+        #   points.append(data_dict)
+        points = [{
+            'measurement': uuid,
+            'time': int(sample['time']),
+            'fields': {
+                'value': sample['value']
                 }
-            points.append(data_dict)
-        
+            } for sample in data['samples']]
             
-            result = ts_db.write_points(points, time_precision='s')
+        result = timeseriesdb.write_points(points, time_precision='s')
+        if result:
             response = dict(responses.success_true)
         else:
             response = dict(responses.success_false)

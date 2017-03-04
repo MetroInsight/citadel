@@ -21,6 +21,7 @@ def timeseries_db_init(app):
             password=app.config['INFLUXDB_PASSWORD'],
             database=app.config['INFLUXDB_DATABASE'],
     )
+    ts_db.create_database(app.config['INFLUXDB_DATABASE'])
     return ts_db
 
 

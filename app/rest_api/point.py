@@ -97,6 +97,7 @@ class PointListAPI(Resource):
             status_code = 201
         except Exception as err:
             resp_data = {
+                    'success': False,
                     'msg': point_create_fail_msg
                     }
             if isinstance(err, NotUniqueError): 
@@ -173,17 +174,18 @@ class TimeSeriesAPI(Resource):
             query_string += "order by time desc limit 1"
         elif not end_time:
             end_time_str = arrow.get(end_time).format(influxdb_time_format)
-            query_string += "where time >= {0}".format(start_time_STR)
+            query_string += "where time >= {0}".format(str(start_time)+'s')
         else:
 #            start_time_str = arrow.get(start_time).format(influxdb_time_format)
 #            end_time_str = arrow.get(end_time).format(influxdb_time_format)
             query_string += "where time >= {0} and time < {1}"\
                             .format(str(start_time)+'s', str(end_time)+'s')
         data = timeseriesdb.query(query_string, epoch='s')
+        points = dict([(point['time'],point['value']) for point in data.get_points()])
+        pdb.set_trace()
         response = dict(responses.success_true)
-        response.update({'data': data.raw})
+        response.update({'data': points})
         return response
-
 
     def post(self, uuid):
         """
@@ -215,11 +217,11 @@ class TimeSeriesAPI(Resource):
         #   points.append(data_dict)
         points = [{
             'measurement': uuid,
-            'time': int(sample['time']),
+            'time': int(float(t)),
             'fields': {
-                'value': sample['value']
+                'value': v
                 }
-            } for sample in data['samples']]
+            } for t,v in data['samples'].items()]
             
         result = timeseriesdb.write_points(points, time_precision='s')
         if result:
@@ -227,6 +229,5 @@ class TimeSeriesAPI(Resource):
         else:
             response = dict(responses.success_false)
             response.update({'error': 'Error occurred when writing to InfluxDB'})
-        print("BYE")
 
         return response

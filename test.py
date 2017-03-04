@@ -38,6 +38,7 @@ def test_add_point():
     except:
         print("Cannot add point correctly")
         print("known reason: {0}".format(resp.text))
+    print(resp.text)
     print('Done adding point test')
 
 
@@ -87,15 +88,10 @@ def test_put_timeseries():
     query = {'name': test_point_metadata['name']}
     uuid = _get_uuid(query)
 
-    data = {'samples':
-            [{
-                'time': time.time(),
-                'value': 777
-             },
-             {
-                'time': time.time()-10,
-                'value': 555
-                }]
+    data = {'samples': {
+                time.time() : 777,
+                time.time()-10:  555
+                }
            }
     ts_url = point_url + '/{0}/timeseries'.format(uuid)
     resp = requests.post(ts_url, json=data)

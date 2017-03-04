@@ -7,5 +7,5 @@ api = Api(api_blueprint)
 from .point import point_api
 api.add_namespace(point_api)
 
-from .timeseries import ns as timeseries_namespace
-api.add_namespace(timeseries_namespace)
+#from .timeseries import ts_ns as timeseries_namespace
+#api.add_namespace(timeseries_namespace)

@@ -4,7 +4,7 @@
 ## Metadata DB Configuration 
 METADATA_DB_TYPE = 'mongodb'
 # Connection parameters for MongoDB
-MONGODB_DATABASE = 'metroinsight'
+MONGODB_DATABASE = 'citadel'
 MONGODB_HOST = '127.0.0.1'
 MONGODB_PORT = 27017
 

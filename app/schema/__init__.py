@@ -9,7 +9,7 @@ from ..common_exceptions import NoMatchedSchemaError
 # TODO: This should be generated from a formal schema file
 schema = {
         'unit': Unit,
-        #'point_type': PointType,
+        'point_type': PointType,
         'latitude': float,
         'longitude': float,
         }

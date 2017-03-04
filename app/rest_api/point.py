@@ -6,6 +6,8 @@ This module handles point create, view and delete functions
 import sys
 from uuid import uuid4
 from copy import deepcopy
+import pdb
+import json
 
 from flask import request, jsonify
 from flask.views import MethodView
@@ -37,8 +39,10 @@ m_message = {
 parser = point_api.parser()
 parser.add_argument('name', required=True)
 
-point_created_msg = 'Point created'
+point_create_success_msg = 'Point created'
 point_create_fail_msg = 'Failed to create point'
+point_delete_success_msg = 'Point deleted'
+point_delete_fail_msg = 'Failed to delete point'
 
 
 @point_api.route('/')
@@ -47,15 +51,20 @@ class PointListAPI(Resource):
     @point_api.response(200, 'Points found')
     @point_api.marshal_list_with(m_point)
     def get(self):
-        return list(Point.objects)
+        #data = request.get_json(force=True)
+        query_str = request.args.get('query')
+        if query_str:
+            query = json.loads(query_str)
+            return list(Point.objects(__raw__=query))
+        else:
+            return list(Point.objects())
 
-    @point_api.response(201, point_created_msg)
+    @point_api.response(201, point_create_success_msg)
     @point_api.response(409, point_create_fail_msg)
-    #@point_api.expect(m_point)
     @point_api.marshal_with(m_message)
     def post(self):
         """Creates a point"""
-        data = request.json
+        data = request.get_json(force=True)
         point_name = data['name']
         tags = data['tags']
         uuid = str(uuid4())
@@ -71,7 +80,7 @@ class PointListAPI(Resource):
         try:
             res = Point(name=point_name, uuid=uuid, tags=normalized_tags).save()
             resp_data = {
-                'msg': point_created_msg,
+                'msg': point_create_success_msg,
                 'reason': '',
                 'uuid': uuid,
                 }
@@ -96,5 +105,108 @@ class PointListAPI(Resource):
 class PointAPI(Resource):
 
     @point_api.marshal_with(m_point)
-    def get(self, id):
+    def get(self):
         return Point.objects(uuid=uuid).first()
+
+    @point_api.response(200, point_delete_success_msg)
+    @point_api.response(404, point_delete_fail_msg)
+    @point_api.marshal_with(m_message)
+    def delete(self, uuid):
+        point = Point.objects(uuid=uuid)
+        if len(point)==0:
+            resp_data = {
+                    'msg': point_delete_fail_msg,
+                    'reason': 'UUID Not found: {0}'.format(uuid)
+                }
+            status_code = 404
+        else:
+            resp_data = {
+                    'msg': point_delete_success_msg,
+                }
+            point.get().delete()
+            status_code = 200
+        return resp_data, status_code
+
+@point_api.param('uuid', 'Unique identifier of point')
+@point_api.route('/<string:uuid>/timeseries')
+class TimeSeriesAPI(Resource):
+    def get(self, uuid):
+        """
+        Reads the time series data of a point for the requested range
+
+        Parameters:
+        "uuid": <point uuid>
+        "start_time": <unix timestamp of start time in seconds>
+        "end_time": <unix timestamp of end time in seconds>
+
+        Returns (JSON):
+        {
+            "data":{
+                "name": <point uuidi>
+                "series": [
+                    "columns": [column definitions]
+                ]
+                "values":[list of point values]
+            }
+            "success": <True or False>
+        }
+
+        """
+
+        query_string = 'select * from "{0}"'.format(uuid)
+                        #influxdb only take double quotes in query
+        print(query_string) 
+        start_time = request.args.get('start_time')
+        end_time = request.args.get('end_time')
+        if not start_time:
+            query_string += "order by time desc limit 1"
+        elif not end_time:
+            query_string += "where time >= {0}".format(str(start_time))
+        else:
+            query_string += "where time >= {0} and time < {1}"\
+                            .format(str(start_time), str(end_time))
+        data = ts_db.query(query_string)
+        response = dict(responses.success_true)
+        response.update({'data': data.raw})
+        return response
+
+
+    def post(self, uuid):
+        """
+        Parameters:
+        {
+            "samples": [
+                {
+                    "time": unix timestamp in seconds
+                    "value": value
+                },
+                { more times and values }
+            ]
+        }
+        Returns:
+        {
+            "success": <True or False>
+            "error": error message
+        }
+        """
+        points = []
+        data = request.get_json(force=True)
+        for sample in data['samples']:
+            data_dict = {
+                    'measurement': uuid,
+                    'time': sample['time'],
+                    'fields':{
+                            'value': sample['value']         
+                        }
+                }
+            points.append(data_dict)
+        
+            
+            result = ts_db.write_points(points, time_precision='s')
+            response = dict(responses.success_true)
+        else:
+            response = dict(responses.success_false)
+            response.update({'error': 'Error occurred when writing to InfluxDB'})
+        print("BYE")
+
+        return response

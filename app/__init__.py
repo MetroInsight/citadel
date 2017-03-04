@@ -6,10 +6,12 @@ from mongoengine import *
 from influxdb import InfluxDBClient
 import config
 
+
 def metadata_db_init(app):
     connect(app.config['MONGODB_DATABASE'],
                 host=app.config['MONGODB_HOST'],
                 port=app.config['MONGODB_PORT'])
+
 
 def timeseries_db_init(app):
     ts_db = InfluxDBClient(
@@ -18,7 +20,6 @@ def timeseries_db_init(app):
             username=app.config['INFLUXDB_USERNAME'],
             password=app.config['INFLUXDB_PASSWORD'],
             database=app.config['INFLUXDB_DATABASE'],
-            
     )
     return ts_db
 

@@ -10,10 +10,10 @@ from flask_restplus import reqparse
 from . import responses
 from .. import timeseriesdb as ts_db
 
-ns = Namespace('timeseries', description='Operations related to timeseries')
+ts_ns = Namespace('timeseries', description='Operations related to timeseries')
 
-@ns.param('uuid', 'Unique identifier of point')
-@ns.route('/<string:uuid>')
+@ts_ns.param('uuid', 'Unique identifier of point')
+@ts_ns.route('/<string:uuid>')
 class TimeSeriesAPI(Resource):
     def get(self, uuid):
         """

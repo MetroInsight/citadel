@@ -16,8 +16,8 @@ Create a database in InfluxDB called 'metroinsight'
 * influx
 * CREATE DATABASE metroinsight
 
-## Run
-python run.py
+## Run natively
+python app/main.py
 
 
 

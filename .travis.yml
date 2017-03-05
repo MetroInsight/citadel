@@ -1,0 +1,20 @@
+sudo: required
+
+language: python
+
+services:
+  - docker
+
+python:
+  - 3.5
+  - 3.6
+
+
+before_install:
+  - docker run --rm --name citadel-mongodb -itd mongo
+  - docker run --rm --name citadel-influxdb -itd influxdb
+  - docker build -t jbkoh/citadel .
+  - docker run -itd -p 127.0.0.1:80:80 --name citade-instance jbkoh/citadel
+  
+script:
+  python test/test.py

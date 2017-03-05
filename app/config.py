@@ -5,14 +5,14 @@
 METADATA_DB_TYPE = 'mongodb'
 # Connection parameters for MongoDB
 MONGODB_DATABASE = 'citadel'
-MONGODB_HOST = '127.0.0.1'
+MONGODB_HOST = '172.17.0.3'
 MONGODB_PORT = 27017
 
 ## Timeseries DB Configuration
 TIMESERIES_DB_TYPE = 'influxdb'
 # Connection parameters for InfluxDB
 INFLUXDB_DATABASE = 'citadel'
-INFLUXDB_HOST = '127.0.0.1'
+INFLUXDB_HOST = '172.17.0.2'
 INFLUXDB_PORT = 8086
 
 # TODO: change to less privileged user

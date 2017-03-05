@@ -4,7 +4,7 @@ import json
 import pdb
 
 
-base_url = 'http://127.0.0.1:8080/api'
+base_url = 'http://132.239.10.197/api'
 point_url = base_url + '/point'
 
 def test_mongodb():

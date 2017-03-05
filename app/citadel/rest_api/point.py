@@ -182,7 +182,6 @@ class TimeSeriesAPI(Resource):
                             .format(str(start_time)+'s', str(end_time)+'s')
         data = timeseriesdb.query(query_string, epoch='s')
         points = dict([(point['time'],point['value']) for point in data.get_points()])
-        pdb.set_trace()
         response = dict(responses.success_true)
         response.update({'data': points})
         return response

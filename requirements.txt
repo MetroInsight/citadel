@@ -1,5 +1,6 @@
-mongodb
+flask
+mongoengine==0.11.0
+Flask-OAuthlib
 influxdb
-python3
-
-See pip_packages for python dependencies
+flask-restplus
+arrow

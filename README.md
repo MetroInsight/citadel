@@ -12,9 +12,9 @@ Docker
 ## Install
 Install software listed in requirements.txt and pip-packages.list
 
-Create a database in InfluxDB called 'metroinsight'
+Create a database in InfluxDB called 'citadel'
 * influx
-* CREATE DATABASE metroinsight
+* CREATE DATABASE citadel
 
 ## Run natively
 python app/main.py
@@ -24,4 +24,6 @@ python app/main.py
 ## Running with Docker
 1. Install Docker from [here](https://docs.docker.com/engine/installation/linux/ubuntu/)
 2. Run "run_with_docker" file. It may ask authority elevation (sudo.)
+   Currently the script is based on Linux environment. 
+   Same script can be easily generated for Windows and Mac.
 

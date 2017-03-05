@@ -23,7 +23,7 @@ python app/main.py
 
 ## Running with Docker
 1. Install Docker from [here](https://docs.docker.com/engine/installation/linux/ubuntu/)
-2. Run "run_with_docker" file. It may ask authority elevation (sudo.)
-   Currently the script is based on Linux environment. 
+2. Run "run_with_docker" file. It may ask authority elevation (sudo.)  
+   Currently the script is based on Linux environment.  
    Same script can be easily generated for Windows and Mac.
 

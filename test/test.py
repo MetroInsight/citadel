@@ -33,11 +33,10 @@ def test_add_point():
     resp = requests.post(
             base_url+'/point/',
             json=test_point_metadata)
-    try:
-        assert(resp.status_code==201)
-    except:
+    if resp.status_code!=201:
         print("Cannot add point correctly")
         print("known reason: {0}".format(resp.text))
+        assert(False)
     print(resp.text)
     print('Done adding point test')
 

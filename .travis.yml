@@ -11,10 +11,10 @@ python:
 
 
 before_install:
-  - docker pull mongo
-  - docker run --name citadel-mongodb -itd mongo
   - docker pull influxdb
   - docker run --name citadel-influxdb -itd influxdb
+  - docker pull mongo
+  - docker run --name citadel-mongodb -itd mongo
   - docker build -t jbkoh/citadel .
   - docker run -itd -p 127.0.0.1:80:80 --name citade-instance jbkoh/citadel
   

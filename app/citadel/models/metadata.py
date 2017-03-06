@@ -9,6 +9,5 @@ class Point(Document):
     name = StringField(required=True, unique=True)
     uuid = StringField(required=True, unique=True)
     tags = DictField() 
-
-
+    geo_point = PointField()
 

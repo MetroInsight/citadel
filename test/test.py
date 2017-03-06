@@ -4,7 +4,7 @@ import json
 import pdb
 
 
-base_url = 'http://127.0.0.1/api'
+base_url = 'http://127.0.0.1:8080/api'
 point_url = base_url + '/point'
 
 def test_mongodb():
@@ -27,7 +27,6 @@ test_point_metadata = {
             } 
         }
 
-
 def test_add_point():
     print('Init adding point test')
     resp = requests.post(
@@ -36,7 +35,11 @@ def test_add_point():
     if resp.status_code!=201:
         print("Cannot add point correctly")
         print("known reason: {0}".format(resp.text))
-        assert(False)
+        if resp.json()['reason']=='Given name already exists':
+            pass
+        else:
+            assert(False)
+    uuid = resp.json()['uuid']
     print(resp.text)
     print('Done adding point test')
 
@@ -82,16 +85,19 @@ def test_delete_point():
 
     print('Done point delete test')
 
+start_time = '1488830000'
+end_time = '1488840000'
+
+test_ts_data = {
+        start_time: 777,
+        end_time: 555,
+        }
+
 def test_put_timeseries():
     print('Init put timeseries test')
     query = {'name': test_point_metadata['name']}
     uuid = _get_uuid(query)
-
-    data = {'samples': {
-                time.time() : 777,
-                time.time()-10:  555
-                }
-           }
+    data = {'samples': test_ts_data}
     ts_url = point_url + '/{0}/timeseries'.format(uuid)
     resp = requests.post(ts_url, json=data)
     assert(resp.status_code==200)
@@ -102,13 +108,38 @@ def test_get_timeseries():
     query = {'name': test_point_metadata['name']}
     uuid = _get_uuid(query)
     params = {
-            'start_time': int(time.time()) - 1000,
-            'end_time': int(time.time()) + 1000
+            'start_time': str(int(start_time) - 1000),
+            'end_time': str(int(end_time) + 1000)
             }
     ts_url = point_url + '/{0}/timeseries'.format(uuid)
     resp = requests.get(ts_url, params=params)
     print(resp.text)
+    assert(resp.json()['data'] == test_ts_data)
     print('Done get timeseries test')
+
+def test_delete_timeseries():
+    print('Init delete timeserie partially test')
+    query = {'name': test_point_metadata['name']}
+    uuid = _get_uuid(query)
+    delete_start_time = str(int(start_time) - 100)
+    delete_end_time = str(int(start_time) + 10)
+
+    ts_url = point_url + '/{0}/timeseries'.format(uuid)
+    params = {
+            'start_time': delete_start_time,
+            'end_time': delete_end_time
+            }
+    resp = requests.delete(ts_url, params=params)
+    assert(resp.status_code==200)
+
+    params = {
+            'start_time': str(int(start_time) - 1000),
+            'end_time': str(int(end_time) + 1000)
+            }
+    ts_url = point_url + '/{0}/timeseries'.format(uuid)
+    resp = requests.get(ts_url, params=params)
+    assert(len(resp.json()['data'])==1)
+    print('Done delete timeserie partially test')
 
 if __name__ == '__main__':
     test_add_point()
@@ -116,5 +147,5 @@ if __name__ == '__main__':
     test_find_all_points()
     test_put_timeseries()
     test_get_timeseries()
-    #test_delete_timeseries()
+    test_delete_timeseries()
     test_delete_point()

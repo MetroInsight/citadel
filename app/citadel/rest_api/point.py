@@ -18,6 +18,7 @@ import arrow
 from . import api
 from . import responses
 from .. import timeseriesdb
+from ..models import timeseries as ts
 from ..models.metadata import Point
 from ..schema.converters import schema_converter
 from mongoengine import NotUniqueError
@@ -25,8 +26,10 @@ from mongoengine import NotUniqueError
 point_api = Namespace('point', description='Operations related to points')
 
 m_point = api.model('Point',{
-        'uuid': fields.String(description='Unique identifier of point'),
-        'tags': fields.Raw(description='key, value pairs in dictionary format'),
+        'uuid': fields.String(
+            description='Unique identifier of point'),
+        'tags': fields.Raw(
+            description='key, value pairs in dictionary format'),
         'name': fields.String(
             description='Unique human readable identifier of point')
     })
@@ -38,10 +41,9 @@ m_message = {
         }
 
 m_timeseries = {
-        'msg': fields.String(),
-        'reason': fields.String(),
-        'uuid': fields.String(),
+        'success': fields.Boolean()
         }
+
 
 
 parser = point_api.parser()
@@ -123,6 +125,7 @@ class PointAPI(Resource):
     @point_api.response(404, point_delete_fail_msg)
     @point_api.marshal_with(m_message)
     def delete(self, uuid):
+        # delete from metadata db (mongodb for now)
         point = Point.objects(uuid=uuid)
         if len(point)==0:
             resp_data = {
@@ -136,6 +139,10 @@ class PointAPI(Resource):
                 }
             point.get().delete()
             status_code = 200
+        
+        # delete from timeseries db (influxdb for now)
+        ts.delete_point(uuid)
+
         return resp_data, status_code
 
 @point_api.param('uuid', 'Unique identifier of point')
@@ -164,24 +171,9 @@ class TimeSeriesAPI(Resource):
         }
 
         """
-
-        query_string = 'select * from "{0}" '.format(uuid)
-                        #influxdb only take double quotes in query
-        print(query_string) 
         start_time = request.args.get('start_time')
         end_time = request.args.get('end_time')
-        if not start_time:
-            query_string += "order by time desc limit 1"
-        elif not end_time:
-            end_time_str = arrow.get(end_time).format(influxdb_time_format)
-            query_string += "where time >= {0}".format(str(start_time)+'s')
-        else:
-#            start_time_str = arrow.get(start_time).format(influxdb_time_format)
-#            end_time_str = arrow.get(end_time).format(influxdb_time_format)
-            query_string += "where time >= {0} and time < {1}"\
-                            .format(str(start_time)+'s', str(end_time)+'s')
-        data = timeseriesdb.query(query_string, epoch='s')
-        points = dict([(point['time'],point['value']) for point in data.get_points()])
+        points = ts.read_ts_data(uuid, start_time, end_time)
         response = dict(responses.success_true)
         response.update({'data': points})
         return response
@@ -204,29 +196,21 @@ class TimeSeriesAPI(Resource):
             "error": error message
         }
         """
-        #points = []
         data = request.get_json(force=True)
-        #for sample in data['samples']:
-        #    data_dict = {
-        #            'measurement': uuid,
-        #            'time': sample['time'],
-        #            'fields':{
-        #                    'value': sample['value']         
-        #                }
-        #   points.append(data_dict)
-        points = [{
-            'measurement': uuid,
-            'time': int(float(t)),
-            'fields': {
-                'value': v
-                }
-            } for t,v in data['samples'].items()]
-            
-        result = timeseriesdb.write_points(points, time_precision='s')
+        result = ts.write_ts_data(uuid, data)
         if result:
             response = dict(responses.success_true)
         else:
             response = dict(responses.success_false)
             response.update({'error': 'Error occurred when writing to InfluxDB'})
 
+        return response
+
+    @point_api.marshal_with(m_message)
+    def delete(self, uuid):
+        start_time = request.args.get('start_time')
+        end_time = request.args.get('end_time')
+        ts.delete_ts_data(uuid, start_time, end_time)
+        response = dict(responses.success_true)
+        response['uuid'] = uuid
         return response

@@ -19,4 +19,4 @@ before_install:
   - docker run -itd -p 127.0.0.1:80:80 --name citade-instance jbkoh/citadel
   
 script:
-  python test/test.py
+  python test/rest_api_test.py

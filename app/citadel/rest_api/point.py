@@ -26,25 +26,30 @@ from mongoengine import NotUniqueError
 point_api = Namespace('point', description='Operations related to points')
 
 m_point = api.model('Point',{
-        'uuid': fields.String(
-            description='Unique identifier of point'),
-        'tags': fields.Raw(
-            description='key, value pairs in dictionary format'),
-        'name': fields.String(
-            description='Unique human readable identifier of point')
+    'uuid': fields.String(
+        description='Unique identifier of point'),
+    'tags': fields.Raw(
+        description='key, value pairs in dictionary format'),
+    'name': fields.String(
+        description='Unique human readable identifier of point')
     })
 
-m_message = {
-        'success': fields.Boolean(),
-        'reason': fields.String(),
-        'uuid': fields.String()
-        }
 
-m_timeseries = {
-        'success': fields.Boolean()
-        }
+m_message = api.model('Message',{
+    'success': fields.Boolean(),
+    'reason': fields.String(),
+    'uuid': fields.String()
+    })
 
+m_timeseries = api.model('Timeseries',{
+    'success': fields.Boolean()
+    })
 
+m_timeseries_post = api.model('TimeseriesPost', {
+        'samples': fields.Raw(
+            description='Dictionary where key=timestamp integer \
+                        and value=data value')
+        })
 
 parser = point_api.parser()
 parser.add_argument('name', required=True)
@@ -57,12 +62,15 @@ point_delete_fail_msg = 'Failed to delete point'
 influxdb_time_format = "2009-11-10T23:00:00Z"
 
 
+@point_api.doc()
 @point_api.route('/')
 class PointListAPI(Resource):
 
+    @point_api.doc(body=m_point)
     @point_api.response(200, 'Points found')
     @point_api.marshal_list_with(m_point)
     def get(self):
+        """ Query to points """
         #data = request.get_json(force=True)
         query_str = request.args.get('query')
         if query_str:
@@ -71,11 +79,14 @@ class PointListAPI(Resource):
         else:
             return list(Point.objects())
 
+    @point_api.doc(body=m_point)
     @point_api.response(201, point_create_success_msg)
     @point_api.response(409, point_create_fail_msg)
     @point_api.marshal_with(m_message)
     def post(self):
-        """Creates a point"""
+        """ 
+        Creates a point
+        """
         data = request.get_json(force=True)
         point_name = data['name']
         tags = data['tags']
@@ -119,12 +130,14 @@ class PointAPI(Resource):
 
     @point_api.marshal_with(m_point)
     def get(self):
+        """ Get metadata of a point with given UUID """
         return Point.objects(uuid=uuid).first()
 
     @point_api.response(200, point_delete_success_msg)
     @point_api.response(404, point_delete_fail_msg)
     @point_api.marshal_with(m_message)
     def delete(self, uuid):
+        """ Deletes a point with given UUID """
         # delete from metadata db (mongodb for now)
         point = Point.objects(uuid=uuid)
         if len(point)==0:
@@ -178,24 +191,9 @@ class TimeSeriesAPI(Resource):
         response.update({'data': points})
         return response
 
+    @point_api.doc(body=m_timeseries_post)
     def post(self, uuid):
-        """
-        Parameters:
-        {
-            "samples": [
-                {
-                    "time": unix timestamp in seconds
-                    "value": value
-                },
-                { more times and values }
-            ]
-        }
-        Returns:
-        {
-            "success": <True or False>
-            "error": error message
-        }
-        """
+        """ Posts timeseries data of a point """
         data = request.get_json(force=True)
         result = ts.write_ts_data(uuid, data)
         if result:
@@ -208,6 +206,9 @@ class TimeSeriesAPI(Resource):
 
     @point_api.marshal_with(m_message)
     def delete(self, uuid):
+        """
+        Deletes timeseries data of a point in the requested time range.
+        """
         start_time = request.args.get('start_time')
         end_time = request.args.get('end_time')
         ts.delete_ts_data(uuid, start_time, end_time)

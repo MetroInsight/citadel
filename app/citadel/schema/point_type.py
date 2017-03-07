@@ -1,5 +1,17 @@
 from enum import Enum
 
-class PointType(Enum):
-    Temperature = 1
-    AirFlow = 2
+PointType = Enum("PointType", [\
+        'temperature',
+        'waterflow',
+        'airflow',
+        'command',
+        'electrical_energy',
+        'thermal_energy',
+        'electrical_power',
+        'time',
+        'angle',
+        'relative_humidity',
+        'speed',
+        'radiation',
+        ]
+        )

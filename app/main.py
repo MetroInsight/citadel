@@ -1,11 +1,15 @@
 #run a test server
+import pdb
+from flask import json, current_app
+
 from citadel import app
+from citadel.rest_api import api
 from config import *
 
-@app.route("/")
-def hello():
-    return "Hello World!"
-
-#app.run(host='0.0.0.0', port=80, debug=True)
 if __name__ == '__main__':
+    with app.app_context():
+        print("==========")
+        print(json.dumps(api.__schema__))
+        print("==========")
+    print(app.config)
     app.run(host=CITADEL_HOST, port=CITADEL_PORT, debug=True)

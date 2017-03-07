@@ -1,9 +1,11 @@
+import json
 
 from flask import Flask
 from flask_oauthlib.provider import OAuth2Provider
 from flask_restplus import Api, Resource
 from mongoengine import *
 from influxdb import InfluxDBClient
+
 import config
 
 
@@ -41,6 +43,9 @@ oauth.init_app(app)
 
 
 #Register blueprints (i.e. flask template for apps)
-from .rest_api import api_blueprint
+from .rest_api import api_blueprint, api
 app.register_blueprint(api_blueprint, url_prefix = '/api')
 
+#with app.app_context():
+#    with open('api_schema.json', 'w') as fp:
+#        json.dump(current_app.api.__schema__, fp)

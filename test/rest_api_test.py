@@ -21,7 +21,7 @@ def test_mongodb():
 test_point_metadata = {
         'name': 'example_point_8',
         'tags': { 
-            'point_type':'Temperature',
+            'point_type':'temperature',
             'unit':'DEG_F',
             'latitude': 0, 'longitude': 0
             } 

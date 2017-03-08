@@ -6,7 +6,7 @@ import pdb
 
 import config
 
-base_url = config.SERVER_NAME + '/api'
+base_url = 'http://' + config.SERVER_NAME + '/api'
 point_url = base_url + '/point'
 
 def test_mongodb():

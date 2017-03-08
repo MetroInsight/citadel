@@ -29,6 +29,15 @@ m_point = api.model('Point',{
     'uuid': fields.String(
         description='Unique identifier of point'),
     'tags': fields.Raw(
+        example={'tag1':'value1', 'tag2':'value2'},
+        description='key, value pairs in dictionary format'),
+    'name': fields.String(
+        description='Unique human readable identifier of point')
+    })
+
+m_point_post = api.model('PointPost',{
+    'tags': fields.Raw(
+        example={'tag1':'value1', 'tag2':'value2'},
         description='key, value pairs in dictionary format'),
     'name': fields.String(
         description='Unique human readable identifier of point')
@@ -67,7 +76,7 @@ influxdb_time_format = "2009-11-10T23:00:00Z"
 class PointListAPI(Resource):
 
     @point_api.doc(body=m_point)
-    @point_api.response(200, 'Points found')
+    @point_api.response(200, 'Points found', m_point)
     @point_api.marshal_list_with(m_point)
     def get(self):
         """ Query to points """
@@ -79,7 +88,7 @@ class PointListAPI(Resource):
         else:
             return list(Point.objects())
 
-    @point_api.doc(body=m_point)
+    @point_api.doc(body=m_point_post)
     @point_api.response(201, point_create_success_msg)
     @point_api.response(409, point_create_fail_msg)
     @point_api.marshal_with(m_message)

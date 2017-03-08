@@ -23,7 +23,10 @@ test_point_metadata = {
         'tags': { 
             'point_type':'temperature',
             'unit':'DEG_F',
-            'latitude': 0, 'longitude': 0
+            'latitude': 0, 
+            'longitude': 0,
+            'source_reference_': 'http://aaa.com',
+            'license': 'gplv2'
             } 
         }
 

@@ -1,6 +1,8 @@
 # FlaskWebService
 A simple flask web service to store and retrieve data
 
+[![Build Status](https://travis-ci.org/MetroInsight/citadel.svg?branch=master)](https://travis-ci.org/MetroInsight/citadel#)
+
 ## Dependency for native running
 Python 3.5+
 .
@@ -38,3 +40,4 @@ python app/main.py
 1. Citadel shoul have run once before generating API doc. Needs JAVA>7.
 2. Run "bash gen_api_doc.sh"
 3. Generated document is located in doc/api/index.html
+

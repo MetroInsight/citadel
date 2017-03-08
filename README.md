@@ -31,4 +31,4 @@ python app/main.py
 ## API Documentation
 1. Specify your machine's IP in app/config.py for both CITADEL_HOST and SERVER_NAME
 2. Run Citadel with "python app/main.py"
-3. API doc will be accessible from your browser at "http://host:post/api/doc"
+3. API doc will be accessible from your browser at "http://host:port/api/doc"

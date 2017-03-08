@@ -37,7 +37,7 @@ python app/main.py
 3. API doc will be accessible from your browser at "http://host:port/api/doc"
 
 ### Generate static HTML
-1. Citadel shoul have run once before generating API doc. Needs JAVA>7.
+1. Citadel should have run once before generating API doc. Needs JAVA>7.
 2. Run "bash gen_api_doc.sh"
 3. Generated document is located in doc/api/index.html
 

@@ -25,7 +25,7 @@ test_point_metadata = {
             'unit':'DEG_F',
             'latitude': 0, 
             'longitude': 0,
-            'source_reference_': 'http://aaa.com',
+            'source_reference': 'http://aaa.com',
             'license': 'gplv2'
             } 
         }

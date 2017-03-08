@@ -2,7 +2,7 @@ import pprint
 import sys
 from mongoengine import *
 import json
-from geojson import Point
+#from geojson import Point
 connect('citadel')
 
 class Point(Document):

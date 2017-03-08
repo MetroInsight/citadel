@@ -184,7 +184,7 @@ font-style: italic;
     <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
     <div class="app-desc">Contact Info: <a href="hello@helloreverb.com">hello@helloreverb.com</a></div>
     <div class="app-desc">Version: 0.1</div>
-    <div class="app-desc">BasePath:http://127.0.0.1:8080/api</div>
+    <div class="app-desc">BasePath:http://132.239.10.197:8080/api</div>
     <div class="license-info">All rights reserved</div>
     <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
   <h2>Access</h2>
@@ -198,9 +198,9 @@ font-style: italic;
   <li><a href="#deletePointApi"><code><span class="http-method">delete</span> /point/{uuid}</code></a></li>
   <li><a href="#deleteTimeSeriesApi"><code><span class="http-method">delete</span> /point/{uuid}/timeseries</code></a></li>
   <li><a href="#getPointApi"><code><span class="http-method">get</span> /point/{uuid}</code></a></li>
-  <li><a href="#getPointListApi"><code><span class="http-method">get</span> /point/</code></a></li>
+  <li><a href="#getPointGenericApi"><code><span class="http-method">get</span> /point/</code></a></li>
   <li><a href="#getTimeSeriesApi"><code><span class="http-method">get</span> /point/{uuid}/timeseries</code></a></li>
-  <li><a href="#postPointListApi"><code><span class="http-method">post</span> /point/</code></a></li>
+  <li><a href="#postPointGenericApi"><code><span class="http-method">post</span> /point/</code></a></li>
   <li><a href="#postTimeSeriesApi"><code><span class="http-method">post</span> /point/{uuid}/timeseries</code></a></li>
   </ol>
 
@@ -283,9 +283,9 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "reason" : "aeiou",
+  "reason" : "reason_string",
   "success" : true,
-  "uuid" : "aeiou"
+  "uuid" : "random_uuid_1"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -335,11 +335,7 @@ font-style: italic;
 
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "name" : "aeiou",
-  "uuid" : "aeiou",
-  "tags" : "{}"
-}</code></pre>
+    <pre class="example"><code>""</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -354,11 +350,11 @@ font-style: italic;
         <a href="#Point">Point</a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="getPointListApi"/>
+  <div class="method"><a name="getPointGenericApi"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="get"><code class="huge"><span class="http-method">get</span> /point/</code></pre></div>
-    <div class="method-summary">Query to points (<span class="nickname">getPointListApi</span>)</div>
+    <div class="method-summary">Query to points (<span class="nickname">getPointGenericApi</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -368,14 +364,16 @@ font-style: italic;
       <li><code>application/json</code></li>
     </ul>
 
-    <h3 class="field-label">Request body</h3>
+
+
+    <h3 class="field-label">Query parameters</h3>
     <div class="field-items">
-      <div class="param">payload (required)</div>
+      <div class="param">query (optional)</div>
 
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; {\&quot;tags\&quot;: {\&quot;tag1\&quot;: \&quot;value1\&quot;, \&quot;tag2\&quot;: \&quot;value2\&quot;}, \&quot;name\&quot;: \&quot;point_name_1\&quot;, \&quot;geometry\&quot;: \&quot;{\\\&quot;coordinates\\\&quot;: [0.1234, -0.1234], \\\&quot;type\\\&quot;: \\\&quot;Point\\\&quot;}\&quot;} </div><div class="param">geo_query (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash;  </div>
     </div>  <!-- field-items -->
-
-
 
 
     <h3 class="field-label">Return type</h3>
@@ -388,11 +386,7 @@ font-style: italic;
 
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
-    <pre class="example"><code>{
-  "name" : "aeiou",
-  "uuid" : "aeiou",
-  "tags" : "{}"
-}</code></pre>
+    <pre class="example"><code>""</code></pre>
 
     <h3 class="field-label">Produces</h3>
     This API call produces the following media types according to the <span class="header">Accept</span> request header;
@@ -448,11 +442,11 @@ font-style: italic;
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="postPointListApi"/>
+  <div class="method"><a name="postPointGenericApi"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
     <pre class="post"><code class="huge"><span class="http-method">post</span> /point/</code></pre></div>
-    <div class="method-summary">Creates a point (<span class="nickname">postPointListApi</span>)</div>
+    <div class="method-summary">Creates a point (<span class="nickname">postPointGenericApi</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -483,9 +477,9 @@ font-style: italic;
     <h3 class="field-label">Example data</h3>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
-  "reason" : "aeiou",
+  "reason" : "reason_string",
   "success" : true,
-  "uuid" : "aeiou"
+  "uuid" : "random_uuid_1"
 }</code></pre>
 
     <h3 class="field-label">Produces</h3>
@@ -561,12 +555,20 @@ font-style: italic;
 
   <h2>Table of Contents</h2>
   <ol>
+    <li><a href="#GeoPoint"><code>GeoPoint</code></a></li>
     <li><a href="#Message"><code>Message</code></a></li>
     <li><a href="#Point"><code>Point</code></a></li>
     <li><a href="#PointPost"><code>PointPost</code></a></li>
     <li><a href="#TimeseriesPost"><code>TimeseriesPost</code></a></li>
   </ol>
 
+  <div class="model">
+    <h3 class="field-label"><a name="GeoPoint">GeoPoint</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#number">array[BigDecimal]</a></span>  </div>
+<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
   <div class="model">
     <h3 class="field-label"><a name="Message">Message</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
@@ -578,9 +580,10 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Point">Point</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">uuid (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique identifier of point </div>
-<div class="param">tags (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> key, value pairs in dictionary format </div>
+      <div class="param">tags (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> key, value pairs in dictionary format </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique human readable identifier of point </div>
+<div class="param">geometry (optional)</div><div class="param-desc"><span class="param-type"><a href="#GeoPoint">GeoPoint</a></span>  </div>
+<div class="param">uuid (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique identifier of point </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -588,12 +591,13 @@ font-style: italic;
     <div class="field-items">
       <div class="param">tags (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> key, value pairs in dictionary format </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Unique human readable identifier of point </div>
+<div class="param">geometry (optional)</div><div class="param-desc"><span class="param-type"><a href="#GeoPoint">GeoPoint</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3 class="field-label"><a name="TimeseriesPost">TimeseriesPost</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">samples (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> Dictionary where key&#x3D;timestamp integer                         and value&#x3D;data value </div>
+      <div class="param">samples (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span> Dictionary where key&#x3D;timestamp integer             and value&#x3D;data value </div>
     </div>  <!-- field-items -->
   </div>
   </body>

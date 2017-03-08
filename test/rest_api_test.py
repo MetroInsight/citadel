@@ -1,10 +1,12 @@
 import requests
+from copy import deepcopy
 import time, random
 import json
 import pdb
 
 
-base_url = 'http://127.0.0.1:8080/api'
+base_url = 'http://132.239.10.197:8080/api'
+#base_url = 'http://127.0.0.1:8080/api'
 point_url = base_url + '/point'
 
 def test_mongodb():
@@ -23,18 +25,29 @@ test_point_metadata = {
         'tags': { 
             'point_type':'temperature',
             'unit':'DEG_F',
-            'latitude': 0, 
-            'longitude': 0,
             'source_reference': 'http://aaa.com',
             'license': 'gplv2'
-            } 
+            },
+        'geometry':{
+            'coordinates':[0,0],
+            'type':'Point'
+            }
         }
 
-def test_add_point():
+
+test_point_metadata_2 = deepcopy(test_point_metadata)
+test_point_metadata_2['name'] = 'example_point_7'
+
+metadata_dict = {
+        test_point_metadata['name']: test_point_metadata,
+        test_point_metadata_2['name']: test_point_metadata_2
+        }
+
+def test_add_point(metadata):
     print('Init adding point test')
     resp = requests.post(
             base_url+'/point/',
-            json=test_point_metadata)
+            json=metadata)
     if resp.status_code!=201:
         print("Cannot add point correctly")
         print("known reason: {0}".format(resp.text))
@@ -49,27 +62,55 @@ def test_add_point():
 
 def _get_uuid(query):
     params = {'query': json.dumps(query)}
-    sensor = requests.get(point_url, params=params).json()[0]
+    sensor = requests.get(point_url, params=params).json()['point_list'][0]
     return sensor['uuid']
 
-def test_find_point():
+def test_find_one_point():
     print('Init finding a point test')
     query = {'name': test_point_metadata['name']}
     params = {"query": json.dumps(query)}
     resp = requests.get(point_url, params=params)
     assert(resp.status_code==200)
-    found_point = resp.json()[0]
+    found_point = resp.json()['point_list'][0]
     for key, val in test_point_metadata.items():
-        assert(found_point[key]==val)
+        if found_point[key] != val:
+            print('ERROR: {0} and {1} are different'\
+                    .format(found_point[key], val))
+            assert(False)
     print('Done finding a point test')
 
 def test_find_all_points():
     print('Init find all points test')
     resp = requests.get(point_url)
-    found_point = resp.json()[0]
-    for key, val in test_point_metadata.items():
-        assert(found_point[key]==val)
+    found_point_list = resp.json()['point_list']
+    for found_point in found_point_list:
+        for key, val in found_point.items():
+            if key=='uuid':
+                continue
+            point_name = found_point['name']
+            given_metadata = metadata_dict[point_name]
+            if given_metadata[key] != val:
+                print('ERROR: {0} and {1} are different'\
+                        .format(given_metadata[key], val))
+                assert(False)
     print('Done find all points test')
+
+
+geo_query = {
+        'geo_query': {
+            'type': 'bounding_box',
+            'geometry_list': [[-1,-1],[1,1]]
+            }
+        }
+
+def test_geo_query(geo_query):
+    print('Init geo query')
+    resp = requests.get(point_url, params=json.dumps(geo_query))
+    assert(resp.status_code==200)
+    assert(len(resp.json()['point_list'])==2)
+    print('Done geo query')
+
+
 
 def test_delete_point():
     print('Init point delete test')
@@ -83,7 +124,7 @@ def test_delete_point():
 
     # find the uuid has no point (confirm delete succeeded)
     params = {"query": json.dumps(query)}
-    num_points = len(requests.get(point_url, params=params).json())
+    num_points = len(requests.get(point_url, params=params).json()['point_list'])
     assert(num_points==0)
 
     print('Done point delete test')
@@ -145,9 +186,11 @@ def test_delete_timeseries():
     print('Done delete timeserie partially test')
 
 if __name__ == '__main__':
-    test_add_point()
-    test_find_point()
+    test_add_point(test_point_metadata)
+    test_add_point(test_point_metadata_2)
+    test_find_one_point()
     test_find_all_points()
+    test_geo_query(geo_query)
     test_put_timeseries()
     test_get_timeseries()
     test_delete_timeseries()

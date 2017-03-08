@@ -4,9 +4,9 @@ import time, random
 import json
 import pdb
 
+import config
 
-base_url = 'http://132.239.10.197:8080/api'
-#base_url = 'http://127.0.0.1:8080/api'
+base_url = 'http://' + config.SERVER_NAME + '/api'
 point_url = base_url + '/point'
 
 def test_mongodb():

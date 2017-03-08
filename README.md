@@ -17,7 +17,6 @@ Create a database in InfluxDB called 'citadel'
 * CREATE DATABASE citadel
 
 ## Running Instruction
-
 ### Run natively
 python app/main.py
 
@@ -29,6 +28,13 @@ python app/main.py
 
 
 ## API Documentation
+
+### Generate interactive UI
 1. Specify your machine's IP in app/config.py for both CITADEL_HOST and SERVER_NAME
 2. Run Citadel with "python app/main.py"
 3. API doc will be accessible from your browser at "http://host:port/api/doc"
+
+### Generate static HTML
+1. Citadel shoul have run once before generating API doc. Needs JAVA>7.
+2. Run "bash gen_api_doc.sh"
+3. Generated document is located in doc/api/index.html

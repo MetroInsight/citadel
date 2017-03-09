@@ -21,6 +21,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # set SERVER_NAME for swagger
+    app.config['SERVER_NAME'] = args.host + ':' + str(args.port)
+
     with app.app_context():
         with open('doc/api/swagger_schema.json', 'w') as fp:
             json.dump(api.__schema__, fp)

@@ -16,7 +16,7 @@ before_install:
   - docker pull mongo
   - docker run --name citadel-mongodb -itd mongo
   - docker build -t jbkoh/citadel .
-  - docker run -itd -p 127.0.0.1:8080:80 --name citade-instance jbkoh/citadel
+  - docker run -itd -p 127.0.0.1:8080:80 --name citadel-instance jbkoh/citadel
   
 script:
   python test/rest_api_test.py

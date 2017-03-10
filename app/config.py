@@ -2,10 +2,12 @@
 # TODO: change to class structure for supporting multiple dev environments
 
 # Citadel Configuration
-CITADEL_HOST = '127.0.0.1'
-CITADEL_PORT = 8080
+CITADEL_HOST = '0.0.0.0'
+#CITADEL_HOST = '137.110.160.125'
+CITADEL_PORT = 80
 SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"
 TOKEN_EXPIRATION = 3600
+SERVER_NAME = 'citadel.ucsd.edu'
 #SWAGGER_VALIDATOR_URL = '0.0.0.0:5000'
 
 

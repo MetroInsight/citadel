@@ -8,10 +8,16 @@ from citadel import app
 from citadel.rest_api import api
 from config import *
 
+@app.route("/")
+def hello():
+    return "Hello Citizens!"
+
+
 if __name__ == '__main__':
     debug = True
     host = CITADEL_HOST
     port = CITADEL_PORT
+    server_name = SERVER_NAME
 
     parser = argparse.ArgumentParser(description='Run Citadel web service.')
     parser.add_argument('-host', dest='host', default=host,
@@ -22,7 +28,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # set SERVER_NAME for swagger
-    app.config['SERVER_NAME'] = args.host + ':' + str(args.port)
+    app.config['SERVER_NAME'] = server_name
 
     with app.app_context():
         with open('doc/api/swagger_schema.json', 'w') as fp:

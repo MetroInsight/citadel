@@ -10,7 +10,6 @@ python:
 
 
 before_install:
-  - echo '127.0.0.1 citadel.ucsd.edu' > /etc/hosts
   - cp test/config.py app/config.py
   - docker pull influxdb
   - docker run --name citadel-influxdb -itd influxdb

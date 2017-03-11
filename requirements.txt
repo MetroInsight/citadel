@@ -1,6 +1,8 @@
+uwsgi
 flask
 mongoengine==0.11.0
 Flask-OAuthlib
 influxdb
 flask-restplus
 arrow
+flask-cors

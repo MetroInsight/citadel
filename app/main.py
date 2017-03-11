@@ -17,7 +17,10 @@ if __name__ == '__main__':
     debug = True
     host = CITADEL_HOST
     port = CITADEL_PORT
-    server_name = SERVER_NAME
+    if port!=80:
+        server_name = SERVER_NAME + ':' + str(port)
+    else:
+        server_name = SERVER_NAME
 
     parser = argparse.ArgumentParser(description='Run Citadel web service.')
     parser.add_argument('-host', dest='host', default=host,

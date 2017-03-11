@@ -67,7 +67,6 @@ m_point_post = point_api.model('PointPost',{
     },
     description='Representation of a data point',
     example={
-        'uuid': 'random_uuid1',
         'tags': {
             'tag1': 'value1',
             'tag2': 'value2'
@@ -140,7 +139,6 @@ class PointGenericAPI(Resource):
         args = point_query_parser.parse_args()
         query_str = args.get('query')
         
-#        query_str = request.args.get('query')
         if query_str:
             query = json.loads(query_str)
             query_result = Point.objects(__raw__=query)

@@ -1,3 +1,4 @@
 [submodule "user_tools/citadel-python-client"]
 	path = user_tools/citadel-python-client
 	url = https://github.com/MetroInsight/citadel-python-client.git
+	branch = master

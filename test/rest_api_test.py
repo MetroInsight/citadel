@@ -82,7 +82,6 @@ def test_find_one_point():
 def test_find_all_points():
     print('Init find all points test')
     resp = requests.get(point_url)
-    pdb.set_trace()
     found_point_list = resp.json()['point_list']
     for found_point in found_point_list:
         for key, val in found_point.items():

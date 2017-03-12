@@ -184,8 +184,8 @@ class PointGenericAPI(Resource):
         # Currently only geo_point type is supported
         # TODO: Extend this to include line, shape, etc.
         if data['geometry']['type'].lower() == 'point':
-            lat = data['geometry']['coordinates'][0]
-            lng = data['geometry']['coordinates'][1]
+            lng = data['geometry']['coordinates'][0]
+            lat = data['geometry']['coordinates'][1]
         else:
             raise Exception
 

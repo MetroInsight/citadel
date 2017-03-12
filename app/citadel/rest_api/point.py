@@ -196,7 +196,7 @@ class PointGenericAPI(Resource):
                     name=point_name, 
                     uuid=uuid, 
                     tags=normalized_tags, 
-                    geometry=[lat, lng]
+                    geometry=[lng, lat]
                     ).save()
             resp_data = {
                 'success': True,

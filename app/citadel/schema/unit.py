@@ -431,6 +431,7 @@ Unit = Enum("Unit", [
     'IN2',
     'KiloEV-PER-MicroM',
     'AbOHM',
-    'MBTU-PER-MIN',
+    'MBTU-PER-HOUR',
     'Gallons-PER-MIN',
+    'MTU',
     ])

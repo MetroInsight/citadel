@@ -8,7 +8,8 @@ from rdflib import Graph
 
 # TODO: Following list needs to be modeled based on QUDT later.
 custom_units = ['MBTU-PER-MIN',
-                'Gallons-PER-MIN']
+                'Gallons-PER-HOUR',
+                'MBTU']
 
 g = Graph()
 

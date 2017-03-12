@@ -154,7 +154,7 @@ class PointGenericAPI(Resource):
                         __raw__=tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
         else:
-            query_result = Point.objects(__raw__=query)
+            query_result = Point.objects(__raw__=tag_query)
 
         return {'point_list': query_result}
 

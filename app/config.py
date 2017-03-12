@@ -3,11 +3,10 @@
 
 # Citadel Configuration
 CITADEL_HOST = '0.0.0.0'
-#CITADEL_PORT = 80
+CITADEL_PORT = 8080
 SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"
 TOKEN_EXPIRATION = 3600
 SERVER_NAME = 'citadel.ucsd.edu'
-#SERVER_NAME = 'citadel.ucsd.edu'
 
 # Metadata DB Configuration 
 METADATA_DB_TYPE = 'mongodb'

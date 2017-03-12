@@ -138,25 +138,23 @@ class PointGenericAPI(Resource):
         """ Query to points """
         args = point_query_parser.parse_args()
         query_str = args.get('query')
-        
+
         if query_str:
-            query = json.loads(query_str)
-            query_result = Point.objects(__raw__=query)
+            tag_query = json.loads(query_str)
         else:
-            query_result = Point.objects()
-
-#        geo_query_str = request.args.get('geo_query')
+            tag_query = {}
+            
         geo_query_str = args.get('geo_query')
-
         if geo_query_str:
             geo_query = json.loads(geo_query_str)
             if geo_query['type']=='bounding_box':
-                west_south = tuple(geo_query['geometry_list'][0])
-                east_north = tuple(geo_query['geometry_list'][1])
+                west_south = geo_query['geometry_list'][0]
+                east_north = geo_query['geometry_list'][1]
                 query_result = query_result.objects(\
+                        __raw__=tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
-            else:
-                assert(False)
+        else:
+            query_result = Point.objects(__raw__=query)
 
         return {'point_list': query_result}
 

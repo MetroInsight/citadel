@@ -6,7 +6,7 @@ import pdb
 
 import config
 
-base_url = 'http://' + config.SERVER_NAME + '/api'
+base_url = 'http://citadel.ucsd.edu/api'
 point_url = base_url + '/point'
 
 def test_mongodb():
@@ -188,11 +188,11 @@ def test_delete_timeseries():
 
 if __name__ == '__main__':
     test_add_point(test_point_metadata)
-    test_add_point(test_point_metadata_2)
+    #test_add_point(test_point_metadata_2)
     test_find_one_point()
     test_find_all_points()
-    test_geo_query(geo_query)
+    #test_geo_query(geo_query)
     test_put_timeseries()
     test_get_timeseries()
-    test_delete_timeseries()
-    test_delete_point()
+    #test_delete_timeseries()
+    #test_delete_point()

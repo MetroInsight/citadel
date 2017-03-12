@@ -4,6 +4,7 @@ language: python
 
 services:
   - docker
+  - git
 
 python:
   - 3.5

@@ -4,10 +4,10 @@
 # Citadel Configuration
 CITADEL_HOST = '0.0.0.0'
 #CITADEL_HOST = '137.110.160.125'
-CITADEL_PORT = 80
+CITADEL_PORT = 5000
 SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"
 TOKEN_EXPIRATION = 3600
-SERVER_NAME = 'citadel.ucsd.edu'
+SERVER_NAME = '132.239.10.197'
 #SWAGGER_VALIDATOR_URL = '0.0.0.0:5000'
 
 

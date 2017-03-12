@@ -34,9 +34,9 @@ metadata_dict = {
         test_point_metadata_2['name']: test_point_metadata_2
         }
 
-def test_add_point(metadata):
+def test_create_point(metadata):
     print('Init adding point test')
-    res = citadel.add_point(metadata)
+    res = citadel.create_point(metadata)
     if not res['success']:
         print(res['result']['reason'])
         assert(False)
@@ -151,8 +151,8 @@ def test_delete_timeseries():
 
 if __name__ == '__main__':
     try:    
-        test_add_point(test_point_metadata)
-        test_add_point(test_point_metadata_2)
+        test_create_point(test_point_metadata)
+        test_create_point(test_point_metadata_2)
         test_find_one_point()
         test_find_all_points()
         #test_geo_query(geo_query)

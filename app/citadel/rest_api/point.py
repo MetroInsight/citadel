@@ -150,7 +150,7 @@ class PointGenericAPI(Resource):
             if geo_query['type']=='bounding_box':
                 west_south = geo_query['geometry_list'][0]
                 east_north = geo_query['geometry_list'][1]
-                query_result = query_result.objects(\
+                query_result = Point.objects(\
                         __raw__=tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
         else:

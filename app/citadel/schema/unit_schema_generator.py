@@ -9,7 +9,21 @@ from rdflib import Graph
 # TODO: Following list needs to be modeled based on QUDT later.
 custom_units = ['MBTU-PER-MIN',
                 'Gallons-PER-HOUR',
-                'MBTU']
+                'MBTU',
+                'KiloW-HR',
+                'KW-reactive',
+                'PowerFactor',
+                'PercentReletiveHumidity',
+                'Pounds-force-per-square-inch',
+                'Inches-of-water',
+                'MIN',
+                'GAL-PER-MIN',
+                'No-units',
+                'Parts-per-million',
+                'Percent',
+                'Revolutions-per-minute-BACNet',
+                'MegaW-HR',
+                ]
 
 g = Graph()
 

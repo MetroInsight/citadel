@@ -1,5 +1,4 @@
 from flask import Blueprint, send_from_directory
-#from flask_restplus import Api, Resource
 
 static_blueprint = Blueprint('static', __name__, static_folder='static')
 

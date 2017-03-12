@@ -95,6 +95,6 @@ database/
 .*.swp
 
 .html
-app/config.py
-app/main.py
-wsgi.ini
+.app/config.py
+.app/main.py
+.wsgi.ini

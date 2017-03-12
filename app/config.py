@@ -8,8 +8,6 @@ SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"
 TOKEN_EXPIRATION = 3600
 SERVER_NAME = 'citadel.ucsd.edu'
 #SERVER_NAME = 'citadel.ucsd.edu'
-#SWAGGER_VALIDATOR_URL = '0.0.0.0:5000'
-
 
 # Metadata DB Configuration 
 METADATA_DB_TYPE = 'mongodb'

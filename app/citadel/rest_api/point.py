@@ -67,7 +67,6 @@ m_point_post = point_api.model('PointPost',{
     },
     description='Representation of a data point',
     example={
-        'uuid': 'random_uuid1',
         'tags': {
             'tag1': 'value1',
             'tag2': 'value2'
@@ -140,7 +139,6 @@ class PointGenericAPI(Resource):
         args = point_query_parser.parse_args()
         query_str = args.get('query')
         
-#        query_str = request.args.get('query')
         if query_str:
             query = json.loads(query_str)
             query_result = Point.objects(__raw__=query)
@@ -236,6 +234,13 @@ class PointAPI(Resource):
     @point_api.marshal_with(m_message)
     def delete(self, uuid):
         """ Deletes a point with given UUID """
+        
+        # delete from timeseries db (influxdb for now)
+        try:
+            ts.delete_point(uuid)
+        except:
+            pass
+
         # delete from metadata db (mongodb for now)
         point = Point.objects(uuid=uuid)
         if len(point)==0:
@@ -251,9 +256,6 @@ class PointAPI(Resource):
             point.get().delete()
             status_code = 200
         
-        # delete from timeseries db (influxdb for now)
-        ts.delete_point(uuid)
-
         return resp_data, status_code
 
 @point_api.param('uuid', 'Unique identifier of point')

@@ -4,12 +4,14 @@ language: python
 
 services:
   - docker
+  - git
 
 python:
   - 3.5
 
 
 before_install:
+  - git submodule update --recursive --remote
   - cp test/config.py app/config.py
   - docker pull influxdb
   - docker run --name citadel-influxdb -itd influxdb

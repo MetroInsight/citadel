@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+config.py
+main.py
+
 # C extensions
 *.so
 
@@ -95,6 +98,4 @@ database/
 .*.swp
 
 .html
-config.py
-main.py
 wsgi.ini

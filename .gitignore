@@ -97,4 +97,4 @@ database/
 .html
 .app/config.py
 .app/main.py
-.wsgi.ini
+.app/wsgi.ini

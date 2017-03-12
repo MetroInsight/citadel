@@ -74,7 +74,8 @@ def test_find_all_points():
 
 geo_query = {
         'type': 'bounding_box',
-        'geometry_list': [[-1,-1],[1,1]]
+        'geometry_list': [[-1,-1],[1,1]] 
+        # [[westsouth_lng, westsouth_lat], [eastnorth_lng, eastnorth_lat]]
         }
 
 def test_geo_query(geo_query):

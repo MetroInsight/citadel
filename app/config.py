@@ -30,3 +30,5 @@ INFLUXDB_PASSWORD = 'citadel'
 
 # Use for development only
 DEBUG = True
+
+TEST = 1

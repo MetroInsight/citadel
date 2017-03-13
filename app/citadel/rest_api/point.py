@@ -137,12 +137,15 @@ class PointGenericAPI(Resource):
     def get(self):
         """ Query to points """
         args = point_query_parser.parse_args()
-        query_str = args.get('query')
+        tag_query_str = args.get('tag_query')
 
-        if query_str:
-            tag_query = json.loads(query_str)
+        flattened_tag_query = dict()
+        if tag_query_str:
+            tag_query = json.loads(tag_query_str)
+            for tag, value in tag_query.items():
+                flattened_tag_query['tags.%s'%tag] = value
         else:
-            tag_query = {}
+            flattened_tag_query = {}
             
         geo_query_str = args.get('geo_query')
         if geo_query_str:
@@ -151,10 +154,10 @@ class PointGenericAPI(Resource):
                 west_south = geo_query['geometry_list'][0]
                 east_north = geo_query['geometry_list'][1]
                 query_result = Point.objects(\
-                        tags__exists=tag_query,\
+                        __raw__=flattened_tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
         else:
-            query_result = Point.objects(tags__exists=tag_query)
+            query_result = Point.objects(tags__exists=flattened_tag_query)
 
         return {'point_list': query_result}
 

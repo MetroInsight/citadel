@@ -37,6 +37,7 @@ test_point_metadata = {
 
 test_point_metadata_2 = deepcopy(test_point_metadata)
 test_point_metadata_2['name'] = 'example_point_7'
+test_point_metadata_2['tags']['point_type'] = 'waterflow'
 
 metadata_dict = {
         test_point_metadata['name']: test_point_metadata,
@@ -67,9 +68,10 @@ def _get_uuid(query):
 
 def test_find_one_point():
     print('Init finding a point test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     params = {'tag_query': json.dumps(query)}
     resp = requests.get(point_url, params=params)
+    pdb.set_trace()
     assert(resp.status_code==200)
     found_point = resp.json()['point_list'][0]
     for key, val in test_point_metadata.items():
@@ -115,7 +117,7 @@ def test_geo_query(geo_query):
 def test_delete_point():
     print('Init point delete test')
     # find uuid
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'temperature'}
     uuid = _get_uuid(query)
 
     # delete the uuid
@@ -163,7 +165,7 @@ def test_get_timeseries():
 
 def test_delete_timeseries():
     print('Init delete timeserie partially test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     uuid = _get_uuid(query)
     delete_start_time = str(int(start_time) - 100)
     delete_end_time = str(int(start_time) + 10)

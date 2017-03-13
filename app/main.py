@@ -3,6 +3,7 @@ import argparse
 
 import pdb
 import json
+from flask import redirect
 
 from citadel import app
 from citadel.rest_api import api
@@ -10,7 +11,7 @@ from config import *
 
 @app.route("/")
 def hello():
-    return "Hello Citizens!"
+    return redirect("http://citadel.ucsd.edu/s/static/map.html", code=302)
 
 
 def run():

@@ -5,3 +5,4 @@ Flask-OAuthlib
 influxdb
 flask-restplus
 arrow
+flask-cors

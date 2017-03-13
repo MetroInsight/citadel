@@ -6,7 +6,7 @@ import pdb
 
 import config
 
-base_url = 'http://' + config.SERVER_NAME + '/api'
+base_url = 'http://citadel.ucsd.edu/api'
 point_url = base_url + '/point'
 
 def test_mongodb():
@@ -61,14 +61,14 @@ def test_add_point(metadata):
 
 
 def _get_uuid(query):
-    params = {'tag_query': json.dumps(query)}
+    params = {'query': json.dumps(query)}
     sensor = requests.get(point_url, params=params).json()['point_list'][0]
     return sensor['uuid']
 
 def test_find_one_point():
     print('Init finding a point test')
     query = {'name': test_point_metadata['name']}
-    params = {'tag_query': json.dumps(query)}
+    params = {"query": json.dumps(query)}
     resp = requests.get(point_url, params=params)
     assert(resp.status_code==200)
     found_point = resp.json()['point_list'][0]
@@ -82,6 +82,7 @@ def test_find_one_point():
 def test_find_all_points():
     print('Init find all points test')
     resp = requests.get(point_url)
+    pdb.set_trace()
     found_point_list = resp.json()['point_list']
     for found_point in found_point_list:
         for key, val in found_point.items():
@@ -123,7 +124,7 @@ def test_delete_point():
     assert(resp.status_code==200)
 
     # find the uuid has no point (confirm delete succeeded)
-    params = {"tag_query": json.dumps(query)}
+    params = {"query": json.dumps(query)}
     num_points = len(requests.get(point_url, params=params).json()['point_list'])
     assert(num_points==0)
 
@@ -187,11 +188,11 @@ def test_delete_timeseries():
 
 if __name__ == '__main__':
     test_add_point(test_point_metadata)
-    test_add_point(test_point_metadata_2)
+    #test_add_point(test_point_metadata_2)
     test_find_one_point()
     test_find_all_points()
-    test_geo_query(geo_query)
+    #test_geo_query(geo_query)
     test_put_timeseries()
     test_get_timeseries()
-    test_delete_timeseries()
-    test_delete_point()
+    #test_delete_timeseries()
+    #test_delete_point()

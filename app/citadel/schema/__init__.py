@@ -13,5 +13,4 @@ schema = {
 #        'latitude': float,          # longitude of a point's geo location
 #        'longitude': float,         # longitude of a point's geo location
         'source_reference':str,     # reference link to the data source.
-        'license':str,              # license type, this should have a enum
         }

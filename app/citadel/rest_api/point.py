@@ -67,7 +67,6 @@ m_point_post = point_api.model('PointPost',{
     },
     description='Representation of a data point',
     example={
-        'uuid': 'random_uuid1',
         'tags': {
             'tag1': 'value1',
             'tag2': 'value2'
@@ -121,7 +120,7 @@ point_delete_fail_msg = 'Failed to delete point'
 influxdb_time_format = "2009-11-10T23:00:00Z"
 
 point_query_parser = point_api.parser()
-point_query_parser.add_argument('query', type=str, location='args',
+point_query_parser.add_argument('tag_query', type=str, location='args',
         help=model_to_json(m_point_post)
         )
 point_query_parser.add_argument('geo_query', type=str, location='args')
@@ -138,27 +137,27 @@ class PointGenericAPI(Resource):
     def get(self):
         """ Query to points """
         args = point_query_parser.parse_args()
-        query_str = args.get('query')
-        
-#        query_str = request.args.get('query')
-        if query_str:
-            query = json.loads(query_str)
-            query_result = Point.objects(__raw__=query)
+        tag_query_str = args.get('tag_query')
+
+        flattened_tag_query = dict()
+        if tag_query_str:
+            tag_query = json.loads(tag_query_str)
+            for tag, value in tag_query.items():
+                flattened_tag_query['tags.%s'%tag] = value
         else:
-            query_result = Point.objects()
-
-#        geo_query_str = request.args.get('geo_query')
+            flattened_tag_query = {}
+            
         geo_query_str = args.get('geo_query')
-
         if geo_query_str:
             geo_query = json.loads(geo_query_str)
             if geo_query['type']=='bounding_box':
-                west_south = tuple(geo_query['geometry_list'][0])
-                east_north = tuple(geo_query['geometry_list'][1])
-                query_result = query_result.objects(\
+                west_south = geo_query['geometry_list'][0]
+                east_north = geo_query['geometry_list'][1]
+                query_result = Point.objects(\
+                        __raw__=flattened_tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
-            else:
-                assert(False)
+        else:
+            query_result = Point.objects(__raw__=flattened_tag_query)
 
         return {'point_list': query_result}
 
@@ -187,9 +186,9 @@ class PointGenericAPI(Resource):
 
         # Currently only geo_point type is supported
         # TODO: Extend this to include line, shape, etc.
-        if data['geometry']['type']=='Point':
-            lat = data['geometry']['coordinates'][0]
-            lng = data['geometry']['coordinates'][1]
+        if data['geometry']['type'].lower() == 'point':
+            lng = data['geometry']['coordinates'][0]
+            lat = data['geometry']['coordinates'][1]
         else:
             raise Exception
 
@@ -198,7 +197,7 @@ class PointGenericAPI(Resource):
                     name=point_name, 
                     uuid=uuid, 
                     tags=normalized_tags, 
-                    geometry=[lat, lng]
+                    geometry=[lng, lat]
                     ).save()
             resp_data = {
                 'success': True,
@@ -236,6 +235,13 @@ class PointAPI(Resource):
     @point_api.marshal_with(m_message)
     def delete(self, uuid):
         """ Deletes a point with given UUID """
+        
+        # delete from timeseries db (influxdb for now)
+        try:
+            ts.delete_point(uuid)
+        except:
+            pass
+
         # delete from metadata db (mongodb for now)
         point = Point.objects(uuid=uuid)
         if len(point)==0:
@@ -251,9 +257,6 @@ class PointAPI(Resource):
             point.get().delete()
             status_code = 200
         
-        # delete from timeseries db (influxdb for now)
-        ts.delete_point(uuid)
-
         return resp_data, status_code
 
 @point_api.param('uuid', 'Unique identifier of point')

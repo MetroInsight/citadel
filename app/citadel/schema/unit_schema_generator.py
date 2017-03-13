@@ -6,6 +6,25 @@ import pdb
 import rdflib
 from rdflib import Graph
 
+# TODO: Following list needs to be modeled based on QUDT later.
+custom_units = ['MBTU-PER-MIN',
+                'Gallons-PER-HOUR',
+                'MBTU',
+                'KiloW-HR',
+                'KW-reactive',
+                'PowerFactor',
+                'PercentReletiveHumidity',
+                'Pounds-force-per-square-inch',
+                'Inches-of-water',
+                'MIN',
+                'GAL-PER-MIN',
+                'No-units',
+                'Parts-per-million',
+                'Percent',
+                'Revolutions-per-minute-BACNet',
+                'MegaW-HR',
+                ]
+
 g = Graph()
 
 metaschema_dir = 'metaschema/'
@@ -26,12 +45,17 @@ res = g.query(q)
 unit_list = list()
 
 for row in res:
-    uri = row[0].decode()
+#    pdb.set_trace()
+    uri = str(row[0])
     unit_str = uri.split('/')[-1]
     unit_list.append(unit_str)
+
+unit_list += custom_units
 
 with open('unit.py', 'w') as fp:
     fp.writelines([
         'from enum import Enum\n',
-        'Unit = Enum("Unit", {0})\n'.format(str(unit_list))
-        ])
+        'Unit = Enum("Unit", [\n']
+        + ["    '{0}',\n".format(unit) for unit in unit_list]
+        + ['    ])\n']
+        )

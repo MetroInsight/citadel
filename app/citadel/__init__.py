@@ -5,6 +5,7 @@ from flask_oauthlib.provider import OAuth2Provider
 from flask_restplus import Api, Resource
 from mongoengine import *
 from influxdb import InfluxDBClient
+from flask_cors import CORS
 
 import config
 
@@ -31,6 +32,8 @@ oauth = OAuth2Provider()
 
 #Create WSGI application object
 app = Flask(__name__)
+CORS(app)
+
 app.config.from_object(config)
 #app.secret_key = 'VerySecretKeyMakeItLongAndKeepItSecret'
 

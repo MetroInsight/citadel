@@ -16,7 +16,7 @@ def hello():
 def run():
 
     parser = argparse.ArgumentParser(description='Run Citadel web service.')
-    parser.add_argument('-d', dest='debug', action='store_true', default=False,
+    parser.add_argument('-d', dest='debug', action='store_true', default=DEBUG,
         help='turn on debugging mode. WARNING: insecure - do not use on public machine.')
     parser.add_argument('-host', dest='host', default=CITADEL_HOST,
         help='ip bind address (default: ' + CITADEL_HOST + ')')

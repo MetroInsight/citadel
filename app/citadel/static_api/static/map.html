@@ -1,0 +1,34 @@
+<html>
+<head>
+<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>MetroInsight Data Browser</title>
+<link rel="stylesheet" href="vendor/leaflet.css" />
+<link rel="stylesheet" href="vendor/font-awesome.min.css"/>
+<link rel="stylesheet" href="vendor/leaflet.awesome-markers.css"/>
+<link rel="stylesheet" href="vendor/MarkerCluster.css"/>
+<link rel="stylesheet" href="vendor/MarkerCluster.Default.css"/>
+<link rel="stylesheet" href="vendor/selectize.default.css"/>
+<link rel="stylesheet" href="vendor/L.Control.MousePosition.css"/>
+<link rel="stylesheet" href="js/map.css" />
+<link rel="icon" type="image/x-icon" href="favicon.ico"/>
+<script type='text/javascript' src="vendor/leaflet.js"></script>
+<script type='text/javascript' src="vendor/jquery-1.10.2.js"></script>
+<script type='text/javascript' src="vendor/leaflet.awesome-markers.min.js"></script>
+<script type='text/javascript' src="vendor/leaflet.markercluster.js"></script>
+<script type='text/javascript' src="vendor/selectize.min.js"></script>
+<script type='text/javascript' src="vendor/L.Control.MousePosition.js"></script>
+<script type='text/javascript' src="js/L.Control.Layers.TreeOpacity.js"></script>
+<script type='text/javascript' src="js/map.js"></script>
+</head>
+<body>
+<div id='queryContainer'>
+  <table>
+    <tr><td><a href="http://metroinsight.io" target="#"><img class="logos" src="images/metroinsight-logo.png"></a></td>
+        <td style='width:300px;'><input id='search' type='text' placeholder='Search'></input></td>
+        <td><button id='searchButton' class='fireButton'> <i id='searchIcon' class='fa fa-search'></i></button></td>
+    </tr>
+  </table>
+</div>
+<div id='map'></div>
+</body>
+</html>

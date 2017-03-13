@@ -49,6 +49,6 @@ oauth.init_app(app)
 from .rest_api import api_blueprint, api
 app.register_blueprint(api_blueprint, url_prefix = '/api')
 
-#with app.app_context():
-#    with open('api_schema.json', 'w') as fp:
-#        json.dump(current_app.api.__schema__, fp)
+# register blueprint for static content
+from .static_api import static_blueprint
+app.register_blueprint(static_blueprint, url_prefix='/s')

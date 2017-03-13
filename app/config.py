@@ -29,4 +29,4 @@ INFLUXDB_USERNAME = 'citadel'
 INFLUXDB_PASSWORD = 'citadel'
 
 # Use for development only
-DEBUG = True
+DEBUG = False

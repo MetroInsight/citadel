@@ -61,14 +61,14 @@ def test_add_point(metadata):
 
 
 def _get_uuid(query):
-    params = {'query': json.dumps(query)}
+    params = {'tag_query': json.dumps(query)}
     sensor = requests.get(point_url, params=params).json()['point_list'][0]
     return sensor['uuid']
 
 def test_find_one_point():
     print('Init finding a point test')
     query = {'name': test_point_metadata['name']}
-    params = {"query": json.dumps(query)}
+    params = {'tag_query': json.dumps(query)}
     resp = requests.get(point_url, params=params)
     assert(resp.status_code==200)
     found_point = resp.json()['point_list'][0]
@@ -123,7 +123,7 @@ def test_delete_point():
     assert(resp.status_code==200)
 
     # find the uuid has no point (confirm delete succeeded)
-    params = {"query": json.dumps(query)}
+    params = {"tag_query": json.dumps(query)}
     num_points = len(requests.get(point_url, params=params).json()['point_list'])
     assert(num_points==0)
 

@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/leaflet.awesome-markers.css"/>
 <link rel="stylesheet" href="vendor/MarkerCluster.css"/>
 <link rel="stylesheet" href="vendor/MarkerCluster.Default.css"/>
-<link rel="stylesheet" href="vendor/selectize.default.css"/>
+<link rel="stylesheet" href="vendor/jquery.multiselect.css" />
 <link rel="stylesheet" href="vendor/L.Control.MousePosition.css"/>
 <link rel="stylesheet" href="js/map.css" />
 <link rel="icon" type="image/x-icon" href="favicon.ico"/>
@@ -15,7 +15,9 @@
 <script type='text/javascript' src="vendor/jquery-1.10.2.js"></script>
 <script type='text/javascript' src="vendor/leaflet.awesome-markers.min.js"></script>
 <script type='text/javascript' src="vendor/leaflet.markercluster.js"></script>
-<script type='text/javascript' src="vendor/selectize.min.js"></script>
+<script type='text/javascript' src="vendor/spin.min.js"></script>
+<script type='text/javascript' src="vendor/leaflet.spin.js"></script>
+<script type='text/javascript' src="vendor/jquery.multiselect.js"></script>
 <script type='text/javascript' src="vendor/L.Control.MousePosition.js"></script>
 <script type='text/javascript' src="js/L.Control.Layers.TreeOpacity.js"></script>
 <script type='text/javascript' src="js/map.js"></script>
@@ -24,8 +26,7 @@
 <div id='queryContainer'>
   <table>
     <tr><td><a href="http://metroinsight.io" target="#"><img class="logos" src="images/metroinsight-logo.png"></a></td>
-        <td style='width:300px;'><input id='search' type='text' placeholder='Search'></input></td>
-        <td><button id='searchButton' class='fireButton'> <i id='searchIcon' class='fa fa-search'></i></button></td>
+        <td  style="width: 400px; max-width: 400px;"><select id="typeId" multiple="multiple"></select></td>
     </tr>
   </table>
 </div>

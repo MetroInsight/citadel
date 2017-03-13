@@ -6,7 +6,11 @@ import pdb
 
 import config
 
-base_url = 'http://' + config.SERVER_NAME + '/api'
+
+server_name = config.CITADEL_HOST + ':' + str(config.CITADEL_PORT)
+
+
+base_url = 'http://' + server_name + '/api'
 point_url = base_url + '/point'
 
 def test_mongodb():

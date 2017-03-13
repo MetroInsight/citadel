@@ -71,10 +71,9 @@ def test_find_one_point():
     query = {'point_type': 'waterflow'}
     params = {'tag_query': json.dumps(query)}
     resp = requests.get(point_url, params=params)
-    pdb.set_trace()
     assert(resp.status_code==200)
     found_point = resp.json()['point_list'][0]
-    for key, val in test_point_metadata.items():
+    for key, val in test_point_metadata_2.items():
         if found_point[key] != val:
             print('ERROR: {0} and {1} are different'\
                     .format(found_point[key], val))
@@ -141,7 +140,7 @@ test_ts_data = {
 
 def test_put_timeseries():
     print('Init put timeseries test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': "waterflow"}
     uuid = _get_uuid(query)
     data = {'samples': test_ts_data}
     ts_url = point_url + '/{0}/timeseries'.format(uuid)
@@ -151,7 +150,7 @@ def test_put_timeseries():
 
 def test_get_timeseries():
     print('Init get timeseries test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     uuid = _get_uuid(query)
     params = {
             'start_time': str(int(start_time) - 1000),

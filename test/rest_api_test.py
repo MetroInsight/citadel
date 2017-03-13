@@ -6,7 +6,11 @@ import pdb
 
 import config
 
-base_url = 'http://' + config.SERVER_NAME + '/api'
+
+server_name = config.CITADEL_HOST + ':' + str(config.CITADEL_PORT)
+
+
+base_url = 'http://' + server_name + '/api'
 point_url = base_url + '/point'
 
 def test_mongodb():
@@ -37,6 +41,7 @@ test_point_metadata = {
 
 test_point_metadata_2 = deepcopy(test_point_metadata)
 test_point_metadata_2['name'] = 'example_point_7'
+test_point_metadata_2['tags']['point_type'] = 'waterflow'
 
 metadata_dict = {
         test_point_metadata['name']: test_point_metadata,
@@ -67,12 +72,12 @@ def _get_uuid(query):
 
 def test_find_one_point():
     print('Init finding a point test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     params = {'tag_query': json.dumps(query)}
     resp = requests.get(point_url, params=params)
     assert(resp.status_code==200)
     found_point = resp.json()['point_list'][0]
-    for key, val in test_point_metadata.items():
+    for key, val in test_point_metadata_2.items():
         if found_point[key] != val:
             print('ERROR: {0} and {1} are different'\
                     .format(found_point[key], val))
@@ -115,7 +120,7 @@ def test_geo_query(geo_query):
 def test_delete_point():
     print('Init point delete test')
     # find uuid
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'temperature'}
     uuid = _get_uuid(query)
 
     # delete the uuid
@@ -139,7 +144,7 @@ test_ts_data = {
 
 def test_put_timeseries():
     print('Init put timeseries test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': "waterflow"}
     uuid = _get_uuid(query)
     data = {'samples': test_ts_data}
     ts_url = point_url + '/{0}/timeseries'.format(uuid)
@@ -149,7 +154,7 @@ def test_put_timeseries():
 
 def test_get_timeseries():
     print('Init get timeseries test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     uuid = _get_uuid(query)
     params = {
             'start_time': str(int(start_time) - 1000),
@@ -163,7 +168,7 @@ def test_get_timeseries():
 
 def test_delete_timeseries():
     print('Init delete timeserie partially test')
-    query = {'name': test_point_metadata['name']}
+    query = {'point_type': 'waterflow'}
     uuid = _get_uuid(query)
     delete_start_time = str(int(start_time) - 100)
     delete_end_time = str(int(start_time) + 10)

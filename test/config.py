@@ -4,8 +4,6 @@
 # Citadel Configuration
 CITADEL_HOST = '0.0.0.0'
 CITADEL_PORT = 8080
-SERVER_NAME = '127.0.0.1:8080'
-#SERVER_NAME = '127.0.0.1:8080'
 SECRET_KEY = "MetroInsight_Secret_Key_Make_This_Complicated"
 TOKEN_EXPIRATION = 3600
 #SWAGGER_VALIDATOR_URL = '0.0.0.0:5000'

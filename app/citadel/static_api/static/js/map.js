@@ -1,37 +1,47 @@
 var metro = (function() {
 
-    // constants
-    var icons = {
-            'electrical power': L.AwesomeMarkers.icon({
-                markerColor: 'purple',
-                icon: 'plug',
-                prefix: 'fa',
-            }),
-            'temperature': L.AwesomeMarkers.icon({
-                markerColor: 'darkred',
-                icon: 'thermometer-full',
-                prefix: 'fa'
-            }),
-            'thermal energy': L.AwesomeMarkers.icon({
-                markerColor: 'darkpurple',
-                icon: 'battery-half',
-                prefix: 'fa'
-            }),
-            'thermal power': L.AwesomeMarkers.icon({
-                markerColor: 'darkpurple',
-                icon: 'flash',
-                prefix: 'fa'
-            }),
-            'waterflow': L.AwesomeMarkers.icon({
-                markerColor: 'blue',
-                icon: 'tint',
-                prefix: 'fa'
-            }),
-    },
     // global variables used in functions
+    var types = {
+            'electrical power': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'purple',
+                    icon: 'plug',
+                    prefix: 'fa',
+                })
+            },
+            'temperature': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'darkred',
+                    icon: 'thermometer-full',
+                    prefix: 'fa'
+                })
+            },
+            'thermal energy': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'darkpurple',
+                    icon: 'battery-half',
+                    prefix: 'fa'
+                })
+            },
+            'thermal power': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'darkpurple',
+                    icon: 'flash',
+                    prefix: 'fa'
+                })
+            },
+            'waterflow': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'blue',
+                    icon: 'tint',
+                    prefix: 'fa'
+                })
+            }
+    },
     map,
     mapLayers,
     resultsLayer,
+    searches = 0,
     zLayers = {
             roads: 10
     };
@@ -108,103 +118,86 @@ var metro = (function() {
             }
         });
 
-        // plugin for selectize so that enter key performs search
-        Selectize.define('enter_key_submit', function (options) {
-            var self = this;
+        var o, d, i;
 
-            this.onKeyDown = (function (e) {
-                var original = self.onKeyDown;
+        var typeSelect = document.getElementById('typeId');
+        for(i in types) {
+            o = document.createElement("option");
+            o.value = o.text = i;
+            typeSelect.add(o);
+        }
 
-                return function (e) {
-                    // this.items.length MIGHT change after event propagation.
-                    // We need the initial value as well. See next comment.
-                    var initialSelection = this.items.length;
-                    original.apply(this, arguments);
+        //t.options[0].selected = true;
 
-                    if (e.keyCode === 13
-                            // Necessary because we don't want this to be triggered when an option is selected with Enter after pressing DOWN key to trigger the dropdown options
-                            && initialSelection && initialSelection === this.items.length
-                            && this.$control_input.val() === '') {
-                        self.trigger('submit');
-                    }
-                };
-            })();
-        });
-
-        var search = $('#search').selectize({
-            delimiter: ',',
-            persist: false,
-            create: true,
-            plugins: ['enter_key_submit'],
-            onInitialize: function () {
-                this.on('submit', function () {
-                    //this.$input.closest('form').submit();
-                    metro.search();
-                }, this);
+        $('#typeId').multiselect({
+            columns: 2,
+            selectAll: true,
+            texts: {
+                placeholder: 'Select dataset type'
             },
+            onOptionClick: function(e, o) {
+                for(i in typeSelect.options) {
+                    if(typeSelect.options[i].value === o.value) {
+                        if(typeSelect.options[i].selected) {
+                            metro.search(o.value);
+                        } else {
+                            metro.remove(o.value);
+                        }
+                        break;
+                    }
+                }
+            }
         });
 
         resultsLayer = L.markerClusterGroup().addTo(map);
 
-        document.getElementById('searchButton').addEventListener('click', function() {
-            metro.search();
-        });
-
-        // enable button in case cached as disabled
-        document.getElementById('searchButton').disabled = false;
-        
         // TODO search on map move? 
-        
+
         L.DomEvent.disableClickPropagation(document.getElementsByClassName('leaflet-control-container')[0]);
 
     };
 
     return {
 
-        search: function() {
-            var url,
-            bounds = map.getBounds(),
-            types, i;
-
-            document.getElementById('searchIcon').className = 'fa fa-spin fa-spinner';
-            document.getElementById('searchButton').disabled = true;
-
-            resultsLayer.clearLayers();
-            
-            url = 'http://citadel.ucsd.edu/api/point/?geo_query:{"geometry_list":[[' +
-                bounds.getSouthWest().lng + ',' + bounds.getSouthWest().lat +
-                '],[' + 
-                bounds.getNorthEast().lng + ',' + bounds.getNorthEast().lat +
-                ']],"type":"bounding_box"}';
-
-            types = document.getElementById('search').value.split(/\s*,\s*/)
-            if(types.length > 1 || types[0].length > 0) {
-                for(i in types) {
-                    metro._doSearch(url + '&tag_query={"point_type":"' + types[i] + '"}');
+        remove: function(type) {
+            resultsLayer.eachLayer(function(l) {
+                if(l.feature.properties.point_type == type) {
+                    resultsLayer.removeLayer(l);
                 }
-            } else {
-                metro._doSearch(url);
-            }
-
+            });
         },
         
-        _doSearch: function(url) {
-            
-            console.log(url);
+        search: function(type) {
+            var bounds = map.getBounds(),
+            url = 'http://citadel.ucsd.edu/api/point/?geo_query:{"geometry_list":[['
+                + bounds.getSouthWest().lng + ',' + bounds.getSouthWest().lat 
+                + '],['  
+                + bounds.getNorthEast().lng + ',' + bounds.getNorthEast().lat 
+                + ']],"type":"bounding_box"}' 
+                + '&tag_query={"point_type":"' + type + '"}',
+                i;
+
+            //console.log(url);
+           
+            searches++;
+            if(searches == 1) {
+                map.spin(true);
+            }
 
             $.ajax(url)
             .always(function() {
-                document.getElementById('searchIcon').className = 'fa fa-search';
-                document.getElementById('searchButton').disabled = false;
+                searches--;
+                if(searches == 0) {
+                    map.spin(false);
+                }
             }).fail(function(hqXHR, status)  {
                 console.log('Error loading data: ' + status);
             }).done(function(d) {
                 // console.log(d);
-
                 var pointToLayer = function(f, ll) {
-                    if(icons[f.properties.point_type]) {
+                    if(types[f.properties.point_type]) {
                         return L.marker(ll, {
-                            icon: icons[f.properties.point_type]
+                            icon: types[f.properties.point_type].icon
                         });
                     } else {
                         console.log('unknown type of point_type: ' + f.properties.point_type);
@@ -224,7 +217,7 @@ var metro = (function() {
                 };
 
                 var i, j, gj;
-                
+
                 for(i in d.point_list) {
                     gj = {
                             type: 'Feature',
@@ -241,9 +234,6 @@ var metro = (function() {
                         onEachFeature: onEachFeature
                     }));
                 }
-
-                // console.log(fc);
-                // group.addTo(map);
             });
         }
     }

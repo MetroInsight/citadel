@@ -14,23 +14,21 @@ def hello():
 
 
 def run():
-    debug = False
-    host = CITADEL_HOST
-    port = CITADEL_PORT
-    if port!=80:
-        server_name = SERVER_NAME + ':' + str(port)
-    else:
-        server_name = SERVER_NAME
 
     parser = argparse.ArgumentParser(description='Run Citadel web service.')
-    parser.add_argument('-d', dest='debug', action='store_true',
+    parser.add_argument('-d', dest='debug', action='store_true', default=False,
         help='turn on debugging mode. WARNING: insecure - do not use on public machine.')
-    parser.add_argument('-host', dest='host', default=host,
-        help='ip bind address (default: ' + host + ')')
-    #parser.add_argument('-p', dest='port', type=int, default=port,
-     #   help='port to listen on (default: ' + str(port) + ')')
+    parser.add_argument('-host', dest='host', default=CITADEL_HOST,
+        help='ip bind address (default: ' + CITADEL_HOST + ')')
+    parser.add_argument('-p', dest='port', type=int, default=CITADEL_PORT,
+        help='port to listen on (default: ' + str(CITADEL_PORT) + ')')
 
     args = parser.parse_args()
+
+    if args.port!=80:
+        server_name = SERVER_NAME + ':' + str(args.port)
+    else:
+        server_name = SERVER_NAME
 
     # set SERVER_NAME for swagger
     app.config['SERVER_NAME'] = server_name
@@ -39,10 +37,7 @@ def run():
 #        with open('doc/api/swagger_schema.json', 'w') as fp:
 #            json.dump(api.__schema__, fp)
 
-    #app.run(host=args.host, port=args.port, debug=debug)
-    app.run(host=args.host, debug=debug)
-
-    # enable threading so requests for static content don't take hang
+    # enable threading so requests for static content don't hang
     app.run(args.host, args.port, args.debug, threaded=True)
 
 if __name__ == '__main__':

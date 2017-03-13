@@ -120,7 +120,7 @@ point_delete_fail_msg = 'Failed to delete point'
 influxdb_time_format = "2009-11-10T23:00:00Z"
 
 point_query_parser = point_api.parser()
-point_query_parser.add_argument('query', type=str, location='args',
+point_query_parser.add_argument('tag_query', type=str, location='args',
         help=model_to_json(m_point_post)
         )
 point_query_parser.add_argument('geo_query', type=str, location='args')
@@ -157,7 +157,7 @@ class PointGenericAPI(Resource):
                         __raw__=flattened_tag_query,\
                         geometry__geo_within_box=[west_south, east_north])
         else:
-            query_result = Point.objects(tags__exists=flattened_tag_query)
+            query_result = Point.objects(__raw__=flattened_tag_query)
 
         return {'point_list': query_result}
 

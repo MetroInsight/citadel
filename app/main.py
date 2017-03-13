@@ -26,9 +26,9 @@ def run():
     args = parser.parse_args()
 
     if args.port!=80:
-        server_name = SERVER_NAME + ':' + str(args.port)
+        server_name = args.host + ':' + str(args.port)
     else:
-        server_name = SERVER_NAME
+        server_name = args.host
 
     # set SERVER_NAME for swagger
     app.config['SERVER_NAME'] = server_name

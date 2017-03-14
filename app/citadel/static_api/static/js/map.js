@@ -5,6 +5,7 @@ var metro = (function() {
     // number of seconds of data to plot for timeseries
     timeSeriesSeconds = 24*3600,
     types = {
+            /*
             'angle': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'white',
@@ -32,7 +33,7 @@ var metro = (function() {
                     icon: 'plug',
                     prefix: 'fa',
                 })
-            },
+            },*/
             'electrical_power': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'orange',
@@ -60,21 +61,21 @@ var metro = (function() {
                     icon: 'battery-half',
                     prefix: 'fa'
                 })
-            },
+            },/*
             'radiation': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'orange',
                     icon: 'sun-o',
                     prefix: 'fa',
                 })
-            },
+            },*/
             'relative_humidity': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'purple',
                     icon: 'shower',
                     prefix: 'fa',
                 })
-            },
+            },/*
             'speed': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'darkgreen',
@@ -88,7 +89,7 @@ var metro = (function() {
                     icon: 'clock-o',
                     prefix: 'fa',
                 })
-            },            
+            },*/            
             'waterflow': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'blue',

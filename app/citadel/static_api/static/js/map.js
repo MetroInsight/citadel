@@ -2,7 +2,9 @@ var metro = (function() {
 
     // global variables
     var citadelURL = 'https://citadel.ucsd.edu',
-        types = {
+    // number of seconds of data to plot for timeseries
+    timeSeriesSeconds = 24*3600,
+    types = {
             'angle': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'white',
@@ -94,8 +96,6 @@ var metro = (function() {
                     prefix: 'fa'
                 })
             }
-
-
     },
     map,
     mapLayers,
@@ -246,12 +246,12 @@ var metro = (function() {
         search: function(type) {
             var bounds = map.getBounds(),
             url = citadelURL + '/api/point/?geo_query:{"geometry_list":[['
-                + bounds.getSouthWest().lng + ',' + bounds.getSouthWest().lat 
-                + '],['  
-                + bounds.getNorthEast().lng + ',' + bounds.getNorthEast().lat 
-                + ']],"type":"bounding_box"}' 
-                + '&tag_query={"point_type":"' + type + '"}',
-                i;
+            + bounds.getSouthWest().lng + ',' + bounds.getSouthWest().lat 
+            + '],['  
+            + bounds.getNorthEast().lng + ',' + bounds.getNorthEast().lat 
+            + ']],"type":"bounding_box"}' 
+            + '&tag_query={"point_type":"' + type + '"}',
+            i;
 
             //console.log(url);
 
@@ -351,82 +351,81 @@ var metro = (function() {
                     console.log('Failed to get timeseries.');
                 }
                 for(i in d.data) {
-                    // get the data for the last 30 minutes.
-                    metro._plotTimeseries(uuid, parseInt(i) - 3600, parseInt(i) + 1);
+                    metro._plotTimeseries(uuid, parseInt(i) - timeSeriesSeconds, parseInt(i) + 1);
                     // should be only one value
                     break;
                 }
             });
-            
+
         },
 
         _plotTimeseries: function(uuid, start, stop) {
 
             $.ajax(citadelURL + '/api/point/' 
-                + uuid
-                + '/timeseries?start_time='
-                + start 
-                + '&end_time='
-                + stop)
-                .fail(function(hqXHR, status)  {
-                    console.log('Error loading data: ' + status);
-                }).done(function(d) {
-                    var plotId = 'plot-' + uuid,
+                    + uuid
+                    + '/timeseries?start_time='
+                    + start 
+                    + '&end_time='
+                    + stop)
+                    .fail(function(hqXHR, status)  {
+                        console.log('Error loading data: ' + status);
+                    }).done(function(d) {
+                        var plotId = 'plot-' + uuid,
                         title, ytitle, type, data = [], i;
-                    //console.log(d);
+                        //console.log(d);
 
-                    resultsLayer.eachLayer(function(l) {
-                        if(l.feature.properties.uuid == uuid) {
-                            //console.log(l.feature.properties);
-                            title = l.feature.properties.name; 
-                            type = l.feature.properties.point_type;
-                            ytitle = type + ' (' + l.feature.properties.unit + ')';
-                        }
-                    });
+                        resultsLayer.eachLayer(function(l) {
+                            if(l.feature.properties.uuid == uuid) {
+                                //console.log(l.feature.properties);
+                                title = l.feature.properties.name; 
+                                type = l.feature.properties.point_type;
+                                ytitle = type + ' (' + l.feature.properties.unit + ')';
+                            }
+                        });
 
-                    if(!chart) {
-                        chart = Highcharts.chart('plotContainer', {
-                            credits: false,
-                            chart: {
-                                defaultSeriesType: 'line',
-                            },
-                            title: {
-                                text: title
-                            },
-                            xAxis: {
-                                type: 'datetime',
-                                title: {
-                                    text: 'Time',
+                        if(!chart) {
+                            chart = Highcharts.chart('plotContainer', {
+                                credits: false,
+                                chart: {
+                                    defaultSeriesType: 'line',
                                 },
-                            },
-                            yAxis: {
                                 title: {
-                                    text: ytitle
-                                }
-                            },
-                            series: [{
-                                name: type,
-                                data: []
-                            }]
-                        });
-                    } else {
-                        chart.series[0].update({
-                            name: type
-                        });
-                        //char.series[0].redraw();
-                        chart.setTitle({
-                            text: title
-                        });                        
-                        chart.yAxis[0].setTitle({
-                            text: ytitle
-                        });
-                    }
-                    
-                    for(i in d.data) {
-                        data.push([i*1000,d.data[i]]);
-                    }
-                    chart.series[0].setData(data);
-                });
+                                    text: title
+                                },
+                                xAxis: {
+                                    type: 'datetime',
+                                    title: {
+                                        text: 'Time',
+                                    },
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: ytitle
+                                    }
+                                },
+                                series: [{
+                                    name: type,
+                                    data: []
+                                }]
+                            });
+                        } else {
+                            chart.series[0].update({
+                                name: type
+                            });
+                            //char.series[0].redraw();
+                            chart.setTitle({
+                                text: title
+                            });                        
+                            chart.yAxis[0].setTitle({
+                                text: ytitle
+                            });
+                        }
+
+                        for(i in d.data) {
+                            data.push([i*1000,d.data[i]]);
+                        }
+                        chart.series[0].setData(data);
+                    });
         }  
     }
 

@@ -100,12 +100,28 @@ var metro = (function() {
     map,
     mapLayers,
     resultsLayer,
-    plotControl,
+    //plotControl,
     chart,
     searches = 0,
     zLayers = {
             roads: 10
     };
+
+    function dragMoveListener (event) {
+        var target = event.target,
+        // keep the dragged position in the data-x/data-y attributes
+        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+        // translate the element
+        target.style.webkitTransform =
+            target.style.transform =
+                'translate(' + x + 'px, ' + y + 'px)';
+
+        // update the posiion attributes
+        target.setAttribute('data-x', x);
+        target.setAttribute('data-y', y);
+    }
 
     document.onready = function() {
 
@@ -212,6 +228,7 @@ var metro = (function() {
 
         resultsLayer = L.markerClusterGroup().addTo(map);
 
+        /*
         plotControl = L.control({
             position: 'bottomleft'
         });
@@ -223,13 +240,68 @@ var metro = (function() {
             return d;
         };
 
-        //plotControl.addTo(map);
+        plotControl.addTo(map);
+        */
 
         // TODO search on map move? 
 
         L.DomEvent.disableClickPropagation(document.getElementsByClassName('leaflet-control-container')[0]);
 
         //metro.viewTimeseries('a77c3846-6bd3-4938-8deb-ac91331135ad');
+
+        // target elements with the "draggable" class
+        interact('.draggable')
+        .draggable({
+            // enable inertial throwing
+            inertia: true,
+            // keep the element within the area of it's parent
+            restrict: {
+                restriction: "parent",
+                endOnly: true,
+                elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+            },
+            // enable autoScroll
+            autoScroll: true,
+            // call this function on every dragmove event
+            onmove: dragMoveListener,
+            // call this function on every dragend event
+            onend: function (event) {
+                var textEl = event.target.querySelector('p');
+
+                textEl && (textEl.textContent =
+                    'moved a distance of '
+                    + (Math.sqrt(event.dx * event.dx +
+                            event.dy * event.dy)|0) + 'px');
+            }
+        });/*.resizable({
+            preserveAspectRatio: true,
+            edges: { left: true, right: true, bottom: true, top: true }
+          })
+          .on('resizemove', function (event) {
+            var target = event.target,
+                x = (parseFloat(target.getAttribute('data-x')) || 0),
+                y = (parseFloat(target.getAttribute('data-y')) || 0);
+
+            // update the element's style
+            target.style.width  = event.rect.width + 'px';
+            target.style.height = event.rect.height + 'px';
+
+            // translate when resizing from top or left edges
+            x += event.deltaRect.left;
+            y += event.deltaRect.top;
+
+            target.style.webkitTransform = target.style.transform =
+                'translate(' + x + 'px,' + y + 'px)';
+
+            target.setAttribute('data-x', x);
+            target.setAttribute('data-y', y);
+            target.textContent = Math.round(event.rect.width) + '×' + Math.round(event.rect.height);
+            //chart.setSize(null, null, false);
+          });*/
+
+        // this is used later in the resizing and gesture demos
+        window.dragMoveListener = dragMoveListener;
+
 
     };
 
@@ -331,16 +403,9 @@ var metro = (function() {
         },
 
         viewTimeseries: function(uuid) {
-            var plotId = 'plot-' + uuid;
 
-            if(!plotControl._map) {
-                plotControl.addTo(map);
-            }
-
-            // TODO check if plot for this uuid already added.
-
-            //$('#plotContainer table').append('<tr><td><div id="' + plotId + '"></div></td></tr>');
-
+            document.getElementById('plotContainer').style.display = 'block';
+            
             // get the last valid point timestamp
             $.ajax(citadelURL + '/api/point/' + uuid + '/timeseries')
             .fail(function(hqXHR, status)  {
@@ -370,8 +435,7 @@ var metro = (function() {
                     .fail(function(hqXHR, status)  {
                         console.log('Error loading data: ' + status);
                     }).done(function(d) {
-                        var plotId = 'plot-' + uuid,
-                        title, ytitle, type, data = [], i;
+                        var title, ytitle, type, data = [], i;
                         //console.log(d);
 
                         resultsLayer.eachLayer(function(l) {
@@ -412,7 +476,6 @@ var metro = (function() {
                             chart.series[0].update({
                                 name: type
                             });
-                            //char.series[0].redraw();
                             chart.setTitle({
                                 text: title
                             });                        
@@ -422,6 +485,7 @@ var metro = (function() {
                         }
 
                         for(i in d.data) {
+                            // convert from seconds to milliseconds
                             data.push([i*1000,d.data[i]]);
                         }
                         chart.series[0].setData(data);

@@ -1,11 +1,5 @@
 @CHARSET "UTF-8";
 
-input[type=range] {
-  /*-webkit-appearance: none;*/
-  width: 80px;
-  vertical-align: middle;
-}
-
 body {
     padding: 0;
     margin: 0;
@@ -19,10 +13,6 @@ canvas {
     background-color: transparent;
     position: absolute;
     z-index: 9999;
-}
-
-table td {
-    background-color: white;
 }
 
 img {
@@ -49,6 +39,13 @@ img {
 
 .awesome-marker i {
     font-size: 18px;
+}
+
+#plotContainer {
+    position: absolute;
+    top: 50vh;
+    left: 10px;
+    height: 350px;
 }
 
 }

@@ -1,7 +1,8 @@
 var metro = (function() {
 
-    // global variables used in functions
-    var types = {
+    // global variables
+    var citadelURL = 'https://citadel.ucsd.edu',
+        types = {
             'angle': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'white',
@@ -12,7 +13,7 @@ var metro = (function() {
             'airflow': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'green',
-                    icon: 'xx',
+                    icon: 'flag-o',
                     prefix: 'fa',
                 })
             },
@@ -244,7 +245,7 @@ var metro = (function() {
 
         search: function(type) {
             var bounds = map.getBounds(),
-            url = 'http://citadel.ucsd.edu/api/point/?geo_query:{"geometry_list":[['
+            url = citadelURL + '/api/point/?geo_query:{"geometry_list":[['
                 + bounds.getSouthWest().lng + ',' + bounds.getSouthWest().lat 
                 + '],['  
                 + bounds.getNorthEast().lng + ',' + bounds.getNorthEast().lat 
@@ -341,7 +342,7 @@ var metro = (function() {
             //$('#plotContainer table').append('<tr><td><div id="' + plotId + '"></div></td></tr>');
 
             // get the last valid point timestamp
-            $.ajax('http://citadel.ucsd.edu/api/point/' + uuid + '/timeseries')
+            $.ajax(citadelURL + '/api/point/' + uuid + '/timeseries')
             .fail(function(hqXHR, status)  {
                 console.log('Error loading data: ' + status);
             }).done(function(d) {
@@ -351,7 +352,7 @@ var metro = (function() {
                 }
                 for(i in d.data) {
                     // get the data for the last 30 minutes.
-                    metro._plotTimeseries(uuid, parseInt(i) - 30*60, parseInt(i) + 1);
+                    metro._plotTimeseries(uuid, parseInt(i) - 3600, parseInt(i) + 1);
                     // should be only one value
                     break;
                 }
@@ -361,7 +362,7 @@ var metro = (function() {
 
         _plotTimeseries: function(uuid, start, stop) {
 
-            $.ajax('http://citadel.ucsd.edu/api/point/' 
+            $.ajax(citadelURL + '/api/point/' 
                 + uuid
                 + '/timeseries?start_time='
                 + start 

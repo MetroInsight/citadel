@@ -2,9 +2,37 @@ var metro = (function() {
 
     // global variables used in functions
     var types = {
-            'electrical power': {
+            'angle': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'white',
+                    icon: 'compass',
+                    prefix: 'fa',
+                })
+            },
+            'airflow': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'green',
+                    icon: 'xx',
+                    prefix: 'fa',
+                })
+            },
+            'command': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'green',
+                    icon: 'terminal',
+                    prefix: 'fa',
+                })
+            },
+            'electrical_energy': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'purple',
+                    icon: 'plug',
+                    prefix: 'fa',
+                })
+            },
+            'electrical_power': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'orange',
                     icon: 'plug',
                     prefix: 'fa',
                 })
@@ -16,20 +44,48 @@ var metro = (function() {
                     prefix: 'fa'
                 })
             },
-            'thermal energy': {
+            'thermal_energy': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'darkpurple',
                     icon: 'battery-half',
                     prefix: 'fa'
                 })
             },
-            'thermal power': {
+            'thermal_power': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'darkpurple',
-                    icon: 'flash',
+                    icon: 'battery-half',
                     prefix: 'fa'
                 })
             },
+            'radiation': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'orange',
+                    icon: 'sun-o',
+                    prefix: 'fa',
+                })
+            },
+            'relative_humidity': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'purple',
+                    icon: 'shower',
+                    prefix: 'fa',
+                })
+            },
+            'speed': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'darkgreen',
+                    icon: 'jet-o',
+                    prefix: 'fa',
+                })
+            },
+            'time': {
+                icon: L.AwesomeMarkers.icon({
+                    markerColor: 'darkgreen',
+                    icon: 'clock-o',
+                    prefix: 'fa',
+                })
+            },            
             'waterflow': {
                 icon: L.AwesomeMarkers.icon({
                     markerColor: 'blue',
@@ -37,6 +93,8 @@ var metro = (function() {
                     prefix: 'fa'
                 })
             }
+
+
     },
     map,
     mapLayers,

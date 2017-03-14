@@ -57,7 +57,7 @@ var metro = (function() {
             },
             'thermal_power': {
                 icon: L.AwesomeMarkers.icon({
-                    markerColor: 'darkpurple',
+                    markerColor: 'purple',
                     icon: 'battery-half',
                     prefix: 'fa'
                 })
@@ -71,7 +71,7 @@ var metro = (function() {
             },*/
             'relative_humidity': {
                 icon: L.AwesomeMarkers.icon({
-                    markerColor: 'purple',
+                    markerColor: 'darkgreen',
                     icon: 'shower',
                     prefix: 'fa',
                 })

@@ -138,26 +138,30 @@ class PointGenericAPI(Resource):
         """ Query to points """
         args = point_query_parser.parse_args()
         tag_query_str = args.get('tag_query')
+        point_name = args.get('name')
 
-        flattened_tag_query = dict()
-        if tag_query_str:
-            tag_query = json.loads(tag_query_str)
-            for tag, value in tag_query.items():
-                flattened_tag_query['tags.%s'%tag] = value
+        if point_name:
+            query_result = Point.objects(name=point_name)
         else:
-            flattened_tag_query = {}
-            
-        geo_query_str = args.get('geo_query')
-        if geo_query_str:
-            geo_query = json.loads(geo_query_str)
-            if geo_query['type']=='bounding_box':
-                west_south = geo_query['geometry_list'][0]
-                east_north = geo_query['geometry_list'][1]
-                query_result = Point.objects(\
-                        __raw__=flattened_tag_query,\
-                        geometry__geo_within_box=[west_south, east_north])
-        else:
-            query_result = Point.objects(__raw__=flattened_tag_query)
+            flattened_tag_query = dict()
+            if tag_query_str:
+                tag_query = json.loads(tag_query_str)
+                for tag, value in tag_query.items():
+                    flattened_tag_query['tags.%s'%tag] = value
+            else:
+                flattened_tag_query = {}
+                
+            geo_query_str = args.get('geo_query')
+            if geo_query_str:
+                geo_query = json.loads(geo_query_str)
+                if geo_query['type']=='bounding_box':
+                    west_south = geo_query['geometry_list'][0]
+                    east_north = geo_query['geometry_list'][1]
+                    query_result = Point.objects(\
+                            __raw__=flattened_tag_query,\
+                            geometry__geo_within_box=[west_south, east_north])
+            else:
+                query_result = Point.objects(__raw__=flattened_tag_query)
 
         return {'point_list': query_result}
 

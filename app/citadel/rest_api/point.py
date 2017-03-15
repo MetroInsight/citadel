@@ -124,6 +124,7 @@ point_query_parser.add_argument('tag_query', type=str, location='args',
         help=model_to_json(m_point_post)
         )
 point_query_parser.add_argument('geo_query', type=str, location='args')
+point_query_parser.add_argument('name', type=str, location='args')
 # TODO: Can this be more specified to have certain JSON structure in the str?
 
 @point_api.doc()

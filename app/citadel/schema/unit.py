@@ -500,6 +500,5 @@ Unit = Enum("Unit", [
     'Revolutions-per-minute-BACNet',
     'MegaW-HR',
     'MI-PER-SEC',
-    'W-PER-M2',
     'PPM',
     ])

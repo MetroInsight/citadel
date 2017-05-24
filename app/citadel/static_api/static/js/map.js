@@ -426,6 +426,10 @@ var metro = (function() {
         },
 
         _plotTimeseries: function(uuid, start, stop) {
+            // Define x-button to close time series plot
+            Highcharts.SVGRenderer.prototype.symbols.cross = function (x, y, w, h) {
+                return ['M', x, y, 'L', x + w, y + h, 'M', x + w, y, 'L', x, y + h, 'z'];
+            };
 
             $.ajax(citadelURL + '/api/point/' 
                     + uuid
@@ -471,7 +475,26 @@ var metro = (function() {
                                 series: [{
                                     name: type,
                                     data: []
-                                }]
+                                }],
+                                lang: {
+                                    closeChart: 'Close Chart'
+                                },
+                                exporting: {
+                                    buttons: {
+                                        contextButton: {
+                                            enabled: false
+                                        },
+                                        customButton: {
+                                            x: 0,
+                                            onclick: function() {
+                                                chart.destroy();
+                                                chart = null;
+                                            },
+                                            symbol: 'cross',
+                                            _titleKey: 'closeChart',
+                                        }
+                                    }
+                                }
                             });
                         } else {
                             chart.series[0].update({

@@ -1,44 +1,11 @@
-# FlaskWebService
-A simple flask web service to store and retrieve data
-[Project Website](http://metroinsight.io)
+Skeleton out the Vertx framework.
 
-[![Build Status](https://travis-ci.org/MetroInsight/citadel.svg?branch=master)](https://travis-ci.org/MetroInsight/citadel#)
+Currently design is a bit messy as a learning step. But you could grasp how it works.
 
-## Dependency for native running
-Python 3.5+
-.
-.
+A thing to observer though it's not the best is the relationship between metorinsight.citadel.RestApi and metorinsight.citadel.metadata.MetadataVerticle.
+They are separate services and RestApi module requests queries and posting to MetdataVerticle via EventBus. Though they are separate, it looks like calling afunction from MetadataVerticle. Thus, the two services and their developments are totally separated and asynchronous.
 
-## Dependency for Docker
-Docker
+You can feel the callback coding style from the code.
 
-## Install
-Install software listed in requirements.txt and pip-packages.list
-
-Create a database in InfluxDB called 'citadel'
-* influx
-* CREATE DATABASE citadel
-
-## Running Instruction
-### Run natively
-python app/main.py
-
-### Running with Docker
-1. Install Docker from [here](https://docs.docker.com/engine/installation/linux/ubuntu/)
-2. Run "run_with_docker" file. It may ask authority elevation (sudo.)  
-   Currently the script is based on Linux environment.  
-   Same script can be easily generated for Windows and Mac.
-
-
-## API Documentation
-
-### Generate interactive UI
-1. Specify your machine's IP in app/config.py for both CITADEL_HOST and SERVER_NAME
-2. Run Citadel with "python app/main.py"
-3. API doc will be accessible from your browser at "http://host:port/api/doc"
-
-### Generate static HTML
-1. Citadel should have run once before generating API doc. Needs JAVA>7.
-2. Run "bash gen_api_doc.sh"
-3. Generated document is located in doc/api/index.html
+I still need to clean up and add comments. But take a look if you have time and provide comments.
 

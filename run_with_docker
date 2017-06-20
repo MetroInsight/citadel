@@ -1,8 +1,0 @@
-#!/bin/bash
-
-sudo docker run --rm --name citadel-mongodb -itd mongo
-sudo docker run --rm --name citadel-influxdb -itd influxdb
-sudo docker run --rm -p 127.0.0.1:80:80 --name citadel-instance -itd jbkoh/citadel
-
-
-

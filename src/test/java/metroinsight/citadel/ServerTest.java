@@ -34,7 +34,7 @@ public class ServerTest {
         .setConfig(new JsonObject().put("http.port", port)
             );
     vertx = Vertx.vertx();
-    vertx.deployVerticle(RestApi.class.getName(),
+    vertx.deployVerticle(RestApiVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
     }

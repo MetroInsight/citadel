@@ -90,25 +90,4 @@ public class MongoService implements MetadataService {
   public void processQuery(String qStr, Handler<AsyncResult<Metadata>> resultHandler) {
     
   }
-  /*
-  MongoClient mongoClient;
-
-  private void initMongoClient(){
-    String uri = config().getString("mongo_uri");
-    if (uri == null) {
-      uri = "mongodb://localhost:27017";
-    }
-    String db = config().getString("mongo_db");
-    if (db == null) {
-      db = "citadel";
-    }
-    JsonObject mongoconfig = new JsonObject()
-        .put("connection_string", uri)
-        .put("db_name", db);
-    mongoClient = MongoClient.createShared(vertx, mongoconfig);
-  }
-  
-  public void start() {
-  }
-  */
 }

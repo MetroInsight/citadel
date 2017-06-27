@@ -2,7 +2,6 @@ package metroinsight.citadel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,23 +10,18 @@ import org.junit.runner.RunWith;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import metroinsight.citadel.metadata.MetadataVerticle;
-import metroinsight.citadel.model.Metadata;;
+import io.vertx.ext.unit.junit.VertxUnitRunner;;
 
 @RunWith(VertxUnitRunner.class)
 public class ServerTest {
   
   private Vertx vertx;
   private Integer port;
+  String testSrcid;
   
   @Before
   public void setUp(TestContext context) throws IOException{
@@ -40,27 +34,15 @@ public class ServerTest {
         .setConfig(new JsonObject().put("http.port", port)
             );
     vertx = Vertx.vertx();
-    //vertx.deployVerticle(CitadelServer.class.getName(),
-    vertx.deployVerticle(MetadataVerticle.class.getName());
-    /*
-    try {
-			TimeUnit.SECONDS.sleep(10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
     vertx.deployVerticle(RestApi.class.getName(),
         options,
         context.asyncAssertSuccess());
-    
     }
-
   @After
   public void tearDown(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
   }
-  
+
   @Test
   public void testMyApplication(TestContext context){
     final Async async = context.async();
@@ -95,12 +77,6 @@ public class ServerTest {
     	.end();
   }
   
-  //@Test
-  public void testGetSensor(TestContext context) {
-    final Async async = context.async();
-    String uuidStr = "7e7c762f-452b-4fdc-bb9d-c714572d1604"; //TODO: This needs to be auto-gen later.
-  }
-  
   @Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
@@ -119,6 +95,28 @@ public class ServerTest {
     		async.complete();
     	})
     	.write(json)
+    	.end();
+  }
+
+  @Test
+  public void testGetSensor(TestContext context) {
+    final Async async = context.async();
+    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
+  	JsonObject query = new JsonObject();
+  	query.put("query", (new JsonObject()).put("srcid", srcid));
+    String queryStr = Json.encodePrettily(query);
+    String length = Integer.toString(queryStr.length());
+    vertx.createHttpClient().post(port, "localhost", "/api/query")
+    	.putHeader("content-type", "application/json")
+    	.putHeader("content-length",  length)
+    	.handler(response -> {
+    		context.assertEquals(response.statusCode(), 200);
+    		response.bodyHandler(body -> {
+    			context.assertTrue(body.toJsonArray().size() > 0);
+    			async.complete();
+    		});
+    	})
+    	.write(queryStr)
     	.end();
   }
 

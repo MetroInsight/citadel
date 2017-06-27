@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/4.12/junit-4.12.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-core/3.4.1/vertx-core-3.4.1.jar" sourcepath="M2_REPO/io/vertx/vertx-core/3.4.1/vertx-core-3.4.1-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-common/4.1.8.Final/netty-common-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-buffer/4.1.8.Final/netty-buffer-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-transport/4.1.8.Final/netty-transport-4.1.8.Final.jar" sourcepath="M2_REPO/io/netty/netty-transport/4.1.8.Final/netty-transport-4.1.8.Final-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-resolver/4.1.8.Final/netty-resolver-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-handler/4.1.8.Final/netty-handler-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec/4.1.8.Final/netty-codec-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-handler-proxy/4.1.8.Final/netty-handler-proxy-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec-socks/4.1.8.Final/netty-codec-socks-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec-http/4.1.8.Final/netty-codec-http-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec-http2/4.1.8.Final/netty-codec-http2-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-resolver-dns/4.1.8.Final/netty-resolver-dns-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec-dns/4.1.8.Final/netty-codec-dns-4.1.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.7.4/jackson-core-2.7.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.7.4/jackson-databind-2.7.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-unit/3.4.1/vertx-unit-3.4.1.jar" sourcepath="M2_REPO/io/vertx/vertx-unit/3.4.1/vertx-unit-3.4.1-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-web/3.4.1/vertx-web-3.4.1.jar" sourcepath="M2_REPO/io/vertx/vertx-web/3.4.1/vertx-web-3.4.1-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-auth-common/3.4.1/vertx-auth-common-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-mongo-client/3.4.1/vertx-mongo-client-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mongodb/mongodb-driver-async/3.4.1/mongodb-driver-async-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mongodb/mongodb-driver-core/3.4.1/mongodb-driver-core-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mongodb/bson/3.4.1/bson-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/de/flapdoodle/embed/de.flapdoodle.embed.mongo/1.50.0/de.flapdoodle.embed.mongo-1.50.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/de/flapdoodle/embed/de.flapdoodle.embed.process/1.50.0/de.flapdoodle.embed.process-1.50.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/java/dev/jna/jna/4.0.0/jna-4.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/java/dev/jna/jna-platform/4.0.0/jna-platform-4.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-compress/1.3/commons-compress-1.3.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.10/slf4j-api-1.7.10.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-rx-java/3.4.1/vertx-rx-java-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/reactivex/rxjava/1.2.7/rxjava-1.2.7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/influxdb/influxdb-java/2.6/influxdb-java-2.6.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/retrofit2/retrofit/2.3.0/retrofit-2.3.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/okhttp3/okhttp/3.8.0/okhttp-3.8.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/okio/okio/1.13.0/okio-1.13.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/retrofit2/converter-moshi/2.3.0/converter-moshi-2.3.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/moshi/moshi/1.4.0/moshi-1.4.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/squareup/okhttp3/logging-interceptor/3.8.0/logging-interceptor-3.8.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-config/3.4.1/vertx-config-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-codegen/3.4.1/vertx-codegen-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mvel/mvel2/2.2.8.Final/mvel2-2.2.8.Final.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-service-proxy/3.4.1/vertx-service-proxy-3.4.1-processor.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-lang-js/3.4.1/vertx-lang-js-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-service-discovery/3.4.1/vertx-service-discovery-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-web-client/3.4.1/vertx-web-client-3.4.1.jar" sourcepath="M2_REPO/io/vertx/vertx-web-client/3.4.1/vertx-web-client-3.4.1-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-web-common/3.4.1/vertx-web-common-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/javatuples/javatuples/1.2/javatuples-1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

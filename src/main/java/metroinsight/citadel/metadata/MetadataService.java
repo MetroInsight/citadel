@@ -10,8 +10,8 @@ import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.metadata.impl.MongoService;
 import metroinsight.citadel.model.Metadata;
 
-@ProxyGen
-@VertxGen
+//@ProxyGen
+//@VertxGen
 public interface MetadataService {
 
   String ADDRESS = "service.metadata";
@@ -21,9 +21,11 @@ public interface MetadataService {
   	return new MongoService(vertx);
   }
   
+  /*
   static MetadataService createProxy(Vertx vertx, String address) {
   	return new MetadataServiceVertxEBProxy(vertx, address);
   }
+  */
 
   void getPoint(String srcid, Handler<AsyncResult<Metadata>> resultHandler);
   

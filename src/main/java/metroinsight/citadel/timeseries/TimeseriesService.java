@@ -10,8 +10,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.model.Timeseries;
 
-@ProxyGen
-@VertxGen
+//@ProxyGen
+//@VertxGen
 public interface TimeseriesService {
 	
 	String ADDRESS = "service.timeseries";
@@ -21,9 +21,10 @@ public interface TimeseriesService {
 		return new InfluxdbService(vertx);
 	}
 	
+	/*
 	static public TimeseriesService createProxy(Vertx vertx, String address) {
 		return new TimeseriesServiceVertxEBProxy(vertx, address);
-	}
+	}*/
 	
 	void getTimeseries(String srcid, String beginTimeStr, String endTimeStr, 
 	    Handler<AsyncResult<List<Timeseries>>> rh);

@@ -16,6 +16,7 @@ import io.vertx.serviceproxy.ProxyHelper;
 import metroinsight.citadel.common.MicroServiceVerticle;
 import metroinsight.citadel.metadata.impl.MongoService;
 
+// Dummy for the future purpose if necessary
 public class MetadataVerticle extends MicroServiceVerticle {
 
   @Override

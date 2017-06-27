@@ -10,7 +10,7 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 import metroinsight.citadel.metadata.MetadataRestApi;
 
-public class RestApi extends AbstractVerticle {
+public class RestApiVerticle extends AbstractVerticle {
 
   protected ServiceDiscovery discovery;
   MetadataRestApi metadataRestApi ;

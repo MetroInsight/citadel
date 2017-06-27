@@ -9,7 +9,7 @@ public class MainVerticle extends AbstractVerticle {
 	public void start() throws Exception {
     //vertx.deployVerticle(MetadataVerticle.class.getName());
     //vertx.deployVerticle(TimeseriesVerticle.class.getName());
-    vertx.deployVerticle(RestApi.class.getName());
+    vertx.deployVerticle(RestApiVerticle.class.getName());
 	}
 
 }

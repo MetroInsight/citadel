@@ -73,21 +73,19 @@ public class MongoService implements MetadataService {
   
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
-    //Metadata metadata = Json.decodeValue(jsonMetadata, Metadata.class);
-    UUID uuid = UUID.randomUUID();
-    jsonMetadata.put("srcid", uuid.toString());
-    Metadata metadata = jsonMetadata.mapTo(Metadata.class); // Schema validation
+    String srcid = UUID.randomUUID().toString();
+    jsonMetadata.put("srcid", srcid);
+    // Validate if it complies to the schema. No actual usage
+    // TODO: Need to change this to proper validation instead.
+    Metadata metadata = jsonMetadata.mapTo(Metadata.class); 
     mongoClient.insert(collName, jsonMetadata, res -> {
       if (res.succeeded()) {
-        resultHandler.handle(Future.succeededFuture(uuid.toString()));
+        // Load result to future if success.
+        resultHandler.handle(Future.succeededFuture(srcid));
       } else {
+        // TODO: Need to add failure behavior.
       }
-      }
-    );
+    });
   }
 
-  @Override
-  public void processQuery(String qStr, Handler<AsyncResult<Metadata>> resultHandler) {
-    
-  }
 }

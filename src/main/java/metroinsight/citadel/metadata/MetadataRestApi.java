@@ -43,7 +43,6 @@ public class MetadataRestApi {
   		if (ar.failed()) {
   			System.out.println(ar.cause().getMessage());
   		} else {
-  			Metadata resultMetadata = ar.result();
   			rc.response()
   			.putHeader("content-TYPE", "application/json; charset=utf=8")
   			.setStatusCode(200)
@@ -55,18 +54,25 @@ public class MetadataRestApi {
   
   public void createPoint(RoutingContext rc) {
     JsonObject body = rc.getBodyAsJson();
-    JsonObject q = (JsonObject)(body.getValue("query")); // TODO: Validate if this is working
-    metadataService.createPoint(q, ar -> {
+    // Get the query as JSON.
+    JsonObject q = (JsonObject)(body.getValue("query"));
+    // Call createPoint in metadataService asynchronously.
+    metadataService.createPoint(q, ar -> { 
+      // ar is a result object created in metadataService.createPoint
+      // We pass what to do with the result in this format.
     	if (ar.failed()) {
+    	  // if the service is failed
+    	  // TODO: add response here.
       	System.out.println(ar.cause().getMessage());
     	} else {
-    	  JsonObject result = rc.getBodyAsJson();
+    	  // Construct response object and complete with "end".
+    	  JsonObject result = new JsonObject();
     	  result.put("result", "SUCCESS");
     	  result.put("srcid", ar.result().toString());
     		rc.response()
-    		.putHeader("content-TYPE", "application/text; charset=utf=8")
-      	.setStatusCode(201)
-    		.end(result.toString());
+    		  .putHeader("content-TYPE", "application/text; charset=utf=8")
+    		  .setStatusCode(201)
+    		  .end(result.toString());
     	}
     	});
   }

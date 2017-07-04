@@ -17,21 +17,22 @@ public interface MetadataService {
   String ADDRESS = "service.metadata";
   String EVENT_ADDRESS = "metadata";
   
+  // This is needed if we make this as a Verticle later.
   static MetadataService create(Vertx vertx) {
   	return new MongoService(vertx);
   }
   
-  /*
+  /*// For event bus communication in the future.
   static MetadataService createProxy(Vertx vertx, String address) {
   	return new MetadataServiceVertxEBProxy(vertx, address);
   }
   */
 
   void getPoint(String srcid, Handler<AsyncResult<Metadata>> resultHandler);
-  
-  void processQuery(String qStr, Handler<AsyncResult<Metadata>> resultHandler);
+  // Returns all metadata corresponding to the srcid.
 
   void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler);
+  // Create Point with given metadata
 
   void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
 }

@@ -1,7 +1,6 @@
 package metroinsight.citadel;
 
 import io.vertx.core.AbstractVerticle;
-import metroinsight.citadel.timeseries.TimeseriesVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 	

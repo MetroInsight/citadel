@@ -12,7 +12,7 @@ import metroinsight.citadel.model.Metadata;
 public interface DataService {
 
 
-  void insertPoint(JsonObject data, Handler<AsyncResult<Metadata>> resultHandler);
+  void insertPoint(JsonObject data, Handler<AsyncResult<Boolean>> resultHandler);
   // insert the data described by the JsonObject data
 
   void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);

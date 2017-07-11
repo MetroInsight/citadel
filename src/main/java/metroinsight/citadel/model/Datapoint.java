@@ -3,7 +3,7 @@ package metroinsight.citadel.model;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-
+@DataObject(generateConverter = true)
 public class Datapoint {
 	
   private String srcid;//unique srcid for the stream belonging to same dataset
@@ -86,12 +86,14 @@ public class Datapoint {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     
+    
     json.put("srcid", srcid);
     json.put("unixTimeStamp", unixTimeStamp);
     json.put("lat", lat);
     json.put("lng", lng);
     json.put("value", value);
    
+    //DatapointConverter.toJson(this, json);
     return json;
   }
   

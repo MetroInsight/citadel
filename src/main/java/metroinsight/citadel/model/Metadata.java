@@ -61,7 +61,7 @@ public class Metadata {
     json.put("pointType", pointType);
     json.put("unit", unit);
     json.put("srcid", srcid);
-    //*/
+    */
     MetadataConverter.toJson(this, json);
     return json;
   }

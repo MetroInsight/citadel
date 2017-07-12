@@ -36,7 +36,7 @@ public class GeomesaService implements DataService {
 	}
   
   @Override
-  public void insertPoint(JsonObject data, Handler<AsyncResult<Boolean>> resultHandler) {
+  public void insertData(JsonObject data, Handler<AsyncResult<Boolean>> resultHandler) {
 	   // Validate if it complies to the schema. No actual usage
 	    // TODO: Need to change this to proper validation instead.
 	   // DataPoint dataPoint = data.mapTo(DataPoint.class); 
@@ -44,11 +44,11 @@ public class GeomesaService implements DataService {
 	    gmh.geomesa_insertData(data, res -> {
 		      if (res.succeeded()) {
 			        // Load result to future if success.
-			        System.out.println("Succeeded in InsertPoint GeomesaService");
+			        //System.out.println("Succeeded in InsertPoint GeomesaService");
 			        resultHandler.handle(Future.succeededFuture(true));
 			      } else {
 			        // TODO: Need to add failure behavior.
-			    	System.out.println("Failed in InsertPoint GeomesaService");
+			    	//System.out.println("Failed in InsertPoint GeomesaService");
 			    	resultHandler.handle(Future.succeededFuture(false));
 			      }
 	          });
@@ -57,7 +57,7 @@ public class GeomesaService implements DataService {
 	} 
 	  
   @Override
-  public void queryPointBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+  public void queryDataBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   	
 	  try{	  
 	  String lat_min="";
@@ -82,7 +82,7 @@ public class GeomesaService implements DataService {
   }
   
   @Override
-  public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+  public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   
 	try{
   	String lat_min="";
@@ -126,6 +126,7 @@ public class GeomesaService implements DataService {
 	}
   }//end queryPoint
   
+  /*
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
@@ -142,13 +143,7 @@ public class GeomesaService implements DataService {
 		 Random random=new Random(5771);
 		 
 		 for(int i=0;i<count;i++){
-			 /*
-			  *   private String srcid;//unique srcid for the stream belonging to same dataset
-				  private String unixTimeStamp;//unix timestamp in milliseconds stored in string format
-				  private String lat;//latitude
-				  private String lng;//longitude
-				  private String value;//value of this data point
-			  */
+			 
 			double value = value_min+random.nextDouble()*(value_max-value_min);
 			long millis = System.currentTimeMillis();
 				
@@ -164,7 +159,7 @@ public class GeomesaService implements DataService {
 			 data.put("value", Double.toString(value));
 			 
 			 System.out.println(i+ ": Data Point to Insert is:" + data.toString());
-			 GS.insertPoint(data, ar -> {
+			 GS.insertData(data, ar -> {
 			    	if (ar.failed()) {
 			          	System.out.println(ar.cause().getMessage());
 			        	} else {
@@ -188,7 +183,7 @@ public class GeomesaService implements DataService {
 		 query.put("unixTimeStamp_min", unixTimeStamp_min);
 		 query.put("unixTimeStamp_max", unixTimeStamp_max);
 		 
-		 GS.queryPointBox(query, ar -> {
+		 GS.queryDataBox(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
@@ -199,7 +194,7 @@ public class GeomesaService implements DataService {
 		        	}
 		       });
 		 
-		 GS.queryPoint(query, ar -> {
+		 GS.queryData(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
@@ -212,7 +207,7 @@ public class GeomesaService implements DataService {
 		 
 	  
   }
-
+*/
 
 
 }

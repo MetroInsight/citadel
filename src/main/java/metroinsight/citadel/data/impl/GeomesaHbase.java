@@ -156,18 +156,18 @@ public class GeomesaHbase {
 			SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
 
 			// create new features locally, and add them to this table
-			System.out.println("Creating new features");
+			//System.out.println("Creating new features");
 			FeatureCollection featureCollection = createNewFeatures(simpleFeatureType, data);
-			System.out.println("Inserting new features");
+			//System.out.println("Inserting new features");
 			insertFeatures(dataStore, featureCollection);
-			System.out.println("done inserting Data");
+			//System.out.println("done inserting Data");
 
 			/*
 			 * //querying Data now, results as shown below:
 			 * System.out.println("querying Data now, results as shown below:");
 			 * Query();
 			 */
-			System.out.println("Done");
+			//System.out.println("Done");
 
 		} // end try
 		catch (Exception e) {

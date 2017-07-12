@@ -37,6 +37,7 @@ public class ServerTest {
     vertx.deployVerticle(RestApiVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
+    
     }
   @After
   public void tearDown(TestContext context) {
@@ -97,7 +98,7 @@ public class ServerTest {
     	.write(json)
     	.end();
   }
-
+/*
   @Test
   public void testGetSensor(TestContext context) {
     final Async async = context.async();
@@ -112,6 +113,7 @@ public class ServerTest {
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
+    			System.out.println("response is:"+body);
     			context.assertTrue(body.toJsonArray().size() > 0);
     			async.complete();
     		});
@@ -119,5 +121,34 @@ public class ServerTest {
     	.write(queryStr)
     	.end();
   }
-
+*/
+  @Test
+  public void testInsertData(TestContext context) {
+    final Async async = context.async();
+    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
+  	JsonObject query = new JsonObject();
+  	JsonObject data = new JsonObject();
+  	data.put("srcid", srcid);
+	data.put("unixTimeStamp","1499813708623");
+	data.put("lat", "30.345");
+	data.put("lng", "65.345");
+	data.put("value","15");
+	 
+  	query.put("query",data);
+    String queryStr = Json.encodePrettily(query);
+    String length = Integer.toString(queryStr.length());
+    vertx.createHttpClient().post(port, "localhost", "/api/data")
+    	.putHeader("content-type", "application/json")
+    	.putHeader("content-length",  length)
+    	.handler(response -> {
+    		context.assertEquals(response.statusCode(), 201);
+    		response.bodyHandler(body -> {
+    			context.assertTrue(body.toJsonArray().size() > 0);
+    			async.complete();
+    		});
+    	})
+    	.write(queryStr)
+    	.end();
+  }
+  
 }

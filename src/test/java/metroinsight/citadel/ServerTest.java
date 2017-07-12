@@ -170,7 +170,7 @@ public class ServerTest {
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
-    		context.assertEquals(response.statusCode(), 201);
+    		context.assertEquals(response.statusCode(), 200);
     			async.complete();
     		
     	})

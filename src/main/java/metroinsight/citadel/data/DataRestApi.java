@@ -46,7 +46,7 @@ public class DataRestApi {
     	  // TODO: add response here.
       	System.out.println(ar.cause().getMessage());
     	} else {
-    	  //System.out.println("Suceeded in DataRestAPI insertData");
+    	  System.out.println("Suceeded in DataRestAPI insertData");
     	  JsonObject result = new JsonObject();
     	  result.put("result", "SUCCESS");
     		rc.response()

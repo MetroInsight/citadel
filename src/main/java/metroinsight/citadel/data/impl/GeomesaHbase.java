@@ -55,6 +55,7 @@ public class GeomesaHbase {
 				
 				//DataStoreFinder is from Geotools, returns an indexed datastore if one is available.
 				dataStore = DataStoreFinder.getDataStore(parameters);
+				
 				// establish specifics concerning the SimpleFeatureType to store
 				String simpleFeatureTypeName = "MetroInsight";
 				SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
@@ -67,6 +68,7 @@ public class GeomesaHbase {
 				// of this type to the table
 				//System.out.println("Creating feature-type (schema):  " + simpleFeatureTypeName);
 				dataStore.createSchema(simpleFeatureType);
+				
 				
 			}//end if
 

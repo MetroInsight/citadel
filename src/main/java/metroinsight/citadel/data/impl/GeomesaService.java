@@ -24,7 +24,7 @@ public class GeomesaService implements DataService {
 	  //initialize the geomesa database
     if(gmh==null) {
  	   gmh = new GeomesaHbase();
- 	   gmh.geomesa_initialize();
+ 	   //gmh.geomesa_initialize();
     }
   }
 
@@ -126,14 +126,14 @@ public class GeomesaService implements DataService {
 	}
   }//end queryPoint
   
-  /*
+  
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
 	  GeomesaService GS=new GeomesaService();
 	  
 	  //inserting the data points
-		 int count =0;
+		 int count =10;
 		 String srcid="axd";
 		 double value_min=10.0;
 		 double value_max=20.0;
@@ -207,7 +207,7 @@ public class GeomesaService implements DataService {
 		 
 	  
   }
-*/
+
 
 
 }

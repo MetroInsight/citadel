@@ -142,10 +142,8 @@ public class ServerTest {
     	.putHeader("content-length",  length)
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 201);
-    		response.bodyHandler(body -> {
-    			context.assertTrue(body.toJsonArray().size() > 0);
     			async.complete();
-    		});
+    		
     	})
     	.write(queryStr)
     	.end();

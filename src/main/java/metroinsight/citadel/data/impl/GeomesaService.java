@@ -57,9 +57,12 @@ public class GeomesaService implements DataService {
 	} 
 	  
   @Override
-  public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+  public void queryPointBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   	
-	  String lat_min=query.getString("lat_min");
+	  try{	  
+	  String lat_min="";
+	  if(query.containsKey("lat_min"))
+		  lat_min=query.getString("lat_min");
 	  String lat_max=query.getString("lat_max");
 	  String lng_min=query.getString("lng_min");
 	  String lng_max=query.getString("lng_max");
@@ -71,9 +74,57 @@ public class GeomesaService implements DataService {
 	      	res.cause().printStackTrace();
 	      }
 	    });
-	  
+	  }
+	  catch(Exception e)  {
+		  e.printStackTrace();
+	  }
 	  
   }
+  
+  @Override
+  public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+  
+	try{
+  	String lat_min="";
+  	String lat_max="";
+  	String lng_min="";
+  	String lng_max="";
+  	String unixTimeStamp_min="";
+  	String unixTimeStamp_max="";
+  	
+  	if(query.containsKey("lat_min"))
+  		lat_min=query.getString("lat_min");
+  	if(query.containsKey("lat_max"))
+  		lat_max=query.getString("lat_max");
+  	if(query.containsKey("lng_min"))
+  		lng_min=query.getString("lng_min");
+  	if(query.containsKey("lng_max"))
+  		lng_max=query.getString("lng_max");
+  	if(query.containsKey("unixTimeStamp_min"))
+  		unixTimeStamp_min=query.getString("unixTimeStamp_min");
+  	if(query.containsKey("unixTimeStamp_max"))
+  		unixTimeStamp_max=query.getString("unixTimeStamp_max");
+  	
+  	//String boxAndRangeQuery=lat_min+lat_max+lng_min+lng_max+unixTimeStamp_min+unixTimeStamp_max;
+  	if(lat_min.length()>0&&lat_max.length()>0&&lng_min.length()>0&&lng_max.length()>0&&unixTimeStamp_min.length()>0&&unixTimeStamp_max.length()>0){
+  		//query is box and range both, other cases need to be implemented too
+  	  gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, unixTimeStamp_min, unixTimeStamp_max, res -> {
+	    	if (res.succeeded()) {
+	    		JsonArray resultJson = res.result();
+	    		resultHandler.handle(Future.succeededFuture(resultJson));
+	      } else {
+	      	res.cause().printStackTrace();
+	      }
+	    });
+  	  
+  	}//end if
+  	
+  	
+	}//end try
+	catch(Exception e){
+		e.printStackTrace();
+	}
+  }//end queryPoint
   
   public static void main(String[] args) {	
 	  
@@ -81,7 +132,7 @@ public class GeomesaService implements DataService {
 	  GeomesaService GS=new GeomesaService();
 	  
 	  //inserting the data points
-		 int count =1;
+		 int count =0;
 		 String srcid="axd";
 		 double value_min=10.0;
 		 double value_max=20.0;
@@ -125,15 +176,19 @@ public class GeomesaService implements DataService {
 		 
 		 
 		 //query the points just inserted:
-		 String lat_minq="30",lat_maxq="35",lng_minq="60",lng_maxq="65";
+		 String lat_minq="30",lat_maxq="30.1",lng_minq="60",lng_maxq="60.1";
+		 String unixTimeStamp_min="1499813708623",unixTimeStamp_max="1499813709645";
+		 
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);
 		 query.put("lat_max", lat_maxq);
 		 query.put("lng_min", lng_minq);
 		 query.put("lng_max", lng_maxq);
+		 query.put("unixTimeStamp_min", unixTimeStamp_min);
+		 query.put("unixTimeStamp_max", unixTimeStamp_max);
 		 
-		 GS.queryPoint(query, ar -> {
+		 GS.queryPointBox(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
@@ -144,8 +199,20 @@ public class GeomesaService implements DataService {
 		        	}
 		       });
 		 
+		 GS.queryPoint(query, ar -> {
+		    	if (ar.failed()) {
+		          	System.out.println(ar.cause().getMessage());
+		        	} else {
+		        		
+		        		String result=ar.result().toString();
+		        		System.out.println("Query 2 Results are:"+result);
+		        		System.out.println("Query 2 done in Main");
+		        	}
+		       });
 		 
 	  
   }
+
+
 
 }

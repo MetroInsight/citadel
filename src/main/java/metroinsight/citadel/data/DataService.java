@@ -13,8 +13,13 @@ public interface DataService {
 
 
   void insertPoint(JsonObject data, Handler<AsyncResult<Boolean>> resultHandler);
-  // insert the data described by the JsonObject data
+  //insert the data described by the JsonObject data
 
+  void queryPointBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  //box query on the data described by the JsonObject query
+  
   void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
-  //query the data described by the JsonObject data
+  //query on the data described by the JsonObject query
+  
+  
 }

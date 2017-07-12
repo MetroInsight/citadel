@@ -20,7 +20,9 @@ public class DataRestApi {
     	if (ar.failed()) {
       	System.out.println(ar.cause().getMessage());
     	} else {
+    		System.out.println("Suceeded in DataRestAPI Query Data");
     		String resultStr = ar.result().toString();
+    		System.out.println("Query Results are:"+resultStr);
     		String length = Integer.toString(resultStr.length());
     		rc.response()
     		.putHeader("content-TYPE", "application/json; charset=utf=8")

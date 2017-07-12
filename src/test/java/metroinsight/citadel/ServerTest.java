@@ -125,7 +125,7 @@ public class ServerTest {
   @Test
   public void testInsertData(TestContext context) {
     final Async async = context.async();
-    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
+    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
   	data.put("srcid", srcid);
@@ -138,6 +138,35 @@ public class ServerTest {
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, "localhost", "/api/data")
+    	.putHeader("content-type", "application/json")
+    	.putHeader("content-length",  length)
+    	.handler(response -> {
+    		context.assertEquals(response.statusCode(), 201);
+    			async.complete();
+    		
+    	})
+    	.write(queryStr)
+    	.end();
+  }
+  
+  @Test
+  public void testQueryData(TestContext context) {
+    final Async async = context.async();
+    
+  	JsonObject query = new JsonObject();
+  	JsonObject data = new JsonObject();
+  	data.put("lat_min", "30");
+  	data.put("lat_max", "31");
+  	data.put("lng_min", "65");
+  	data.put("lng_max", "66");
+	data.put("unixTimeStamp_min","1499813707623");
+	data.put("unixTimeStamp_max","1499813709623");
+	
+	 
+  	query.put("query",data);
+    String queryStr = Json.encodePrettily(query);
+    String length = Integer.toString(queryStr.length());
+    vertx.createHttpClient().post(port, "localhost", "/api/querydata")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {

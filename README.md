@@ -2,6 +2,12 @@
 
 This is a Maven project. You can use any mvn commands.
 
+### System Requirements
+1. Mongodb
+2. Hbase
+3. Geomesa
+
+
 ### Set up dev env.
 ```{r, engine='bash', count_lines}
 mvn eclipse:eclipse

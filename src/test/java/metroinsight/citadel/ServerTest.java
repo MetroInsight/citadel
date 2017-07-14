@@ -22,12 +22,13 @@ public class ServerTest {
   private Vertx vertx;
   private Integer port;
   String testSrcid;
+  String serverip="localhost";
   
   @Before
   public void setUp(TestContext context) throws IOException{
     ServerSocket socket = null;
     socket = new ServerSocket(0);
-    port = socket.getLocalPort();
+    port =8080; //socket.getLocalPort();
     socket.close();
     
     DeploymentOptions options = new DeploymentOptions()
@@ -48,7 +49,7 @@ public class ServerTest {
   public void testMyApplication(TestContext context){
     final Async async = context.async();
     
-    vertx.createHttpClient().getNow(port,  "localhost", "/",
+    vertx.createHttpClient().getNow(port,  serverip, "/",
         response -> {
           response.handler(body -> {
             context.assertTrue(body.toString().contains("Hello"));
@@ -88,7 +89,7 @@ public class ServerTest {
     jo.put("query", metadataJo);
     final String json = Json.encodePrettily(jo);
     final String length = Integer.toString(json.length());
-    vertx.createHttpClient().post(port, "localhost", "/api/sensor")
+    vertx.createHttpClient().post(port, serverip, "/api/sensor")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
@@ -137,7 +138,7 @@ public class ServerTest {
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
-    vertx.createHttpClient().post(port, "localhost", "/api/data")
+    vertx.createHttpClient().post(port, serverip, "/api/data")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
@@ -151,6 +152,8 @@ public class ServerTest {
   
   @Test
   public void testQueryData(TestContext context) {
+	  
+	  
     final Async async = context.async();
     
   	JsonObject query = new JsonObject();
@@ -166,16 +169,23 @@ public class ServerTest {
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
-    vertx.createHttpClient().post(port, "localhost", "/api/querydata")
+    vertx.createHttpClient().post(port, serverip, "/api/querydata")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 200);
+    		response.bodyHandler(body -> {
+    			System.out.println("Data Query response is:"+body);
+    			context.assertTrue(body.toJsonArray().size() > 0);
     			async.complete();
+    		});
     		
     	})
     	.write(queryStr)
     	.end();
+    
+	
+	 
   }
   
 }

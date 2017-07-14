@@ -245,19 +245,10 @@ public class GeomesaHbase {
 		
 		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
 		String filter=cqlGeometry+" AND "+cqlDates;
-		//System.out.println("Fiter String is:"+filter);
+		
 		Filter cqlFilter = CQL.toFilter(filter);
 		
-		Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + "30.023995462377798" + " " + "60.0458649363977" + ")");
-		SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
-		if(featureBuilder==null)
-			featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
-		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
-		simpleFeature.setAttribute("point_loc", geometry);
-		Date date4=new Date(1499813709625L);
-		simpleFeature.setAttribute("date", date4);
 		
-		//System.out.println(" true or false cqlFiter String is:"+cqlFilter.evaluate(simpleFeature));
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 
 		// submit the query, and get back an iterator over matching features

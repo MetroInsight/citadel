@@ -3,11 +3,10 @@ package metroinsight.citadel.data.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -15,7 +14,6 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Query;
-import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -23,13 +21,11 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
-import org.geotools.temporal.object.DefaultInstant;
 import org.locationtech.geomesa.utils.text.WKTUtils$;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -40,6 +36,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import metroinsight.citadel.model.Datapoint;
 
 public class GeomesaHbase {
 	DataStore dataStore=null;
@@ -57,7 +54,6 @@ public class GeomesaHbase {
 				dataStore = DataStoreFinder.getDataStore(parameters);
 				
 				// establish specifics concerning the SimpleFeatureType to store
-				String simpleFeatureTypeName = "MetroInsight";
 				SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
 
 				// write Feature-specific metadata to the destination table in HBase
@@ -98,38 +94,46 @@ public class GeomesaHbase {
 	}
 
 	
-	static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonObject data) {
+	static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
 		
 		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
 		
 		if(featureBuilder==null)
-		featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
+		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
 		
 		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
 		
 		try {
-			
+		  /*
 			String srcid = data.getString("srcid");
-			String lat = data.getString("lat");
-			String lng = data.getString("lng");
-			String unixTimeStamp = data.getString("unixTimeStamp");//unixTimeStamp is in milliseconds
+			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
 			String value = data.getString("value");
-			
-			
-			Date date= new Date(Long.parseLong(unixTimeStamp));
-			
-			
-			Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat + " " + lng + ")");
-		
-			simpleFeature.setAttribute("srcid", srcid);
-			simpleFeature.setAttribute("value", value);
-			simpleFeature.setAttribute("point_loc", geometry);
-			simpleFeature.setAttribute("date", date);
+			Date date= new Date(Long.parseLong(timestamp));
+		  JsonObject geometryJson = data.getJsonObject("geometry");
+		  String geometryType = geometryJson.getString("type").toLowerCase();
+		  */
+		  for (int i = 0; i < data.size(); i++) {
+		    JsonObject datum = data.getJsonObject(i);
+		    Datapoint dp = datum.mapTo(Datapoint.class); 
+		    String geometryType = dp.getGeometryType();
+		    List<List<Double>> coordinates = dp.getCoordinates();
+		    if (geometryType.equals("point")) {
+		      Double lng = coordinates.get(0).get(0);
+		      Double lat = coordinates.get(0).get(1);
+		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+		      simpleFeature.setAttribute("point_loc", geometry);
+		      }
+		    else {
+		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+		      }
+        simpleFeature.setAttribute("srcid", dp.getSrcid());
+        simpleFeature.setAttribute("value", dp.getValue());
+        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
+        featureCollection.add(simpleFeature);
+		  }
 
 			// accumulate this new feature in the collection
-			featureCollection.add(simpleFeature);
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
 
@@ -143,7 +147,7 @@ public class GeomesaHbase {
 		featureStore.addFeatures(featureCollection);
 	}
 	
-	public void geomesa_insertData(JsonObject data) {
+	public void geomesa_insertData(JsonArray data) {
 		
 		//System.out.println("Inserting Data in geomesa_insertData(JsonObject data) in GeomesaHbase");
 		
@@ -154,7 +158,6 @@ public class GeomesaHbase {
 			}
 
 			// establish specifics concerning the SimpleFeatureType to store
-			String simpleFeatureTypeName = "MetroInsight";
 			SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
 
 			// create new features locally, and add them to this table
@@ -179,8 +182,8 @@ public class GeomesaHbase {
 
 	}// end function
 
-	static JsonArray queryFeatures_Box_Lat_Lng(DataStore dataStore, String geomField, String x0,
-			String y0, String x1, String y1) throws CQLException, IOException {
+	static JsonArray queryFeatures_Box_Lat_Lng(DataStore dataStore, String geomField, double x0,
+			double y0, double x1, double y1) throws CQLException, IOException {
 
 		// construct a (E)CQL filter from the search parameters,
 		// and use that as the basis for the query
@@ -206,7 +209,7 @@ public class GeomesaHbase {
 			JsonObject Data = new JsonObject();
 			Data.put("srcid", feature.getProperty("srcid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
-			Data.put("unixTimeStamp", date.getTime());
+			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
 			Coordinate cd=point.getCoordinates()[0];//since it a single point
 			Data.put("lat", cd.x);
@@ -224,8 +227,8 @@ public class GeomesaHbase {
 		return ja;
 	}//end function
 	
-	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(DataStore dataStore2, String geomField, String dateField,String lat_min,
-			String lng_min, String lat_max, String lng_max, String unixTimeStamp_min, String unixTimeStamp_max) {
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(DataStore dataStore2, String geomField, String dateField, Double lat_min,
+			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) {
 		JsonArray ja = new JsonArray();
 
 		
@@ -233,8 +236,8 @@ public class GeomesaHbase {
 		// construct a (E)CQL filter from the search parameters,
 		// and use that as the basis for the query
 		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
-		Date datemin=new Date(Long.valueOf(unixTimeStamp_min));
-		Date datemax=new Date(Long.valueOf(unixTimeStamp_max));
+		Date datemin=new Date(Long.valueOf(timestamp_min));
+		Date datemax=new Date(Long.valueOf(timestamp_max));
 		
 		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 		//format.setTimeZone(TimeZone.getTimeZone("PDT"));
@@ -264,7 +267,7 @@ public class GeomesaHbase {
 			JsonObject Data = new JsonObject();
 			Data.put("srcid", feature.getProperty("srcid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
-			Data.put("unixTimeStamp", date.getTime());
+			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
 			Coordinate cd=point.getCoordinates()[0];//since it a single point
 			Data.put("lat", cd.x);
@@ -289,7 +292,7 @@ public class GeomesaHbase {
 	}//end function
 	
 	
-	public JsonArray Query_Box_Lat_Lng(String lat_min, String lat_max, String lng_min, String lng_max) {
+	public JsonArray Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max) {
 		try {
 
 			if (dataStore == null) {
@@ -309,8 +312,8 @@ public class GeomesaHbase {
 
 	}//end function
 
-	private JsonArray Query_Box_Lat_Lng_Time_Range(String lat_min, String lat_max, String lng_min, String lng_max,
-			String unixTimeStamp_min, String unixTimeStamp_max) {
+	private JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max) {
 		try {
 
 			if (dataStore == null) {
@@ -321,7 +324,7 @@ public class GeomesaHbase {
 			// query a few Features from this table
 			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
 			//the point_loc and date should be part of the config
-			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,unixTimeStamp_min,unixTimeStamp_max);
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
 
 			return result;
 		} catch (Exception e) {
@@ -332,7 +335,7 @@ public class GeomesaHbase {
 	
 
 
-	public void geomesa_insertData(JsonObject data, Handler<AsyncResult<Boolean>> resultHandler) {
+	public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
 		
 		try{
 		    geomesa_insertData(data);
@@ -345,10 +348,10 @@ public class GeomesaHbase {
 		
 	}//end function
 
-	public void Query_Box_Lat_Lng(String lat_min, String lat_max, String lng_min, String lng_max,Handler<AsyncResult<JsonArray>> resultHandler) {
+	public void Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max,Handler<AsyncResult<JsonArray>> resultHandler) {
 		JsonArray result=new JsonArray();
 		try{
-			result=Query_Box_Lat_Lng( lat_min,  lat_max,  lng_min,  lng_max);
+			result = Query_Box_Lat_Lng( lat_min,  lat_max,  lng_min,  lng_max);
 			resultHandler.handle(Future.succeededFuture(result));
 		}
 		catch(Exception e){
@@ -358,11 +361,11 @@ public class GeomesaHbase {
 		
 	}//end function
 
-	public void Query_Box_Lat_Lng_Time_Range(String lat_min, String lat_max, String lng_min, String lng_max,
-			String unixTimeStamp_min, String unixTimeStamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
+	public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
 		JsonArray result=new JsonArray();
 		try{
-			result=Query_Box_Lat_Lng_Time_Range( lat_min,  lat_max,  lng_min,  lng_max, unixTimeStamp_min , unixTimeStamp_max);
+			result=Query_Box_Lat_Lng_Time_Range( lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
 			resultHandler.handle(Future.succeededFuture(result));
 		}
 		catch(Exception e){

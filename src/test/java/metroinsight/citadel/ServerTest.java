@@ -2,6 +2,7 @@ package metroinsight.citadel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -45,7 +47,7 @@ public class ServerTest {
     vertx.close(context.asyncAssertSuccess());
   }
 
-  @Test
+  //@Test
   public void testMyApplication(TestContext context){
     final Async async = context.async();
     
@@ -89,7 +91,7 @@ public class ServerTest {
     jo.put("query", metadataJo);
     final String json = Json.encodePrettily(jo);
     final String length = Integer.toString(json.length());
-    vertx.createHttpClient().post(port, serverip, "/api/sensor")
+    vertx.createHttpClient().post(port, serverip, "/api/point")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
@@ -128,14 +130,22 @@ public class ServerTest {
     final Async async = context.async();
     String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
   	JsonObject query = new JsonObject();
-  	JsonObject data = new JsonObject();
-  	data.put("srcid", srcid);
-	data.put("unixTimeStamp","1499813708623");
-	data.put("lat", "30.345");
-	data.put("lng", "65.345");
-	data.put("value","15");
-	 
-  	query.put("query",data);
+  	JsonObject datum= new JsonObject();
+  	JsonArray data = new JsonArray();
+  	Double lng = 65.345;
+  	Double lat = 30.345;
+  	datum.put("srcid", srcid);
+  	datum.put("timestamp", 1499813708623L);
+  	datum.put("value", 15);
+  	datum.put("geometryType", "point");
+  	ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
+  	ArrayList<Double> coordinate = new ArrayList<Double>();
+  	coordinate.add(lng);
+  	coordinate.add(lat);
+  	coordinates.add(coordinate);
+  	datum.put("coordinates", coordinates);
+  	data.add(datum);
+  	query.put("data",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, serverip, "/api/data")
@@ -158,14 +168,12 @@ public class ServerTest {
     
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
-  	data.put("lat_min", "30");
-  	data.put("lat_max", "31");
-  	data.put("lng_min", "65");
-  	data.put("lng_max", "66");
-	data.put("unixTimeStamp_min","1499813707623");
-	data.put("unixTimeStamp_max","1499813709623");
-	
-	 
+  	data.put("lat_min", 30);
+  	data.put("lat_max", 31);
+  	data.put("lng_min", 65);
+  	data.put("lng_max", 66);
+  	data.put("timestamp_min", 1499813707623L);
+  	data.put("timestamp_max", 1499813709623L);
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());

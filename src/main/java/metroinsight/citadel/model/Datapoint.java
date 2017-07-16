@@ -1,65 +1,59 @@
 package metroinsight.citadel.model;
 
+import java.util.List;
+
+import com.vividsolutions.jts.geom.Geometry;
+
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @DataObject(generateConverter = true)
 public class Datapoint {
 	
   private String srcid;//unique srcid for the stream belonging to same dataset
-  private String unixTimeStamp;//unix timestamp in milliseconds stored in string format
-  private String lat;//latitude
-  private String lng;//longitude
-  private String value;//value of this data point
+  private long timestamp;//unix timestamp in milliseconds stored in string format
+  private double value;//value of this data point
+  private List<List<Double>> coordinates;
+  private String geometryType;
   
   public Datapoint(){
-    
+    Geometry a;
   }
   
   public Datapoint(JsonObject json) {
-  	
-	this.srcid = json.getString("srcid");
-	this.unixTimeStamp = json.getString("unixTimeStamp");
-  	this.lat = json.getString("lat");
- 	this.lng = json.getString("lng");
- 	this.value = json.getString("value");
-  	
+    this.srcid = json.getString("srcid");
+    this.timestamp = json.getLong("timestamp");
+    this.value = json.getDouble("value");
+    this.geometryType = json.getString("geometryType");
+    this.coordinates = (List<List<Double>>) json.getValue("coordinates");
   }
   
-  public Datapoint(String srcid,String unixTimeStamp,String lat, String lng, String value){
-  
+  public Datapoint(String srcid, Long timestamp, double value, String geometryType, List<List<Double>> coordinates) {
     this.srcid = srcid;
-    this.unixTimeStamp = unixTimeStamp;
-    this.lat = lat;
-    this.lng=lng;
-    this.value=value;
+    this.timestamp = timestamp;
+    this.geometryType = geometryType;
+    this.coordinates = coordinates;
+    this.value = value;
   }
   
   public Datapoint(Datapoint other) {
-	this.srcid = other.srcid;
-  	this.unixTimeStamp = other.unixTimeStamp;
-  	this.lat = other.lat;
-  	this.lng=other.lng;
-  	this.value=other.value;
+    this.srcid = other.srcid;
+  	this.timestamp = other.timestamp;
+  	this.value = other.value;
+  	this.coordinates = other.coordinates;
+  	this.geometryType = other.geometryType;
   }
 
   public final String getSrcid(){
     return srcid;
   }
 
-  public final String getUnixTimeStamp(){
-	    return unixTimeStamp;
+  public final Long getTimestamp(){
+	    return timestamp;
 	  }
   
-  public final String getLat(){
-    return lat;
-  }
-  
-  public final String getLng(){
-	    return lng;
-	  }
-  
-  public final String getValue(){
+  public final double getValue(){
 	    return value;
 	  }
   
@@ -67,39 +61,42 @@ public class Datapoint {
 	    this.srcid = srcid;
 	  }
   
-  public final void setUnixTimeStamp(String unixTimeStamp){
-    this.unixTimeStamp = unixTimeStamp;
-  }
-
-  public final void setLat(String lat){
-    this.lat = lat;
+  public final void setTimestamp(Long timestamp){
+    this.timestamp = timestamp;
   }
   
-  public final void setLng(String lng){
-	this.lng = lng;
-	  }
-  
-  public final void setValue(String value){
+  public final void setValue(double value){
 	    this.value = value;
 	  }
   
+  public final void setGeometryType(String geometryType) {
+    this.geometryType = geometryType;
+  }
+  
+  public final String getGeometryType() {
+    return this.geometryType;
+  }
+  
+  public final List<List<Double>> getCoordinates() {
+    return this.coordinates;
+  }
+  
+  public final void setCoordinates(List<List<Double>>coordinates) {
+    this.coordinates = coordinates;
+  }
+  
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    
-    
     json.put("srcid", srcid);
-    json.put("unixTimeStamp", unixTimeStamp);
-    json.put("lat", lat);
-    json.put("lng", lng);
+    json.put("timestamp", timestamp);
     json.put("value", value);
-   
-    //DatapointConverter.toJson(this, json);
+    json.put("geometryType", geometryType);
+    json.put("coordinates", coordinates.toString());
     return json;
   }
   
   public String toString() {
   	return this.toJson().toString();
   }
-
   
 }

@@ -1,7 +1,7 @@
 package metroinsight.citadel.data;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.data.impl.GeomesaService;
 
@@ -38,7 +38,7 @@ public class DataRestApi {
   public void insertData(RoutingContext rc) {
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
-    JsonObject q = (JsonObject)(body.getValue("query"));
+    JsonArray q = body.getJsonArray("data");
     // Call createPoint in metadataService asynchronously.
     dataService.insertData(q, ar -> { 
       // ar is a result object created in metadataService.createPoint

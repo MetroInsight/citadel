@@ -1,0 +1,74 @@
+#%RAML 1.0
+title: Citadel REST API
+version: v1
+schemas:
+  - Metadata: |
+     { 
+       "$schema": "http://json-schema.org/draft-03/schema",
+       "type": "object",
+       "properties": {
+         "srcid": { "type": "string"},
+         "unit": { "type": "string"},
+         "pointType": { "type": "string"}
+       }
+     }
+
+
+/api/point:
+  post:
+    responses:
+      201:
+        body:
+          application/json:
+            example: 
+  /{srcid}
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: Metadata
+
+  /{srcid}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              schema: |
+                {}
+    /data:
+      get:
+        responses:
+          200:
+      post:
+        responses:
+          201:
+            body:
+              application/json:
+                example: |
+                  {
+                    "srcid": "random_srcid_str",
+                    "timestamp": 1500161205,
+                    "value": "1.31",
+                    "geometry": {
+                      "type": "point",
+                      "coordinates": [-117.224590, 32.865847],
+                    }
+                  }
+/api/query:
+  post:
+    responses:
+      200:
+        body:
+          application/json:
+            schema: |
+              {}
+/api/querydata:
+  post:
+    responses: 
+      200:
+        body:
+          application/json:
+            schema: |
+              {}

@@ -105,9 +105,9 @@ public class ServerTest {
   @Test
   public void testGetSensor(TestContext context) {
     final Async async = context.async();
-    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
+    String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
   	JsonObject query = new JsonObject();
-  	query.put("query", (new JsonObject()).put("srcid", srcid));
+  	query.put("query", (new JsonObject()).put("uuid", uuid));
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, "localhost", "/api/query")
@@ -128,13 +128,13 @@ public class ServerTest {
   @Test
   public void testInsertData(TestContext context) {
     final Async async = context.async();
-    String srcid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
+    String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
   	JsonObject query = new JsonObject();
   	JsonObject datum= new JsonObject();
   	JsonArray data = new JsonArray();
   	Double lng = 65.345;
   	Double lat = 30.345;
-  	datum.put("srcid", srcid);
+  	datum.put("uuid", uuid);
   	datum.put("timestamp", 1499813708623L);
   	datum.put("value", 15);
   	datum.put("geometryType", "point");

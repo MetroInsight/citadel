@@ -7,7 +7,8 @@ import io.vertx.core.json.JsonObject;
 public class Metadata {
   private String pointType;
   private String unit;
-  private String srcid;
+  private String uuid;
+  private String name;
   
   public Metadata(){
     
@@ -16,19 +17,30 @@ public class Metadata {
   public Metadata(JsonObject json) {
   	this.pointType = json.getString("pointType");
   	this.unit = json.getString("unit");
-  	this.srcid = json.getString("srcid");
+  	this.uuid = json.getString("uuid");
+  	this.name = json.getString("name");
   }
   
-  public Metadata(String pointType, String unit, String srcid){
+  public Metadata(String pointType, String unit, String uuid, String name){
     this.pointType = pointType;
     this.unit = unit;
-    this.srcid = srcid;
+    this.uuid = uuid;
+    this.name = name;
   }
   
   public Metadata(Metadata other) {
   	this.pointType = other.pointType;
   	this.unit = other.unit;
-  	this.srcid = other.srcid;
+  	this.uuid = other.uuid;
+  	this.name = other.name;
+  }
+  
+  public final String getName() {
+    return this.name;
+  }
+
+  public final void setName(String name) {
+    this.name = name;
   }
   
   public final String getPointType(){
@@ -36,7 +48,7 @@ public class Metadata {
   }
 
   public final String getSrcid(){
-    return srcid;
+    return uuid;
   }
 
   public final String getUnit(){
@@ -47,8 +59,8 @@ public class Metadata {
     this.pointType = pointType;
   }
 
-  public final void setSrcid(String srcid){
-    this.srcid = srcid;
+  public final void setSrcid(String uuid){
+    this.uuid = uuid;
   }
 
   public final void setUnit(String unit){
@@ -60,7 +72,7 @@ public class Metadata {
     /*
     json.put("pointType", pointType);
     json.put("unit", unit);
-    json.put("srcid", srcid);
+    json.put("uuid", uuid);
     */
     MetadataConverter.toJson(this, json);
     return json;

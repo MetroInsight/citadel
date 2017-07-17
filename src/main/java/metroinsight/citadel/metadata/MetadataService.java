@@ -28,8 +28,8 @@ public interface MetadataService {
   }
   */
 
-  void getPoint(String srcid, Handler<AsyncResult<Metadata>> resultHandler);
-  // Returns all metadata corresponding to the srcid.
+  void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler);
+  // Returns all metadata corresponding to the uuid.
 
   void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler);
   // Create Point with given metadata

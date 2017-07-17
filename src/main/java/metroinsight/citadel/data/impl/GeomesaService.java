@@ -113,7 +113,7 @@ public class GeomesaService implements DataService {
 	  
 	  //inserting the data points
 	  int count =10;
-	  String srcid="axd";
+	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
 	  double lat_min=30.0;
@@ -131,7 +131,7 @@ public class GeomesaService implements DataService {
 			double lng=lng_min+random.nextDouble()*diff_loc;	
 			JsonArray data = new JsonArray();
 			JsonObject datum = new JsonObject();	
-			datum.put("srcid", srcid);
+			datum.put("uuid", uuid);
 			datum.put("timestamp", timestamp);
 			datum.put("value", value);
 			ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();

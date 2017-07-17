@@ -56,9 +56,9 @@ public class MongoService implements MetadataService {
   }
 
   @Override
-  public void getPoint(String srcid, Handler<AsyncResult<Metadata>> resultHandler){
+  public void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler){
     JsonObject query = new JsonObject();
-    query.put("srcid", srcid);
+    query.put("uuid", uuid);
     mongoClient.findOne(collName, query, null, res -> {
     	if (res.succeeded()) {
     		JsonObject resultJson = res.result();
@@ -73,15 +73,15 @@ public class MongoService implements MetadataService {
   
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
-    String srcid = UUID.randomUUID().toString();
-    jsonMetadata.put("srcid", srcid);
+    String uuid = UUID.randomUUID().toString();
+    jsonMetadata.put("uuid", uuid);
     // Validate if it complies to the schema. No actual usage
     // TODO: Need to change this to proper validation instead.
     Metadata metadata = jsonMetadata.mapTo(Metadata.class); 
     mongoClient.insert(collName, jsonMetadata, res -> {
       if (res.succeeded()) {
         // Load result to future if success.
-        resultHandler.handle(Future.succeededFuture(srcid));
+        resultHandler.handle(Future.succeededFuture(uuid));
       } else {
         // TODO: Need to add failure behavior.
       }

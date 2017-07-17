@@ -7,7 +7,7 @@ schemas:
        "$schema": "http://json-schema.org/draft-03/schema",
        "type": "object",
        "properties": {
-         "srcid": { "type": "string"},
+         "uuid": { "type": "string"},
          "unit": { "type": "string"},
          "pointType": { "type": "string"}
        }
@@ -17,7 +17,7 @@ schemas:
         "$schema": "http://json-schema.org/draft-03/schema",
         "type": "object",
         "properties": {
-          "srcid": { "type": "string"},
+          "uuid": { "type": "string"},
           "value": { "type": "double"},
           "geometryType": { "type": "string"},
           "coordinates": [[{"type": "double"}]]
@@ -41,7 +41,7 @@ schemas:
           body:
             application/json:
               example: 
-    /{srcid}
+    /{uuid}
       get:
         responses:
           200:

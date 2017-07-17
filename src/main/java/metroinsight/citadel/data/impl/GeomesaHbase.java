@@ -83,7 +83,7 @@ public class GeomesaHbase {
 		
 		SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName,
 				"point_loc:Point:srid=4326,"+// a Geometry attribute: Point type
-				"srcid:String,"+// a String attribute
+				"uuid:String,"+// a String attribute
 				"value:String,"+// a String attribute
 				"date:Date"// a date attribute for time
 				);
@@ -105,7 +105,7 @@ public class GeomesaHbase {
 		
 		try {
 		  /*
-			String srcid = data.getString("srcid");
+			String uuid = data.getString("uuid");
 			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
 			String value = data.getString("value");
 			Date date= new Date(Long.parseLong(timestamp));
@@ -126,7 +126,7 @@ public class GeomesaHbase {
 		    else {
 		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
 		      }
-        simpleFeature.setAttribute("srcid", dp.getSrcid());
+        simpleFeature.setAttribute("uuid", dp.getSrcid());
         simpleFeature.setAttribute("value", dp.getValue());
         simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
         featureCollection.add(simpleFeature);
@@ -207,7 +207,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			Data.put("srcid", feature.getProperty("srcid").getValue());
+			Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
@@ -265,7 +265,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			Data.put("srcid", feature.getProperty("srcid").getValue());
+			Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();

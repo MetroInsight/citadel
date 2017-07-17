@@ -11,7 +11,7 @@ import io.vertx.core.json.JsonObject;
 @DataObject(generateConverter = true)
 public class Datapoint {
 	
-  private String srcid;//unique srcid for the stream belonging to same dataset
+  private String uuid;//unique uuid for the stream belonging to same dataset
   private long timestamp;//unix timestamp in milliseconds stored in string format
   private double value;//value of this data point
   private List<List<Double>> coordinates;
@@ -22,15 +22,15 @@ public class Datapoint {
   }
   
   public Datapoint(JsonObject json) {
-    this.srcid = json.getString("srcid");
+    this.uuid = json.getString("uuid");
     this.timestamp = json.getLong("timestamp");
     this.value = json.getDouble("value");
     this.geometryType = json.getString("geometryType");
     this.coordinates = (List<List<Double>>) json.getValue("coordinates");
   }
   
-  public Datapoint(String srcid, Long timestamp, double value, String geometryType, List<List<Double>> coordinates) {
-    this.srcid = srcid;
+  public Datapoint(String uuid, Long timestamp, double value, String geometryType, List<List<Double>> coordinates) {
+    this.uuid = uuid;
     this.timestamp = timestamp;
     this.geometryType = geometryType;
     this.coordinates = coordinates;
@@ -38,7 +38,7 @@ public class Datapoint {
   }
   
   public Datapoint(Datapoint other) {
-    this.srcid = other.srcid;
+    this.uuid = other.uuid;
   	this.timestamp = other.timestamp;
   	this.value = other.value;
   	this.coordinates = other.coordinates;
@@ -46,7 +46,7 @@ public class Datapoint {
   }
 
   public final String getSrcid(){
-    return srcid;
+    return uuid;
   }
 
   public final Long getTimestamp(){
@@ -57,8 +57,8 @@ public class Datapoint {
 	    return value;
 	  }
   
-  public final void setSrcid(String srcid){
-	    this.srcid = srcid;
+  public final void setSrcid(String uuid){
+	    this.uuid = uuid;
 	  }
   
   public final void setTimestamp(Long timestamp){
@@ -87,7 +87,7 @@ public class Datapoint {
   
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    json.put("srcid", srcid);
+    json.put("uuid", uuid);
     json.put("timestamp", timestamp);
     json.put("value", value);
     json.put("geometryType", geometryType);

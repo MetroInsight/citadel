@@ -35,11 +35,11 @@ public class MetadataRestApi {
   }
   
   public void getPoint(RoutingContext rc) {
-  	String srcid = rc.request().getParam("srcid");
-  	if (srcid == null) {
+  	String uuid = rc.request().getParam("uuid");
+  	if (uuid == null) {
   		rc.response().setStatusCode(400).end();
   	} else {
-  		metadataService.getPoint(srcid, ar -> {
+  		metadataService.getPoint(uuid, ar -> {
   		if (ar.failed()) {
   			System.out.println(ar.cause().getMessage());
   		} else {
@@ -68,7 +68,7 @@ public class MetadataRestApi {
     	  // Construct response object and complete with "end".
     	  JsonObject result = new JsonObject();
     	  result.put("result", "SUCCESS");
-    	  result.put("srcid", ar.result().toString());
+    	  result.put("uuid", ar.result().toString());
     		rc.response()
     		  .putHeader("content-TYPE", "application/text; charset=utf=8")
     		  .setStatusCode(201)

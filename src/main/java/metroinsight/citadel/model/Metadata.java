@@ -47,7 +47,7 @@ public class Metadata {
     return pointType;
   }
 
-  public final String getSrcid(){
+  public final String getUuid(){
     return uuid;
   }
 
@@ -59,7 +59,7 @@ public class Metadata {
     this.pointType = pointType;
   }
 
-  public final void setSrcid(String uuid){
+  public final void setUuid(String uuid){
     this.uuid = uuid;
   }
 

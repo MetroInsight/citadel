@@ -126,7 +126,7 @@ public class GeomesaHbase {
 		    else {
 		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
 		      }
-        simpleFeature.setAttribute("uuid", dp.getSrcid());
+        simpleFeature.setAttribute("uuid", dp.getUuid());
         simpleFeature.setAttribute("value", dp.getValue());
         simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
         featureCollection.add(simpleFeature);

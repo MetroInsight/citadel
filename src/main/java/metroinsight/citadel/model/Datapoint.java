@@ -45,7 +45,7 @@ public class Datapoint {
   	this.geometryType = other.geometryType;
   }
 
-  public final String getSrcid(){
+  public final String getUuid(){
     return uuid;
   }
 
@@ -57,7 +57,7 @@ public class Datapoint {
 	    return value;
 	  }
   
-  public final void setSrcid(String uuid){
+  public final void setUuid(String uuid){
 	    this.uuid = uuid;
 	  }
   

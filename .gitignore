@@ -1,5 +1,6 @@
 /target/
 generated/
+.settings/
 # Compiled class file
 *.class
 

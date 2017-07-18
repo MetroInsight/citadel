@@ -1,15 +1,16 @@
 package metroinsight.citadel.metadata;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.RoutingContext;
+import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.metadata.impl.MongoService;
-import metroinsight.citadel.model.Metadata;
+import metroinsight.citadel.model.BaseContent;
 
-public class MetadataRestApi {
+public class MetadataRestApi extends RestApiTemplate {
 
-  private MongoClient mongoClient;
   private MetadataService metadataService;
   
   public MetadataRestApi (Vertx vertx) {
@@ -17,42 +18,63 @@ public class MetadataRestApi {
   }
   
   public void queryPoint(RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    BaseContent content = new BaseContent();
     JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
     metadataService.queryPoint(q, ar -> {
     	if (ar.failed()) {
-      	System.out.println(ar.cause().getMessage());
+    	  content.setReason(ar.cause().getMessage());
+    	  resp.setStatusCode(400);
     	} else {
-    		String resultStr = ar.result().toString();
-    		String length = Integer.toString(resultStr.length());
-    		rc.response()
-    		.putHeader("content-TYPE", "application/json; charset=utf=8")
-    		.putHeader("content-length",  length)
-      	.setStatusCode(200)
-      	.write(resultStr)
-    		.end();
+    	  content.setSucceess(true);;
+    	  content.setResults(ar.result());
+    	  resp.setStatusCode(200);
     	}
+    	String cStr = content.toString();
+    	String cLen = Integer.toString(cStr.length());
+    	resp
+    	  .putHeader("content-length", cLen)
+    	  .write(cStr)
+    	  .end();
     	});
   }
   
   public void getPoint(RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    BaseContent content = new BaseContent();
   	String uuid = rc.request().getParam("uuid");
   	if (uuid == null) {
-  		rc.response().setStatusCode(400).end();
+  	  content.setReason(sensorNotFound);
+  	  String cStr = content.toString();
+  	  String cLen = Integer.toString(cStr.length());
+  	  resp.setStatusCode(400)
+    	  .putHeader("content-length", cLen)
+    	  .write(cStr)
+  	    .end();
   	} else {
   		metadataService.getPoint(uuid, ar -> {
   		if (ar.failed()) {
-  			System.out.println(ar.cause().getMessage());
+  		  content.setReason(ar.cause().getMessage());
+  		  resp.setStatusCode(400);
   		} else {
-  			rc.response()
-  			.putHeader("content-TYPE", "application/json; charset=utf=8")
-  			.setStatusCode(200)
-  			.end(ar.result().toString());
+  		  JsonArray pointResult = new JsonArray();
+  		  pointResult.add(ar.result());
+  		  resp.setStatusCode(200);
+  		  content.setSucceess(true);
+  		  content.setResults(pointResult);
   		}
+  	  String cStr = content.toString();
+  	  String cLen = Integer.toString(cStr.length());
+  	  resp.putHeader("content-length", cLen)
+    	  .write(cStr)
+  	    .end();
   		});
   	}
   }
   
   public void createPoint(RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    BaseContent content = new BaseContent();
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonObject q = (JsonObject)(body.getValue("query"));
@@ -60,20 +82,25 @@ public class MetadataRestApi {
     metadataService.createPoint(q, ar -> { 
       // ar is a result object created in metadataService.createPoint
       // We pass what to do with the result in this format.
+      String cStr;
+      String cLen;
     	if (ar.failed()) {
     	  // if the service is failed
-    	  // TODO: add response here.
-      	System.out.println(ar.cause().getMessage());
+    	  resp.setStatusCode(400);
+    	  content.setReason(ar.cause().getMessage());
+    	  cStr = content.toString();
     	} else {
     	  // Construct response object and complete with "end".
-    	  JsonObject result = new JsonObject();
-    	  result.put("result", "SUCCESS");
-    	  result.put("uuid", ar.result().toString());
-    		rc.response()
-    		  .putHeader("content-TYPE", "application/text; charset=utf=8")
-    		  .setStatusCode(201)
-    		  .end(result.toString());
+    	  resp.setStatusCode(201);
+    	  JsonObject pointCreateContent = new JsonObject();
+    	  pointCreateContent.put("success", true);
+    	  pointCreateContent.put("uuid", ar.result().toString());
+    	  cStr = pointCreateContent.toString();
     	}
+    	cLen = Integer.toString(cStr.length());
+  	  resp.putHeader("content-length", cLen)
+  	    .write(cStr)
+  	    .end();
     	});
   }
 

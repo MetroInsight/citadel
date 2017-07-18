@@ -73,7 +73,7 @@ public class ServerTest {
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
-    			context.assertTrue(body.toJsonArray().size() > 0);
+    			context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
     			async.complete();
     		});
     	})
@@ -96,7 +96,10 @@ public class ServerTest {
     	.putHeader("content-length",  length)
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 201);
-    		async.complete();
+    		response.bodyHandler(body -> {
+    			context.assertTrue(body.toJsonObject().getBoolean("success"));
+    			async.complete();
+    		});
     	})
     	.write(json)
     	.end();

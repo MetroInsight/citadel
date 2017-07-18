@@ -75,11 +75,10 @@ public class MetadataRestApi extends RestApiTemplate {
   public void createPoint(RoutingContext rc) {
     HttpServerResponse resp = getDefaultResponse(rc);
     BaseContent content = new BaseContent();
-    JsonObject body = rc.getBodyAsJson();
+    JsonObject point = rc.getBodyAsJson();
     // Get the query as JSON.
-    JsonObject q = (JsonObject)(body.getValue("query"));
     // Call createPoint in metadataService asynchronously.
-    metadataService.createPoint(q, ar -> { 
+    metadataService.createPoint(point, ar -> { 
       // ar is a result object created in metadataService.createPoint
       // We pass what to do with the result in this format.
       String cStr;

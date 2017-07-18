@@ -87,9 +87,7 @@ public class ServerTest {
     JsonObject metadataJo = new JsonObject();
     metadataJo.put("pointType",  "temp");
     metadataJo.put("unit",  "F");
-    JsonObject jo = new JsonObject();
-    jo.put("query", metadataJo);
-    final String json = Json.encodePrettily(jo);
+    final String json = Json.encodePrettily(metadataJo);
     final String length = Integer.toString(json.length());
     vertx.createHttpClient().post(port, serverip, "/api/point")
     	.putHeader("content-type", "application/json")

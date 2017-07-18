@@ -123,7 +123,7 @@ public class GeomesaHbase {
 		    if (geometryType.equals("point")) {
 		      Double lng = coordinates.get(0).get(0);
 		      Double lat = coordinates.get(0).get(1);
-		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
 		      simpleFeature.setAttribute("point_loc", geometry);
 		      }
 		    else {
@@ -167,7 +167,7 @@ public class GeomesaHbase {
         if (geometryType.equals("point")) {
           Double lng = coordinates.get(0).get(0);
           Double lat = coordinates.get(0).get(1);
-          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
           f.setAttribute("point_loc", geometry);
           }                                                                        
         else {                                                                     

@@ -216,7 +216,7 @@
 	<classpathentry kind="var" path="M2_REPO/commons-daemon/commons-daemon/1.0.13/commons-daemon-1.0.13.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/geotools/gt-epsg-hsql/15.1/gt-epsg-hsql-15.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/hsqldb/hsqldb/2.3.0/hsqldb-2.3.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-core/3.4.1/vertx-core-3.4.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-core/3.4.1/vertx-core-3.4.1.jar" sourcepath="M2_REPO/io/vertx/vertx-core/3.4.1/vertx-core-3.4.1-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty-common/4.1.8.Final/netty-common-4.1.8.Final.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty-buffer/4.1.8.Final/netty-buffer-4.1.8.Final.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty-transport/4.1.8.Final/netty-transport-4.1.8.Final.jar"/>
@@ -230,7 +230,7 @@
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty-resolver-dns/4.1.8.Final/netty-resolver-dns-4.1.8.Final.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/netty/netty-codec-dns/4.1.8.Final/netty-codec-dns-4.1.8.Final.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.7.4/jackson-core-2.7.4.jar"/>
-	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.7.4/jackson-databind-2.7.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.7.4/jackson-databind-2.7.4.jar" sourcepath="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.7.4/jackson-databind-2.7.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.7.0/jackson-annotations-2.7.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-unit/3.4.1/vertx-unit-3.4.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-web/3.4.1/vertx-web-3.4.1.jar"/>
@@ -256,11 +256,6 @@
 	<classpathentry kind="var" path="M2_REPO/io/vertx/vertx-web-common/3.4.1/vertx-web-common-3.4.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/javatuples/javatuples/1.2/javatuples-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>

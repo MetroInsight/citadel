@@ -11,9 +11,12 @@ import java.util.Map;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.DataUtilities;
+import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
+import org.geotools.data.FeatureWriter;
 import org.geotools.data.Query;
+import org.geotools.data.Transaction;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -148,31 +151,34 @@ public class GeomesaHbase {
 	}
 	
 	public void geomesa_insertData(JsonArray data) {
-		
-		//System.out.println("Inserting Data in geomesa_insertData(JsonObject data) in GeomesaHbase");
-		
-		try {
 
+		try {
 			if (dataStore == null) {
 				geomesa_initialize();
 			}
-
-			// establish specifics concerning the SimpleFeatureType to store
-			SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
-
-			// create new features locally, and add them to this table
-			//System.out.println("Creating new features");
-			FeatureCollection featureCollection = createNewFeatures(simpleFeatureType, data);
-			//System.out.println("Inserting new features");
-			insertFeatures(dataStore, featureCollection);
-			//System.out.println("done inserting Data");
-
-			/*
-			 * //querying Data now, results as shown below:
-			 * System.out.println("querying Data now, results as shown below:");
-			 * Query();
-			 */
-			//System.out.println("Done");
+			FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,  Transaction.AUTO_COMMIT);
+			JsonObject datum;
+			for (int i=0; i<data.size(); i++) {
+			  SimpleFeature f = writer.next();
+        datum = data.getJsonObject(i);
+        Datapoint dp = datum.mapTo(Datapoint.class);
+        String geometryType = dp.getGeometryType();
+        List<List<Double>> coordinates = dp.getCoordinates();
+        if (geometryType.equals("point")) {
+          Double lng = coordinates.get(0).get(0);
+          Double lat = coordinates.get(0).get(1);
+          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+          f.setAttribute("point_loc", geometry);
+          }                                                                        
+        else {                                                                     
+          throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+          }                                                                     
+        f.setAttribute("uuid", dp.getUuid());                                   
+        f.setAttribute("value", dp.getValue());                                 
+        f.setAttribute("date", new Date(dp.getTimestamp()));                    
+      }                                                                         
+      writer.write();                                                           
+      writer.close();
 
 		} // end try
 		catch (Exception e) {
@@ -192,17 +198,13 @@ public class GeomesaHbase {
 		
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 
-		// submit the query, and get back an iterator over matching features
-		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
-		FeatureIterator featureItr = featureSource.getFeatures(query).features();
-
-
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query,  Transaction.AUTO_COMMIT);
 		JsonArray ja = new JsonArray();
 
 		// loop through all results
 		int n = 0;
-		while (featureItr.hasNext()) {
-			Feature feature = featureItr.next();
+		while (reader.hasNext()) {
+			Feature feature = reader.next();
 
 			
 			try{
@@ -222,7 +224,7 @@ public class GeomesaHbase {
 			}
 			
 		}
-		featureItr.close();
+		reader.close();
 
 		return ja;
 	}//end function
@@ -255,13 +257,12 @@ public class GeomesaHbase {
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 
 		// submit the query, and get back an iterator over matching features
-		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
-		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+		FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query,  Transaction.AUTO_COMMIT);
 		
 		// loop through all results
 		int n = 0;
-		while (featureItr.hasNext()) {
-			Feature feature = featureItr.next();
+		while (reader.hasNext()) {
+			Feature feature = reader.next();
 			
 			try{
 			JsonObject Data = new JsonObject();
@@ -280,7 +281,7 @@ public class GeomesaHbase {
 			}
 			
 		}
-		featureItr.close();
+		reader.close();
 
 		
 		

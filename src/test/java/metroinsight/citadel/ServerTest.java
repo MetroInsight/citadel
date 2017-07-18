@@ -23,7 +23,7 @@ public class ServerTest {
   
   private Vertx vertx;
   private Integer port;
-  String testSrcid;
+  String testUuid;
   String serverip="localhost";
   
   @Before

@@ -94,8 +94,10 @@ public class GeomesaService implements DataService {
       gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
+          // Pass above
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!NEVER!");;
             res.cause().printStackTrace();
             }
         });

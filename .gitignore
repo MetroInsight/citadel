@@ -1,6 +1,7 @@
 /target/
 generated/
 .settings/
+.project
 # Compiled class file
 *.class
 

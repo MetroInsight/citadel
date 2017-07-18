@@ -187,7 +187,7 @@ public class ServerTest {
     		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
     			System.out.println("Data Query response is:"+body);
-    			context.assertTrue(body.toJsonArray().size() > 0);
+    			context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
     			async.complete();
     		});
     		

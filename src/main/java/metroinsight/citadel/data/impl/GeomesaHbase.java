@@ -176,8 +176,8 @@ public class GeomesaHbase {
         f.setAttribute("uuid", dp.getUuid());                                   
         f.setAttribute("value", dp.getValue());                                 
         f.setAttribute("date", new Date(dp.getTimestamp()));                    
+        writer.write();                                                           
       }                                                                         
-      writer.write();                                                           
       writer.close();
 
 		} // end try
@@ -237,7 +237,7 @@ public class GeomesaHbase {
 		try{
 		// construct a (E)CQL filter from the search parameters,
 		// and use that as the basis for the query
-		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max + ")";
 		Date datemin=new Date(Long.valueOf(timestamp_min));
 		Date datemax=new Date(Long.valueOf(timestamp_max));
 		

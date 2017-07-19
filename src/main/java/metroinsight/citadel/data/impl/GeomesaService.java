@@ -31,11 +31,12 @@ public class GeomesaService implements DataService {
 	}
   
   @Override
-  public void insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
+  public void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler) {
 	   // Validate if it complies to the schema. No actual usage
 	    // TODO: Need to change this to proper validation instead.
 	   // DataPoint dataPoint = data.mapTo(DataPoint.class); 
 	    
+    /*
 	    gmh.geomesa_insertData(data, res -> {
 		      if (res.succeeded()) {
 			        // Load result to future if success.
@@ -47,7 +48,13 @@ public class GeomesaService implements DataService {
 			    	resultHandler.handle(Future.succeededFuture(false));
 			      }
 	          });
-	    
+	    */
+    try {
+      gmh.geomesa_insertData(data);
+      resultHandler.handle(Future.succeededFuture());
+    } catch (Exception e) {
+      resultHandler.handle(Future.failedFuture(e));
+    }
 		
 	} 
 	  
@@ -97,13 +104,12 @@ public class GeomesaService implements DataService {
           // Pass above
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!NEVER!");;
             res.cause().printStackTrace();
             }
         });
       }//end if
       catch(Exception e){
-        e.printStackTrace();
+        resultHandler.handle(Future.failedFuture(e));
       }
     }
   

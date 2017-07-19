@@ -50,7 +50,7 @@ public class MongoService implements MetadataService {
   			}
   			resultHandler.handle(Future.succeededFuture(ja));
   		} else {
-      	res.cause().printStackTrace();
+      	resultHandler.handle(Future.failedFuture(res.cause()));
   		}
   	});
   }
@@ -66,7 +66,7 @@ public class MongoService implements MetadataService {
     		Metadata resMetadata = resultJson.mapTo(Metadata.class);
     		resultHandler.handle(Future.succeededFuture(resMetadata));
       } else {
-      	res.cause().printStackTrace();
+      	resultHandler.handle(Future.failedFuture(res.cause()));
       }
     });
   }
@@ -83,7 +83,7 @@ public class MongoService implements MetadataService {
         // Load result to future if success.
         resultHandler.handle(Future.succeededFuture(uuid));
       } else {
-        // TODO: Need to add failure behavior.
+      	resultHandler.handle(Future.failedFuture(res.cause()));
       }
     });
   }

@@ -48,7 +48,7 @@ public class DataRestApi extends RestApiTemplate {
   }
    */
   public void queryData(RoutingContext rc) {
-    JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
+    JsonObject q = rc.getBodyAsJson().getJsonObject("query");
     HttpServerResponse resp = getDefaultResponse(rc);
     BaseContent content = new BaseContent();
     dataService.queryData(q, ar -> {
@@ -72,6 +72,9 @@ public class DataRestApi extends RestApiTemplate {
         .write(cStr)
         .end();
       });
+  }
+  
+  public void getData(RoutingContext rc) {
   }
   
   

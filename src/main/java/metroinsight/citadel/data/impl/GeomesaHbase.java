@@ -96,53 +96,6 @@ public class GeomesaHbase {
 		
 	}
 
-	
-	static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
-		
-		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
-		
-		if(featureBuilder==null)
-		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
-		
-		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
-		
-		try {
-		  /*
-			String uuid = data.getString("uuid");
-			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
-			String value = data.getString("value");
-			Date date= new Date(Long.parseLong(timestamp));
-		  JsonObject geometryJson = data.getJsonObject("geometry");
-		  String geometryType = geometryJson.getString("type").toLowerCase();
-		  */
-		  for (int i = 0; i < data.size(); i++) {
-		    JsonObject datum = data.getJsonObject(i);
-		    Datapoint dp = datum.mapTo(Datapoint.class); 
-		    String geometryType = dp.getGeometryType();
-		    List<List<Double>> coordinates = dp.getCoordinates();
-		    if (geometryType.equals("point")) {
-		      Double lng = coordinates.get(0).get(0);
-		      Double lat = coordinates.get(0).get(1);
-		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
-		      simpleFeature.setAttribute("point_loc", geometry);
-		      }
-		    else {
-		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
-		      }
-        simpleFeature.setAttribute("uuid", dp.getUuid());
-        simpleFeature.setAttribute("value", dp.getValue());
-        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
-        featureCollection.add(simpleFeature);
-		  }
-
-			// accumulate this new feature in the collection
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return featureCollection;
-	}
-	
 	static void insertFeatures(DataStore dataStore, FeatureCollection featureCollection)
 			throws IOException {
 
@@ -150,41 +103,34 @@ public class GeomesaHbase {
 		featureStore.addFeatures(featureCollection);
 	}
 	
-	public void geomesa_insertData(JsonArray data) {
+	public void geomesa_insertData(JsonArray data) throws IOException {
 
-		try {
-			if (dataStore == null) {
-				geomesa_initialize();
-			}
-			FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,  Transaction.AUTO_COMMIT);
-			JsonObject datum;
-			for (int i=0; i<data.size(); i++) {
-			  SimpleFeature f = writer.next();
-        datum = data.getJsonObject(i);
-        Datapoint dp = datum.mapTo(Datapoint.class);
-        String geometryType = dp.getGeometryType();
-        List<List<Double>> coordinates = dp.getCoordinates();
-        if (geometryType.equals("point")) {
-          Double lng = coordinates.get(0).get(0);
-          Double lat = coordinates.get(0).get(1);
-          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
-          f.setAttribute("point_loc", geometry);
-          }                                                                        
-        else {                                                                     
-          throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
-          }                                                                     
-        f.setAttribute("uuid", dp.getUuid());                                   
-        f.setAttribute("value", dp.getValue());                                 
-        f.setAttribute("date", new Date(dp.getTimestamp()));                    
-        writer.write();                                                           
-      }                                                                         
-      writer.close();
-
-		} // end try
-		catch (Exception e) {
-
-			e.printStackTrace();
-		}
+    if (dataStore == null) {
+      geomesa_initialize();
+    }
+    FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,  Transaction.AUTO_COMMIT);
+    JsonObject datum;
+    for (int i=0; i<data.size(); i++) {
+      SimpleFeature f = writer.next();
+      datum = data.getJsonObject(i);
+      Datapoint dp = datum.mapTo(Datapoint.class);
+      String geometryType = dp.getGeometryType();
+      List<List<Double>> coordinates = dp.getCoordinates();
+      if (geometryType.equals("point")) {
+        Double lng = coordinates.get(0).get(0);
+        Double lat = coordinates.get(0).get(1);
+        Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
+        f.setAttribute("point_loc", geometry);
+        }                                                                        
+      else {                                                                     
+        throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+        }                                                                     
+      f.setAttribute("uuid", dp.getUuid());                                   
+      f.setAttribute("value", dp.getValue());                                 
+      f.setAttribute("date", new Date(dp.getTimestamp()));                    
+      writer.write();                                                           
+    }                                                                         
+    writer.close();
 
 	}// end function
 

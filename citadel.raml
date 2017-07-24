@@ -20,13 +20,44 @@ schemas:
           "uuid": { "type": "string"},
           "value": { "type": "double"},
           "geometryType": { "type": "string"},
-          "coordinates": [[{"type": "double"}]]
+          "coordinates": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "double"
+              }
+            }
         }
       }
   - Data: |
       [
         schema: Datum
       ]
+  - Query: |
+      {
+        "$schema": "http://json-schema.org/draft-03/schema",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "uuids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "lat_max": {"type": "double"},
+              "lat_min": {"type": "double"},
+              "lng_max": {"type": "double"},
+              "lng_min": {"type": "double"},
+              "timestamp_min": {"type": "integer"}, #long to be precise
+              "timestamp_max": {"type": "integer"}  #long to be precise
+            }
+          }
+        }
+      }
 
 /api:
   get:

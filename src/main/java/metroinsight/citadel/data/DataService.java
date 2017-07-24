@@ -11,7 +11,12 @@ import metroinsight.citadel.model.Metadata;
 //@VertxGen
 public interface DataService {
 
-
+  long timestamp_default_min = 1483228800000L;
+  Double lat_default_max = 33.459938;
+  Double lat_default_min = 32.576754;
+  Double lng_default_min = -117.394428;
+  Double lng_default_max = -116.725635;
+  
   void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler);
   //insert the data described by the JsonObject data
 

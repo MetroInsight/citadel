@@ -4,6 +4,7 @@ generated/
 .project
 # Compiled class file
 *.class
+.classpath
 
 # Log file
 *.log

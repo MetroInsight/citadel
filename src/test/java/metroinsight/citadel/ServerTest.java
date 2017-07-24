@@ -133,8 +133,8 @@ public class ServerTest {
   	JsonObject query = new JsonObject();
   	JsonObject datum= new JsonObject();
   	JsonArray data = new JsonArray();
-  	Double lng = 65.345;
-  	Double lat = 30.345;
+  	Double lng = -117.231221;
+  	Double lat = 32.881454;
   	datum.put("uuid", uuid);
   	datum.put("timestamp", 1499813708623L);
   	datum.put("value", 15);
@@ -163,38 +163,58 @@ public class ServerTest {
   
   @Test
   public void testQueryData(TestContext context) {
-	  
-	  
     final Async async = context.async();
-    
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
-  	data.put("lat_min", 30);
-  	data.put("lat_max", 31);
-  	data.put("lng_min", 65);
-  	data.put("lng_max", 66);
+  	data.put("lat_min", 32.868623);
+  	data.put("lat_max", 32.893202);
+  	data.put("lng_min", -117.244438);
+  	data.put("lng_max", -117.214398);
   	data.put("timestamp_min", 1499813707623L);
   	data.put("timestamp_max", 1499813709623L);
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, serverip, "/api/querydata")
-    	.putHeader("content-type", "application/json")
-    	.putHeader("content-length",  length)
-    	.handler(response -> {
-    		context.assertEquals(response.statusCode(), 200);
-    		response.bodyHandler(body -> {
-    			System.out.println("Data Query response is:"+body);
-    			context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
-    			async.complete();
-    		});
-    		
+      .putHeader("content-type", "application/json")
+      .putHeader("content-length",  length)
+      .handler(response -> {
+        context.assertEquals(response.statusCode(), 200);
+        response.bodyHandler(body -> {
+          System.out.println("Data Query response is:"+body);
+          context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
+          async.complete();
+          });
     	})
-    	.write(queryStr)
-    	.end();
-    
-	
-	 
+      .write(queryStr)
+      .end();
+  }
+
+  @Test
+  public void testQueryDataOnlyUUID(TestContext context) {
+    final Async async = context.async();
+  	JsonObject query = new JsonObject();
+  	JsonObject data = new JsonObject();
+    String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
+    JsonArray uuids = new JsonArray();
+    uuids.add(uuid);
+  	data.put("uuids", uuids);
+  	query.put("query",data);
+    String queryStr = Json.encodePrettily(query);
+    String length = Integer.toString(queryStr.length());
+    vertx.createHttpClient().post(port, serverip, "/api/querydata")
+      .putHeader("content-type", "application/json")
+      .putHeader("content-length",  length)
+      .handler(response -> {
+        context.assertEquals(response.statusCode(), 200);
+        response.bodyHandler(body -> {
+          System.out.println("Data Query response is:"+body);
+          context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
+          async.complete();
+          });
+    	})
+      .write(queryStr)
+      .end();
   }
   
 }

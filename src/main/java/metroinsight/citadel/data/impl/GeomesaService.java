@@ -1,7 +1,7 @@
 package metroinsight.citadel.data.impl;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 import java.util.Random;
 
 import io.vertx.core.AsyncResult;
@@ -13,7 +13,7 @@ import metroinsight.citadel.data.DataService;
 
 public class GeomesaService implements DataService {
  
-	static GeomesaHbase gmh;
+  static GeomesaHbase gmh;
   
   public GeomesaService() {
 	  //initialize the geomesa database
@@ -89,16 +89,55 @@ public class GeomesaService implements DataService {
   public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
-      Double lat_max = query.getDouble("lat_max");
-      Double lat_min = query.getDouble("lat_min");
-      Double lng_min = query.getDouble("lng_min");
-      Double lng_max = query.getDouble("lng_max");
-      long timestamp_min = query.getLong("timestamp_min");
-      long timestamp_max = query.getLong("timestamp_max");
+      Double lat_max;
+      Double lat_min;
+      Double lng_min;
+      Double lng_max;
+      long timestamp_min;
+      long timestamp_max;
+      if (query.containsKey("lat_max")) {
+        lat_max = query.getDouble("lat_max");
+      } else {
+        lat_max = lat_default_max;
+      }
+      if (query.containsKey("lat_min")) {
+        lat_min = query.getDouble("lat_min");
+      } else {
+        lat_min = lat_default_min;
+      }
+      if (query.containsKey("lng_min")) {
+        lng_min = query.getDouble("lng_min");
+      } else {
+        lng_min = lng_default_min;
+      }
+      if (query.containsKey("lng_max")) {
+        lng_max = query.getDouble("lng_max");
+      } else {
+        lng_max = lng_default_max;
+      }
+      
+      if (query.containsKey("timestamp_min")) {
+        timestamp_min = query.getLong("timestamp_min");
+      } else {
+        timestamp_min = timestamp_default_min;
+      }
+      if (query.containsKey("timestamp_max")) {
+        timestamp_max = query.getLong("timestamp_max");
+      } else {
+        timestamp_max = System.currentTimeMillis();
+      }
+      
+      ArrayList<String> uuids = new ArrayList<String>();
+      if (query.containsKey("uuids")) {
+        JsonArray uuidJsonArray = query.getJsonArray("uuids");
+        for (int i=0; i<uuidJsonArray.size(); i++) {
+          uuids.add(uuidJsonArray.getString(i));
+        }
+      }
       
       //String boxAndRangeQuery=lat_min+lat_max+lng_min+lng_max+timestamp_min+timestamp_max;
         //query is box and range both, other cases need to be implemented too
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
           // Pass above

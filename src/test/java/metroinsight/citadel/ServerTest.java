@@ -130,22 +130,41 @@ public class ServerTest {
   public void testInsertData(TestContext context) {
     final Async async = context.async();
     String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
+    String uuid2 = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
   	JsonObject query = new JsonObject();
-  	JsonObject datum= new JsonObject();
+
   	JsonArray data = new JsonArray();
+
+  	JsonObject datum1 = new JsonObject();
   	Double lng = -117.231221;
   	Double lat = 32.881454;
-  	datum.put("uuid", uuid);
-  	datum.put("timestamp", 1499813708623L);
-  	datum.put("value", 15);
-  	datum.put("geometryType", "point");
+  	datum1.put("uuid", uuid);
+  	datum1.put("timestamp", 1499813708623L);
+  	datum1.put("value", 15);
+  	datum1.put("geometryType", "point");
   	ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
   	ArrayList<Double> coordinate = new ArrayList<Double>();
   	coordinate.add(lng);
   	coordinate.add(lat);
   	coordinates.add(coordinate);
-  	datum.put("coordinates", coordinates);
-  	data.add(datum);
+  	datum1.put("coordinates", coordinates);
+  	data.add(datum1);
+
+  	JsonObject datum2 = new JsonObject();
+  	lng = -117.231230;
+  	lat = 32.881450;
+  	datum2.put("uuid", uuid2);
+  	datum2.put("timestamp", 1499813708600L);
+  	datum2.put("value", 20);
+  	datum2.put("geometryType", "point");
+  	ArrayList<ArrayList<Double>> coordinates2 = new ArrayList<ArrayList<Double>>();
+  	ArrayList<Double> coordinate2 = new ArrayList<Double>();
+  	coordinate2.add(lng);
+  	coordinate2.add(lat);
+  	coordinates2.add(coordinate2);
+  	datum2.put("coordinates", coordinates2);
+  	data.add(datum2);
+  	
   	query.put("data",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
@@ -155,7 +174,6 @@ public class ServerTest {
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 201);
     			async.complete();
-    		
     	})
     	.write(queryStr)
     	.end();
@@ -189,6 +207,18 @@ public class ServerTest {
       .write(queryStr)
       .end();
   }
+  
+  private Boolean check_only_one_uuid(JsonArray data, String uuid) {
+    JsonObject datum;
+    System.out.println(data);
+    for (int i=0; i<data.size(); i++) {
+      datum = data.getJsonObject(i);
+      if (!datum.getString("uuid").equals(uuid)) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   @Test
   public void testQueryDataOnlyUUID(TestContext context) {
@@ -209,7 +239,9 @@ public class ServerTest {
         context.assertEquals(response.statusCode(), 200);
         response.bodyHandler(body -> {
           System.out.println("Data Query response is:"+body);
-          context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
+          JsonArray results = body.toJsonObject().getJsonArray("results");
+          context.assertTrue(results.size() > 0);
+          context.assertTrue(check_only_one_uuid(results, uuid));
           async.complete();
           });
     	})

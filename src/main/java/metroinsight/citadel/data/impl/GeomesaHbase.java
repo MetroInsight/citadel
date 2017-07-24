@@ -217,18 +217,23 @@ public class GeomesaHbase {
         Feature feature = reader.next();
 
         try {
-          JsonObject Data = new JsonObject();
-          Data.put("uuid", feature.getProperty("uuid").getValue());
+          JsonObject data = new JsonObject();
+          data.put("uuid", feature.getProperty("uuid").getValue());
           Date date = (Date) feature.getProperty("date").getValue();
-          Data.put("timestamp", date.getTime());
+          data.put("timestamp", date.getTime());
           Point point = (Point) feature.getProperty("point_loc").getValue();
           Coordinate cd = point.getCoordinates()[0];// since it a single point
-          Data.put("lat", cd.x);
-          Data.put("lng", cd.y);
-          Data.put("value", feature.getProperty("value").getValue());
-          ja.add(Data);
+          JsonArray coordinate = new JsonArray();
+          coordinate.add(cd.x);
+          coordinate.add(cd.y);
+          JsonArray coordinates = new JsonArray();
+          coordinates.add(coordinate);
+          data.put("value", Double.parseDouble((String) feature.getProperty("value").getValue()));
+          data.put("geometryType", "point");
+          data.put("coordinates", coordinates);
+          ja.add(data);
         } catch (Exception e) {
-          e.printStackTrace();
+          throw e;
         }
 
       }

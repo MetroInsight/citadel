@@ -145,7 +145,6 @@ public class GeomesaHbase {
     FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query, Transaction.AUTO_COMMIT);
     JsonArray ja = new JsonArray();
     // loop through all results
-    int n = 0;
     while (reader.hasNext()) {
       Feature feature = reader.next();
       try {
@@ -208,7 +207,6 @@ public class GeomesaHbase {
           Transaction.AUTO_COMMIT);
 
       // loop through all results
-      int n = 0;
       while (reader.hasNext()) {
         Feature feature = reader.next();
 

@@ -1,3 +1,6 @@
+.vertx
+__pycache__
+
 /target/
 generated/
 .settings/

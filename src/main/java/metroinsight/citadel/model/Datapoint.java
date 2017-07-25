@@ -5,7 +5,6 @@ import java.util.List;
 import com.vividsolutions.jts.geom.Geometry;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @DataObject(generateConverter = true)

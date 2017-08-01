@@ -88,7 +88,7 @@ public class GeomesaHbase {
      * 
      */
 
-    SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName, "point_loc:Point:srid=4326," + // a
+    final SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName, "point_loc:Point:srid=4326," + // a
                                                                                                                          // Geometry
                                                                                                                          // attribute:
                                                                                                                          // Point

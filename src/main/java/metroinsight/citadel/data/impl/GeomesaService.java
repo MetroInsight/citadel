@@ -1,7 +1,6 @@
 package metroinsight.citadel.data.impl;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Random;
 
 import io.vertx.core.AsyncResult;

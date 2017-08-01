@@ -1,9 +1,14 @@
 package metroinsight.citadel;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.rxjava.core.Vertx;
 
 public class MainVerticle extends AbstractVerticle {
 	
+    public static void main(String[] args) {
+        Vertx.vertx().deployVerticle(RestApiVerticle.class.getName());
+    }
+    
 	@Override
 	public void start() throws Exception {
 	  // Deploy verticles.

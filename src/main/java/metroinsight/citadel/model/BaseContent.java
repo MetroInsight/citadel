@@ -1,8 +1,10 @@
 package metroinsight.citadel.model;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+@DataObject()
 public class BaseContent {
   private Boolean success;
   private String reason;

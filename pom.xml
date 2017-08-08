@@ -210,6 +210,11 @@
 			<artifactId>javatuples</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-redis-client</artifactId>
+			<version>3.4.2</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>

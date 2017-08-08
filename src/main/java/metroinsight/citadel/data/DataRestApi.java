@@ -1,5 +1,9 @@
 package metroinsight.citadel.data;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -12,9 +16,15 @@ import metroinsight.citadel.model.BaseContent;
 public class DataRestApi extends RestApiTemplate {
 
   private DataService dataService;
+  Vertx vertx;
+  
+  public DataRestApi (Vertx vertx) {
+    dataService = new GeomesaService(vertx);
+    this.vertx = vertx;
+  }
   
   public DataRestApi () {
-	  dataService = new GeomesaService();
+    dataService = new GeomesaService();
   }
   
   /*
@@ -69,43 +79,60 @@ public class DataRestApi extends RestApiTemplate {
       }
       resp
         .putHeader("content-length", cLen)
-        .write(cStr)
-        .end();
+        .write(cStr);
       });
   }
   
   public void getData(RoutingContext rc) {
+    
   }
   
   
   public void insertData(RoutingContext rc) {
-    HttpServerResponse resp = getDefaultResponse(rc);
-    BaseContent content = new BaseContent();
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonArray q = body.getJsonArray("data");
     // Call createPoint in metadataService asynchronously.
+    HttpServerResponse resp = getDefaultResponse(rc);
     dataService.insertData(q, ar -> { 
-      // ar is a result object created in metadataService.createPoint
-      // We pass what to do with the result in this format.
+      BaseContent content = new BaseContent();
       String cStr;
       String cLen;
-    	if (ar.failed()) {
-    	  content.setReason(ar.cause().getMessage());
-    	  resp.setStatusCode(400);
-    	} else {
-    	  resp.setStatusCode(201);
-    	  content.setSucceess(true);
-    	}
-    	cStr = content.toString();
-    	cLen = Integer.toString(cStr.length());
+      if (ar.failed()) {
+        content.setReason(ar.cause().getMessage());
+        resp.setStatusCode(400);
+      } else {
+        resp.setStatusCode(201);
+        content.setSucceess(true);
+      }
+      cStr = content.toString();
+      cLen = Integer.toString(cStr.length());
       resp
         .putHeader("content-length", cLen)
-        .write(cStr)
-        .end();
+        .write(cStr);
+      });
+    return;
+  }
 
-    	
-    	});
+  public void querySimpleBbox(RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    BaseContent content = new BaseContent();
+    JsonObject bbox = rc.getBodyAsJson().getJsonObject("query");
+    dataService.querySimpleBbox(bbox.getDouble("min_lng"), bbox.getDouble("max_lng"), bbox.getDouble("min_lat"), bbox.getDouble("max_lat"), rh -> {
+      if (rh.succeeded()) {
+        content.setResults(rh.result());
+        resp.setStatusCode(200);
+      } else {
+        content.setReason(rh.cause().getMessage());
+        resp.setStatusCode(400);
+      }
+      String cStr = content.toString();
+      String cLen = Integer.toString(cStr.length());
+      resp
+        .putHeader("content-length", cLen)
+        .write(cStr);
+    });
+    
   }
 
 }

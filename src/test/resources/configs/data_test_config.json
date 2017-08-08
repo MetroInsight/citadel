@@ -1,0 +1,18 @@
+[
+  {
+    "uuid": "90fb26f6-4449-482b-87be-83e5741d213e",
+    "name": "test_sensor_1",
+    "pointType": "temperature",
+    "timestamp": 1499813708623,
+    "value": 15,
+    "coordinates": [[-117.231221, 32.881450]]
+  },
+  {
+    "uuid": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "name": "test_sensor_2",
+    "pointType": "temperature",
+    "timetsamp": 1499813708600,
+    "value": 20,
+    "coordinates": [[-117.231230, 32.881499]]
+  }
+]

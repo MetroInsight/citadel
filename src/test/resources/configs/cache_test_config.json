@@ -1,0 +1,12 @@
+{
+  "uuid": "cache_test_uuid_1",
+  "data": {
+    "name": "test_sensor_1",
+    "pointType": "temperature",
+    "unit": "fahrenheit",
+    "lng": -117.222294,
+    "lat": 32.869073,
+    "timestamp": 1502061853000,
+    "value": 80.0
+  }
+}

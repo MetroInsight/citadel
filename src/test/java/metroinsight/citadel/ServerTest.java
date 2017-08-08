@@ -3,6 +3,8 @@ package metroinsight.citadel;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -11,19 +13,21 @@ import org.junit.runner.RunWith;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import metroinsight.citadel.datacache.impl.RedisDataCacheService;
+import metroinsight.citadel.model.CachedData;;
 
 @RunWith(VertxUnitRunner.class)
 public class ServerTest {
   
   private Vertx vertx;
   private Integer port;
-  String testUuid;
   String serverip="localhost";
   
   @Before
@@ -60,7 +64,7 @@ public class ServerTest {
         });
   }
   
-  @Test
+  //@Test
   public void testQueryPoint(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -77,11 +81,10 @@ public class ServerTest {
     			async.complete();
     		});
     	})
-    	.write(queryStr)
-    	.end();
+    	.write(queryStr);
   }
   
-  @Test
+  //@Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
     JsonObject metadataJo = new JsonObject();
@@ -99,8 +102,7 @@ public class ServerTest {
     			async.complete();
     		});
     	})
-    	.write(json)
-    	.end();
+    	.write(json);
   }
 /*
   @Test
@@ -123,11 +125,11 @@ public class ServerTest {
     		});
     	})
     	.write(queryStr)
-    	.end();
   }
 */
-  @Test
+  //@Test
   public void testInsertData(TestContext context) {
+    System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
     String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
     String uuid2 = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -175,11 +177,11 @@ public class ServerTest {
     		context.assertEquals(response.statusCode(), 201);
     			async.complete();
     	})
-    	.write(queryStr)
-    	.end();
+    	.write(queryStr);
+    System.out.println("FINISHED TESTING INSERT DATA");
   }
   
-  @Test
+  //@Test
   public void testQueryData(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -204,8 +206,7 @@ public class ServerTest {
           async.complete();
           });
     	})
-      .write(queryStr)
-      .end();
+      .write(queryStr);
   }
   
   private Boolean check_only_one_uuid(JsonArray data, String uuid) {
@@ -220,7 +221,7 @@ public class ServerTest {
     return true;
   }
 
-  @Test
+  //@Test
   public void testQueryDataOnlyUUID(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -245,8 +246,116 @@ public class ServerTest {
           async.complete();
           });
     	})
-      .write(queryStr)
-      .end();
+      .write(queryStr);
+  }
+  
+  public JsonObject getRedisTestConfig() {
+    String filename = "configs/cache_test_config.json";
+    Buffer configBuf = vertx.fileSystem().readFileBlocking(filename);
+    JsonObject configJson = configBuf.toJsonObject();
+    return configJson;
+  }
+  
+  public JsonArray getDataTestConfig() {
+    String filename = "configs/data_test_config.json";
+    Buffer configBuf = vertx.fileSystem().readFileBlocking(filename);
+    JsonArray configJson = configBuf.toJsonArray();
+    return configJson;
+  }
+  
+  //@Test
+  public void testRedisWrite(TestContext context) {
+    System.out.println("START TESTING CACHE WRITING");
+    // Read config
+    JsonObject cacheTestConfig = getRedisTestConfig();
+    String uuid = cacheTestConfig.getString("uuid");
+    JsonObject data = cacheTestConfig.getJsonObject("data");
+    final Async async = context.async();
+    RedisDataCacheService redisCache = new RedisDataCacheService(vertx);
+    List<String> indexKeys = new ArrayList<String>(2);
+    indexKeys.add(0, "lat");
+    indexKeys.add(1, "lng");
+    redisCache.upsertData(uuid, data, indexKeys, rh -> {
+      context.assertTrue(rh.succeeded());
+      System.out.println("FINISH TESTING CACHE WRITING");
+      async.complete();
+    }); 
+  }
+  
+  //@Test
+  public void testRedisRead(TestContext context) {
+    System.out.println("CACHE READ START");
+    // Read config
+    JsonObject cacheTestConfig = getRedisTestConfig();
+    String uuid = cacheTestConfig.getString("uuid");
+    JsonObject targetData = cacheTestConfig.getJsonObject("data").mapTo(CachedData.class).toJson();
+    final Async async = context.async();
+    RedisDataCacheService redisCache = new RedisDataCacheService(vertx);
+    List<String> fields = new ArrayList<>(Arrays.asList("pointType", "unit", "lng", "lat", "timestamp", "value", "name"));
+    redisCache.getData(uuid, fields, rh -> {
+      context.assertTrue(rh.succeeded());
+      JsonObject data = rh.result();
+      //TODO: get keys and compare values
+      CachedData cachedData = data.mapTo(CachedData.class);
+      data = cachedData.toJson();
+      context.assertEquals(data,  targetData);
+      System.out.println("CACHE READ SUCCESS");
+      async.complete();
+    });
+  }
+  
+  @Test
+  public void testQuerySimpleBbox(TestContext context) {
+    //router.post("/api/querydata/simplebbox").handler(dataRestApi::querySimpleBbox);
+    System.out.println("START TESTING Simple BBox Query");
+    final Async async = context.async();
+    JsonObject query = new JsonObject();
+    JsonArray data = getDataTestConfig();
+    JsonObject targetDatum = data.getJsonObject(0);
+    JsonObject refDatum = data.getJsonObject(1);
+    Double lng1 = targetDatum.getJsonArray("coordinates").getJsonArray(0).getDouble(0);
+    Double lat1 = targetDatum.getJsonArray("coordinates").getJsonArray(0).getDouble(1);
+    Double lng2 = refDatum.getJsonArray("coordinates").getJsonArray(0).getDouble(0);
+    Double lat2 = refDatum.getJsonArray("coordinates").getJsonArray(0).getDouble(1);
+    Double deltaLng = Math.abs(lng1-lng2)/2;
+    Double deltaLat = Math.abs(lat1-lat2)/2;
+    Double minLng = lng1 - deltaLng;
+    Double maxLng = lng1 + deltaLng;
+    Double minLat = lat1 - deltaLat;
+    Double maxLat = lat1 + deltaLat;
+    query.put("min_lat", minLat);
+    query.put("min_lng", minLng);
+    query.put("max_lat", maxLat);
+    query.put("max_lng", maxLng);
+    
+    JsonObject queryLoad = new JsonObject();
+    queryLoad.put("query", query);
+
+    String queryStr = Json.encodePrettily(queryLoad);
+    String length = Integer.toString(queryStr.length());
+
+    vertx.createHttpClient().post(port, serverip, "/api/querydata/simplebbox")
+      .putHeader("content-type", "application/json")
+      .putHeader("content-length",  length)
+      .handler(response -> {
+        context.assertEquals(response.statusCode(), 200);
+        response.bodyHandler(body -> {
+          System.out.println("Data Query response is:"+body);
+          JsonArray res = body.toJsonObject().getJsonArray("results");
+          boolean foundFlag = false;
+          JsonObject datum;
+          for (int i=0; i< res.size(); i++) {
+            datum = res.getJsonObject(i);
+            if (datum.getString("uuid").equals(targetDatum.getString("uuid"))) {
+              foundFlag = true;
+            }
+          }
+          context.assertTrue(foundFlag);
+          async.complete();
+          });
+    	})
+      .write(queryStr);
+    System.out.println("FINISHED TESTING Simple BBox Query");
   }
   
 }

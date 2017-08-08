@@ -34,7 +34,7 @@ schemas:
       [
         schema: Datum
       ]
-  - Query: |
+  - DataQuery: |
       {
         "$schema": "http://json-schema.org/draft-03/schema",
         "type": "object",
@@ -67,6 +67,7 @@ schemas:
           {API Documentation}
   /point:
     post:
+      description: Create a point with given metadata.
       responses:
         201:
           body:
@@ -74,17 +75,16 @@ schemas:
               example: 
     /{uuid}
       get:
+        description: Retrieve metadata given uuid.
         responses:
           200:
             body:
               application/json:
                 schema: Metadata
   /data:
-    get:
-      responses:
-        200:
     post:
-      bpdy:
+      description: Posting data. 
+      body:
         application/json:
           schema: Data
       responses:
@@ -93,6 +93,7 @@ schemas:
             {}
   /query:
     post:
+      description: Retrieve metadata with a query. Finding Metadata mathching the query.
       body:
         application/json:
           {}
@@ -104,6 +105,7 @@ schemas:
                 {}
   /querydata:
     post:
+      description: Retrieving data with a query. Box lat,long, time range, UUIDs can be specified.
       body:
         application/json:
           {}
@@ -113,3 +115,25 @@ schemas:
             application/json:
               schema: |
                 {}
+    /simplebbox:
+      post:
+        description: Retrieving points with most recent location and value in a bbox
+          body:
+            application/json:
+              {
+                "query": {
+                  "min_lng": -112.0,
+                  "max_lng": -111.0,
+                  "min_lat": 32.0,
+                  "max_lat": 33.0
+                }
+              }
+          responses:
+            200:
+              body:
+                application.json:
+                  {
+                    "results": [],
+                    "success": True,
+                    "reason" ""
+                  }

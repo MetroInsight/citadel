@@ -64,7 +64,7 @@ public class ServerTest {
         });
   }
   
-  //@Test
+  @Test
   public void testQueryPoint(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -84,7 +84,7 @@ public class ServerTest {
     	.write(queryStr);
   }
   
-  //@Test
+  @Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
     JsonObject metadataJo = new JsonObject();
@@ -127,7 +127,7 @@ public class ServerTest {
     	.write(queryStr)
   }
 */
-  //@Test
+  @Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
@@ -181,7 +181,7 @@ public class ServerTest {
     System.out.println("FINISHED TESTING INSERT DATA");
   }
   
-  //@Test
+  @Test
   public void testQueryData(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -221,7 +221,7 @@ public class ServerTest {
     return true;
   }
 
-  //@Test
+  @Test
   public void testQueryDataOnlyUUID(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -263,7 +263,7 @@ public class ServerTest {
     return configJson;
   }
   
-  //@Test
+  @Test
   public void testRedisWrite(TestContext context) {
     System.out.println("START TESTING CACHE WRITING");
     // Read config
@@ -282,7 +282,7 @@ public class ServerTest {
     }); 
   }
   
-  //@Test
+  @Test
   public void testRedisRead(TestContext context) {
     System.out.println("CACHE READ START");
     // Read config

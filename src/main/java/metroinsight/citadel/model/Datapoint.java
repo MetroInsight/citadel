@@ -7,7 +7,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-@DataObject(generateConverter = true)
+@DataObject()
 public class Datapoint {
 	
   private String uuid;//unique uuid for the stream belonging to same dataset

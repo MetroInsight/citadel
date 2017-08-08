@@ -6,6 +6,7 @@ import java.util.Random;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.data.DataService;
@@ -13,21 +14,30 @@ import metroinsight.citadel.data.DataService;
 public class GeomesaService implements DataService {
  
   static GeomesaHbase gmh;
+  Vertx vertx = null;
   
+  public GeomesaService(Vertx vertx) {
+	  //initialize the geomesa database
+    this.vertx = vertx;
+    gmh = new GeomesaHbase(vertx);
+  }
+
   public GeomesaService() {
 	  //initialize the geomesa database
-    if(gmh==null) {
+    if(gmh==null) { // Do we need null checking here?
  	   gmh = new GeomesaHbase();
  	   //gmh.geomesa_initialize();
     }
   }
 
+  /*
   static void initialize() {
-	  if(gmh==null){
-	   gmh = new GeomesaHbase();
-	   gmh.geomesa_initialize();
-	 }
-	}
+    if(gmh==null){
+      gmh = new GeomesaHbase();
+      gmh.geomesa_initialize();
+    }
+  }
+  */
   
   @Override
   public void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler) {
@@ -35,27 +45,9 @@ public class GeomesaService implements DataService {
 	    // TODO: Need to change this to proper validation instead.
 	   // DataPoint dataPoint = data.mapTo(DataPoint.class); 
 	    
-    /*
-	    gmh.geomesa_insertData(data, res -> {
-		      if (res.succeeded()) {
-			        // Load result to future if success.
-			        //System.out.println("Succeeded in InsertPoint GeomesaService");
-			        resultHandler.handle(Future.succeededFuture(true));
-			      } else {
-			        // TODO: Need to add failure behavior.
-			    	//System.out.println("Failed in InsertPoint GeomesaService");
-			    	resultHandler.handle(Future.succeededFuture(false));
-			      }
-	          });
-	    */
-    try {
-      gmh.geomesa_insertData(data);
-      resultHandler.handle(Future.succeededFuture());
-    } catch (Exception e) {
-      resultHandler.handle(Future.failedFuture(e));
-    }
-		
-	} 
+    // TODO: data schema validation
+    gmh.geomesa_insertData(data, resultHandler);
+  } 
 	  
   @Override
   public void queryDataBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
@@ -82,6 +74,17 @@ public class GeomesaService implements DataService {
 		  e.printStackTrace();
 	  }
 	  
+  }
+  
+  @Override
+  public void querySimpleBbox(Double minLng, Double maxLng, Double minLat, Double maxLat,Handler<AsyncResult<JsonArray>> rh) {
+    gmh.bboxCacheQuery(minLng, maxLng, minLat, maxLat, gmhRh -> {
+      if (gmhRh.succeeded()) {
+        rh.handle(Future.succeededFuture(gmhRh.result())); 
+      } else {
+        rh.handle(Future.failedFuture(gmhRh.cause()));
+      }
+    });
   }
   
   @Override

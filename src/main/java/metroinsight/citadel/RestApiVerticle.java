@@ -1,18 +1,17 @@
 package metroinsight.citadel;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
+import metroinsight.citadel.common.MicroServiceVerticle;
 import metroinsight.citadel.data.DataRestApi;
 import metroinsight.citadel.metadata.MetadataRestApi;
 
-public class RestApiVerticle extends AbstractVerticle {
+public class RestApiVerticle extends MicroServiceVerticle {
 
-  protected ServiceDiscovery discovery;
   MetadataRestApi metadataRestApi ;
   DataRestApi dataRestApi;
  
@@ -22,10 +21,11 @@ public class RestApiVerticle extends AbstractVerticle {
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
 
     // REST API modules
-    metadataRestApi = new MetadataRestApi (vertx);
-    dataRestApi     = new DataRestApi();
+    metadataRestApi = new MetadataRestApi(vertx);
+    dataRestApi     = new DataRestApi(vertx);
     
     Router router = Router.router(vertx);
+    router.route().handler(BodyHandler.create());
     
     // Main page. TODO
     router.route("/").handler(rc -> {
@@ -36,17 +36,14 @@ public class RestApiVerticle extends AbstractVerticle {
     });
     
     // REST API routing for MetaData
-    router.route("/api/point*").handler(BodyHandler.create());
     router.post("/api/point").handler(metadataRestApi::createPoint);
     router.get("/api/point/:uuid").handler(metadataRestApi::getPoint);
-    router.route("/api/query*").handler(BodyHandler.create());
     router.post("/api/query").handler(metadataRestApi::queryPoint);
 
     // REST API routing for Data
-    router.route("/api/data*").handler(BodyHandler.create());
     router.post("/api/data").handler(dataRestApi::insertData);
-    router.route("/api/querydata*").handler(BodyHandler.create());
     router.post("/api/querydata").handler(dataRestApi::queryData);
+    router.post("/api/querydata/simplebbox").handler(dataRestApi::querySimpleBbox);
     
     vertx
         .createHttpServer()

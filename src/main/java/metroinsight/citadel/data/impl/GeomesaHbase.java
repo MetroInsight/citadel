@@ -3,6 +3,8 @@ package metroinsight.citadel.data.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,14 +37,27 @@ import com.vividsolutions.jts.geom.Point;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import metroinsight.citadel.datacache.DataCacheService;
+import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.model.Datapoint;
 
 public class GeomesaHbase {
   DataStore dataStore = null;
   static String simpleFeatureTypeName = "MetroInsight";
   static SimpleFeatureBuilder featureBuilder = null;
+  static DataCacheService cacheService;
+  Vertx vertx = null;
+  
+  public GeomesaHbase (Vertx vertx) {
+    this.vertx = vertx;
+    GeomesaHbase.cacheService = new RedisDataCacheService(vertx);
+  }
+  
+  public GeomesaHbase() {
+  }
 
   public void geomesa_initialize() {
 
@@ -95,43 +110,60 @@ public class GeomesaHbase {
     );
 
     return simpleFeatureType;
-
   }
-
-  static void insertFeatures(DataStore dataStore, FeatureCollection featureCollection) throws IOException {
-
-    FeatureStore featureStore = (FeatureStore) dataStore.getFeatureSource(simpleFeatureTypeName);
-    featureStore.addFeatures(featureCollection);
-  }
-
-  public void geomesa_insertData(JsonArray data) throws IOException {
-
-    if (dataStore == null) {
-      geomesa_initialize();
+  
+  static void upsertCache(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh) {
+    if (cacheService == null) {
+      return;
     }
-    FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,
-        Transaction.AUTO_COMMIT);
-    JsonObject datum;
-    for (int i = 0; i < data.size(); i++) {
-      SimpleFeature f = writer.next();
-      datum = data.getJsonObject(i);
-      Datapoint dp = datum.mapTo(Datapoint.class);
-      String geometryType = dp.getGeometryType();
-      List<List<Double>> coordinates = dp.getCoordinates();
-      if (geometryType.equals("point")) {
-        Double lng = coordinates.get(0).get(0);
-        Double lat = coordinates.get(0).get(1);
-        Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
-        f.setAttribute("point_loc", geometry);
+    JsonObject cache = new JsonObject();
+    // This had better use CachedData structure, but because redis can't store null values, it does not make sense to use default values from CachedData
+    JsonArray coordinate = data.getJsonArray("coordinates").getJsonArray(0);
+    cache.put("lng", coordinate.getDouble(0));
+    cache.put("lat", coordinate.getDouble(1));
+    cache.put("value", data.getDouble("value"));
+    cache.put("timestamp", data.getLong("timestamp"));
+    List<String> indexKeys = new ArrayList<String>(2);
+    indexKeys.add(0, "lng");
+    indexKeys.add(1, "lat");
+    cacheService.upsertData(uuid, cache, indexKeys, cacheRh -> {
+      if (cacheRh.succeeded()) {
+        rh.handle(Future.succeededFuture());
       } else {
-        throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+        System.out.println(cacheRh.cause());
+        rh.handle(Future.failedFuture(cacheRh.cause()));
       }
-      f.setAttribute("uuid", dp.getUuid());
-      f.setAttribute("value", dp.getValue());
-      f.setAttribute("date", new Date(dp.getTimestamp()));
-      writer.write();
-    }
-    writer.close();
+    });
+    
+    /*
+    // Update indices. Removing temporarily as it is implemented inside cacheService.
+    JsonObject indexJson = new JsonObject();
+    indexJson.put("lng", cache.getDouble("lng"));
+    indexJson.put("lat", cache.getDouble("lat"));
+    cacheService.upsertIndex(uuid, indexJson, indexRh -> {
+      if (indexRh.failed()) {
+        rh.handle(Future.failedFuture(indexRh.cause()));
+      }
+    });
+    */
+  }
+  
+  public void bboxCacheQuery(Double minLng, Double maxLng, Double minLat, Double maxLat, Handler<AsyncResult<JsonArray>> rh) {
+    cacheService.bboxQuery(minLng, maxLng, minLat, maxLat, csRh -> {
+      if (csRh.succeeded()) {
+        rh.handle(Future.succeededFuture(csRh.result()));
+      } else {
+        rh.handle(Future.failedFuture(csRh.cause()));
+      }
+    });
+  }
+
+  public void geomesa_insertData(JsonArray data) {
+    geomesa_insertData(data, rh -> {
+      if (rh.failed()) {
+        System.out.println(rh.cause());
+      }
+    });
 
   }// end function
 
@@ -281,14 +313,63 @@ public class GeomesaHbase {
     return null;
   }// end function
 
-  public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
+  public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Void>> rh) {
 
     try {
-      geomesa_insertData(data);
-      resultHandler.handle(Future.succeededFuture(true));
+      if (dataStore == null) {
+        geomesa_initialize();
+      }
+      // Init caching buffers
+      JsonObject cacheBuffers = new JsonObject();
+      String uuid;
+
+      
+      FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,
+          Transaction.AUTO_COMMIT);
+      JsonObject datum;
+      for (int i = 0; i < data.size(); i++) {
+        SimpleFeature f = writer.next();
+        datum = data.getJsonObject(i);
+        Datapoint dp = datum.mapTo(Datapoint.class);
+        String geometryType = dp.getGeometryType();
+        List<List<Double>> coordinates = dp.getCoordinates();
+        if (geometryType.equals("point")) {
+          Double lng = coordinates.get(0).get(0);
+          Double lat = coordinates.get(0).get(1);
+          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
+          f.setAttribute("point_loc", geometry);
+        } else {
+          throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+        }
+        f.setAttribute("uuid", dp.getUuid());
+        f.setAttribute("value", dp.getValue());
+        f.setAttribute("date", new Date(dp.getTimestamp()));
+        writer.write();
+
+        //Buffering for cache
+        uuid = datum.getString("uuid");
+        JsonObject buf = null;
+        if (cacheBuffers.containsKey(uuid)) {
+          buf = cacheBuffers.getJsonObject(uuid);
+          if (buf.getDouble("timestamp") < datum.getDouble("timestamp")) {
+            cacheBuffers.put(uuid, datum);
+          }
+        } else {
+          cacheBuffers.put(uuid, datum);
+        }
+      }
+      writer.close();
+
+      // Push buffers to the cache
+      Iterator<String> keyIter = cacheBuffers.fieldNames().iterator();
+      while (keyIter.hasNext()) {
+        uuid = keyIter.next();
+        upsertCache(uuid, cacheBuffers.getJsonObject(uuid), rh);
+      }
+        rh.handle(Future.succeededFuture());
     } catch (Exception e) {
-      resultHandler.handle(Future.succeededFuture(false));
       e.printStackTrace();
+      rh.handle(Future.failedFuture(e));
     }
 
   }// end function
@@ -316,7 +397,7 @@ public class GeomesaHbase {
       resultHandler.handle(Future.succeededFuture(result));// in this case the result is empty jsonarray
       e.printStackTrace();
     }
-
   }
+  
 
 }// end GeomesaHbase class

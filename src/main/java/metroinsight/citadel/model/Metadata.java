@@ -3,7 +3,7 @@ package metroinsight.citadel.model;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-@DataObject(generateConverter = true)
+@DataObject()
 public class Metadata {
   private String pointType;
   private String unit;
@@ -69,12 +69,10 @@ public class Metadata {
   
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    /*
     json.put("pointType", pointType);
     json.put("unit", unit);
     json.put("uuid", uuid);
-    */
-    MetadataConverter.toJson(this, json);
+    json.put("name", name);
     return json;
   }
   

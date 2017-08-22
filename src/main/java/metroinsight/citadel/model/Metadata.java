@@ -69,12 +69,12 @@ public class Metadata {
   
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    /*
+    
     json.put("pointType", pointType);
     json.put("unit", unit);
     json.put("uuid", uuid);
-    */
-    MetadataConverter.toJson(this, json);
+    
+   // MetadataConverter.toJson(this, json);
     return json;
   }
   

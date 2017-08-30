@@ -1,19 +1,3 @@
-/**
- * Copyright 2016 Commonwealth Computer Research, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the License);
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package metroinsight.citadel.data.impl;
 
 import com.google.common.base.Joiner;
@@ -50,8 +34,26 @@ import java.util.Map;
 import java.util.Random;
 
 public class GeomesaService_new {
-    //static String TABLE_NAME = "bigtable.table.name".replace(".", "_");
+   
 
+	static GeomesaHbase gmh;
+	
+	public GeomesaService_new() {
+		  //initialize the geomesa database
+	    if(gmh==null) {
+	 	   gmh = new GeomesaHbase();
+	 	   gmh.geomesa_initialize();
+	    }
+	  }
+	
+	 static void initialize() {
+		  if(gmh==null){
+		   gmh = new GeomesaHbase();
+		   gmh.geomesa_initialize();
+		 }
+		}
+	 
+	
     // sub-set of parameters that are used to create the HBase DataStore
 	static int count=0;
 	static Random random;
@@ -148,6 +150,9 @@ public class GeomesaService_new {
         // there are also quite a few temporal predicates; here, we use a
         // "DURING" predicate, because we have a fixed range of times that
         // we want to query
+        
+        
+        
         String cqlDates = "(" + dateField + " DURING " + t0 + "/" + t1 + ")";
 
         // there are quite a few predicates that can operate on other attribute
@@ -170,7 +175,7 @@ public class GeomesaService_new {
         // and use that as the basis for the query
         Filter cqlFilter = createFilter(geomField, x0, y0, x1, y1, dateField, t0, t1, attributesQuery);
         Query query = new Query(simpleFeatureTypeName, cqlFilter);
-
+        System.out.println("Query is :"+query);
         // submit the query, and get back an iterator over matching features
         FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
         FeatureIterator featureItr = featureSource.getFeatures(query).features();
@@ -180,13 +185,13 @@ public class GeomesaService_new {
         while (featureItr.hasNext()) {
         	
             Feature feature = featureItr.next();
-            /*
+            
             System.out.println((++n) + ".  " +
                     feature.getProperty("srcid").getValue() + "|" +
                     feature.getProperty("value").getValue() + "|" +
                     feature.getProperty("date").getValue() + "|" +
                     feature.getProperty("point_loc").getValue());
-                   */
+                   
         	n++;
         }
         System.out.println(n);
@@ -198,24 +203,30 @@ public class GeomesaService_new {
        
     	 random = new Random(5771);
     	
+    	 //GeomesaService_new gs =new GeomesaService_new();
+    	 
+    	 
+    	
         Map<String, Serializable> parameters = new HashMap<>();
 		parameters.put("bigtable.table.name", "Geomesa4");
 		DataStore dataStore = DataStoreFinder.getDataStore(parameters);
         assert dataStore != null;
+       
+    	 
         long millistart;long milliend;
         
         
         // establish specifics concerning the SimpleFeatureType to store
         String simpleFeatureTypeName = "QuickStart";
         SimpleFeatureType simpleFeatureType = createSimpleFeatureType(simpleFeatureTypeName);
-        /*
+        
         
         System.out.println("Creating feature-type (schema):  " + simpleFeatureTypeName);
         dataStore.createSchema(simpleFeatureType);
 
          millistart = System.currentTimeMillis();
         
-        for(int k=0;k<729;k++)
+        for(int k=0;k<7;k++)
         {
         // create new features locally, and add them to this table
         //System.out.println("Creating new features");
@@ -227,13 +238,13 @@ public class GeomesaService_new {
 		 System.out.println("Time"+(milliend-millistart));
         }
         System.out.println("Insertion Done");
-        */
+        
         
         // query a few Features from this table
         System.out.println("Submitting query");
         
         millistart = System.currentTimeMillis();
-        for(int i=0;i<1000;i++)
+        for(int i=0;i<2;i++)
         {
         queryFeatures(simpleFeatureTypeName, dataStore,
                 "point_loc", 30, 60, 30.01, 60.01,

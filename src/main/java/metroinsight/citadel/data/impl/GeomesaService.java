@@ -19,7 +19,7 @@ public class GeomesaService implements DataService {
 	  //initialize the geomesa database
     if(gmh==null) {
  	   gmh = new GeomesaHbase();
- 	   //gmh.geomesa_initialize();
+ 	   gmh.geomesa_initialize();
     }
   }
 
@@ -111,8 +111,9 @@ public class GeomesaService implements DataService {
 	  //testing the fucntionality of Geomesa service:
 	  GeomesaService GS=new GeomesaService();
 	  
+	  
 	  //inserting the data points
-	  int count =10;
+	  int count =1000;
 	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -126,9 +127,9 @@ public class GeomesaService implements DataService {
 			double value = value_min+random.nextDouble()*(value_max-value_min);
 			long millis = System.currentTimeMillis();
 				
-			long timestamp = millis;//note time is used in millisec in the System
-			double lat=lat_min+random.nextDouble()*diff_loc;
-			double lng=lng_min+random.nextDouble()*diff_loc;	
+			long timestamp = 1388534500000L;//millis;//note time is used in millisec in the System
+			double lat=30.05;//lat_min+random.nextDouble()*diff_loc;
+			double lng=60.05;//lng_min+random.nextDouble()*diff_loc;	
 			JsonArray data = new JsonArray();
 			JsonObject datum = new JsonObject();	
 			datum.put("uuid", uuid);
@@ -157,8 +158,8 @@ public class GeomesaService implements DataService {
 		 
 		 //query the points just inserted:
 		 double lat_minq=30,lat_maxq=30.1,lng_minq=60,lng_maxq=60.1;
-		 long timestamp_min=1499813708623L,timestamp_max=1499813709645L;
-		 
+		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;
+		                  //1388534400000 
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);
@@ -167,6 +168,9 @@ public class GeomesaService implements DataService {
 		 query.put("lng_max", lng_maxq);
 		 query.put("timestamp_min", timestamp_min);
 		 query.put("timestamp_max", timestamp_max);
+		 long millistart;long milliend;
+		 
+		 millistart = System.currentTimeMillis();
 		 
 		 GS.queryDataBox(query, ar -> {
 		    	if (ar.failed()) {
@@ -175,10 +179,15 @@ public class GeomesaService implements DataService {
 		        		
 		        		String result=ar.result().toString();
 		        		System.out.println("Query Results are:"+result);
+		        		System.out.println("Result size is:"+result.length());
 		        		System.out.println("Query done in Main");
 		        	}
 		       });
 		 
+		 milliend = System.currentTimeMillis();
+	     System.out.println("Time taken is:"+(milliend-millistart));
+	        
+	     millistart = System.currentTimeMillis();
 		 GS.queryData(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
@@ -189,7 +198,8 @@ public class GeomesaService implements DataService {
 		        		System.out.println("Query 2 done in Main");
 		        	}
 		       });
-		 
+		 milliend = System.currentTimeMillis();
+	     System.out.println("Time taken is:"+(milliend-millistart));		 
 	  
   }
 

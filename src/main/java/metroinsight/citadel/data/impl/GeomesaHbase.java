@@ -39,8 +39,8 @@ import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.model.Datapoint;
 
 public class GeomesaHbase {
-	DataStore dataStore=null;
-	static String simpleFeatureTypeName = "MetroInsight";
+	public DataStore dataStore=null;
+	static String simpleFeatureTypeName = "MetroInsight";//"QuickStart";//
 	static SimpleFeatureBuilder featureBuilder=null;
 	
 	public void geomesa_initialize() {
@@ -195,7 +195,8 @@ public class GeomesaHbase {
 		// submit the query, and get back an iterator over matching features
 		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
 		FeatureIterator featureItr = featureSource.getFeatures(query).features();
-
+        
+		System.out.println("Query is:"+query);
 
 		JsonArray ja = new JsonArray();
 
@@ -207,7 +208,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			Data.put("uuid", feature.getProperty("uuid").getValue());
+			//Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
@@ -244,7 +245,7 @@ public class GeomesaHbase {
 		String date1=format.format(datemin);
 		String date2=format.format(datemax);
 		//Date date3=format.parse(date1);
-		//System.out.println("TimeStampRev is:"+date3.getTime());
+		System.out.println("Date range is:"+date1.toString()+" : "+date2.toString());
 		
 		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
 		String filter=cqlGeometry+" AND "+cqlDates;
@@ -265,7 +266,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			Data.put("uuid", feature.getProperty("uuid").getValue());
+			//Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
@@ -301,7 +302,7 @@ public class GeomesaHbase {
 		
 
 			// query a few Features from this table
-			//System.out.println("Submitting query in Query_Box_Lat_Lng GeomesaHbase ");
+			System.out.println("Submitting query in Query_Box_Lat_Lng GeomesaHbase ");
 			JsonArray result = queryFeatures_Box_Lat_Lng(dataStore, "point_loc", lat_min, lng_min, lat_max, lng_max);
 
 			return result;

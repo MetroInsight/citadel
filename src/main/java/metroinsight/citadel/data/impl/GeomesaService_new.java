@@ -91,8 +91,12 @@ public class GeomesaService_new {
             // populate the new feature's attributes
 
             // Who: string value
+            int  n = random.nextInt(1) + 1;
+            if(n==1)
             simpleFeature.setAttribute("srcid","sandy_123_456");
-
+            else
+            simpleFeature.setAttribute("srcid","sandy_123_789");
+            
             // What: long value
             simpleFeature.setAttribute("value", "10");
 
@@ -177,7 +181,7 @@ throws CQLException, IOException {
 	
 	
 	System.out.println("1st Date range is:"+date1.toString()+" : "+date2.toString());
-	System.out.println("2nd Date range is:"+date3.toString()+" : "+date4.toString());
+	//System.out.println("2nd Date range is:"+date3.toString()+" : "+date4.toString());
 
 	
 String cqlGeometry = "BBOX(" + geomField + ", " +
@@ -199,7 +203,11 @@ String cqlDates2 = "(" + dateField + " DURING " + date3 + "/" + date4 + ")";
 String cqlAttributes = attributesQuery == null ? "INCLUDE" : attributesQuery;
 
 //String cql = cqlGeometry + " AND (" + cqlDates+ " OR " + cqlDates2+")";
-String cql = cqlGeometry + " AND " + cqlDates;
+//String cql = cqlGeometry + " AND " + cqlDates +" AND "+ "(srcid = 'sandy_123_789' OR srcid = 'sandy_123_456')";
+String cql = cqlGeometry + " AND (" + cqlDates+ " OR " + cqlDates2+")" +" AND "+ "(srcid = 'sandy_123_789' OR srcid = 'sandy_123_456')";
+
+//String cql = cqlGeometry + " AND " + cqlDates +" AND "+ "(srcid = 'sandy_123_789')";
+
 return CQL.toFilter(cql);
 }    
     
@@ -259,13 +267,14 @@ int n = 0;
 while (featureItr.hasNext()) {
 
 Feature feature = featureItr.next();
-
+/*
 System.out.println((n) + ".  " +
   feature.getProperty("srcid").getValue() + "|" +
   feature.getProperty("value").getValue() + "|" +
   feature.getProperty("date").getValue() + "|" +
   feature.getProperty("point_loc").getValue());
-   
+  */
+  
 n++;
 }
 System.out.println("Results: "+n);
@@ -331,7 +340,7 @@ featureItr.close();
         long timestamp_min=1389312000000L,timestamp_max=1389744000000L;
         
         millistart = System.currentTimeMillis();
-        for(int i=0;i<1;i++)
+        for(int i=0;i<10;i++)
         {
         queryFeatures2(simpleFeatureTypeName, dataStore,
                 "point_loc", 32.000, 63.0000, 33.00, 64.0,

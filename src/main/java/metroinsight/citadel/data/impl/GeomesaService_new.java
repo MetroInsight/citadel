@@ -27,6 +27,8 @@ import org.opengis.filter.Filter;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,22 +38,6 @@ import java.util.Random;
 public class GeomesaService_new {
    
 
-	static GeomesaHbase gmh;
-	
-	public GeomesaService_new() {
-		  //initialize the geomesa database
-	    if(gmh==null) {
-	 	   gmh = new GeomesaHbase();
-	 	   gmh.geomesa_initialize();
-	    }
-	  }
-	
-	 static void initialize() {
-		  if(gmh==null){
-		   gmh = new GeomesaHbase();
-		   gmh.geomesa_initialize();
-		 }
-		}
 	 
 	
     // sub-set of parameters that are used to create the HBase DataStore
@@ -74,7 +60,9 @@ public class GeomesaService_new {
         String simpleFeatureTypeSchema = Joiner.on(",").join(attributes);
         SimpleFeatureType simpleFeatureType =
                 DataUtilities.createType(simpleFeatureTypeName, simpleFeatureTypeSchema);
-
+        
+        simpleFeatureType.getUserData().put("geomesa.xz.precision", 20);
+        
         return simpleFeatureType;
     }
 
@@ -88,8 +76,8 @@ public class GeomesaService_new {
         DateTime MIN_DATE = new DateTime(2014, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
         Double MIN_X = 30.0;
         Double MIN_Y =  60.0;
-        Double DX = 5.0;
-        Double DY = 5.0;
+        Double DX = 10.0;
+        Double DY = 10.0;
 
         for (int i = 0; i < numNewFeatures; i ++) {
             // create the new (unique) identifier and empty feature shell
@@ -164,6 +152,58 @@ public class GeomesaService_new {
         return CQL.toFilter(cql);
     }
 
+static Filter createFilter2(String geomField, double x0, double y0, double x1, double y1,
+            String dateField, Long t0, Long t1,
+            String attributesQuery)
+throws CQLException, IOException {
+
+// there are many different geometric predicates that might be used;
+// here, we just use a bounding-box (BBOX) predicate as an example.
+// this is useful for a rectangular query area
+	
+	Date datemin1=new Date(Long.valueOf(t0));
+	Date datemax1=new Date(Long.valueOf(t1));
+	
+	Date datemin2=new Date(Long.valueOf(t0+1000*60*60*12*10));
+	Date datemax2=new Date(Long.valueOf(t1+1000*60*60*12*10));
+	
+	SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+	//format.setTimeZone(TimeZone.getTimeZone("PDT"));
+	String date1=format.format(datemin1);
+	String date2=format.format(datemax1);
+	
+	String date3=format.format(datemin2);
+	String date4=format.format(datemax2);
+	
+	
+	System.out.println("1st Date range is:"+date1.toString()+" : "+date2.toString());
+	System.out.println("2nd Date range is:"+date3.toString()+" : "+date4.toString());
+
+	
+String cqlGeometry = "BBOX(" + geomField + ", " +
+x0 + ", " + y0 + ", " + x1 + ", " + y1 + ")";
+
+// there are also quite a few temporal predicates; here, we use a
+// "DURING" predicate, because we have a fixed range of times that
+// we want to query
+
+
+
+String cqlDates = "(" + dateField + " DURING " + date1 + "/" + date2 + ")";
+
+String cqlDates2 = "(" + dateField + " DURING " + date3 + "/" + date4 + ")";
+
+// there are quite a few predicates that can operate on other attribute
+// types; the GeoTools Filter constant "INCLUDE" is a default that means
+// to accept everything
+String cqlAttributes = attributesQuery == null ? "INCLUDE" : attributesQuery;
+
+//String cql = cqlGeometry + " AND (" + cqlDates+ " OR " + cqlDates2+")";
+String cql = cqlGeometry + " AND " + cqlDates;
+return CQL.toFilter(cql);
+}    
+    
+
     static void queryFeatures(String simpleFeatureTypeName,
                               DataStore dataStore,
                               String geomField, double x0, double y0, double x1, double y1,
@@ -185,26 +225,60 @@ public class GeomesaService_new {
         while (featureItr.hasNext()) {
         	
             Feature feature = featureItr.next();
-            
-            System.out.println((++n) + ".  " +
+            /*
+            System.out.println((n) + ".  " +
                     feature.getProperty("srcid").getValue() + "|" +
                     feature.getProperty("value").getValue() + "|" +
                     feature.getProperty("date").getValue() + "|" +
                     feature.getProperty("point_loc").getValue());
-                   
+             */      
         	n++;
         }
-        System.out.println(n);
+        System.out.println("Results: "+n);
         featureItr.close();
-    }
+    }//end query feature
+    
+    static void queryFeatures2(String simpleFeatureTypeName,
+            DataStore dataStore,
+            String geomField, double x0, double y0, double x1, double y1,
+            String dateField, Long t0, Long t1,
+            String attributesQuery)
+throws CQLException, IOException {
+
+
+Filter cqlFilter = createFilter2(geomField, x0, y0, x1, y1, dateField, t0, t1, attributesQuery);
+
+Query query = new Query(simpleFeatureTypeName, cqlFilter);
+System.out.println("Query is :"+query);
+// submit the query, and get back an iterator over matching features
+FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+FeatureIterator featureItr = featureSource.getFeatures(query).features();
+
+// loop through all results
+int n = 0;
+while (featureItr.hasNext()) {
+
+Feature feature = featureItr.next();
+
+System.out.println((n) + ".  " +
+  feature.getProperty("srcid").getValue() + "|" +
+  feature.getProperty("value").getValue() + "|" +
+  feature.getProperty("date").getValue() + "|" +
+  feature.getProperty("point_loc").getValue());
+   
+n++;
+}
+System.out.println("Results: "+n);
+featureItr.close();
+}//end query feature 2
+
+    
+    
 
     public static void main(String[] args) throws Exception {
         // find out where -- in HBase -- the user wants to store data
        
     	 random = new Random(5771);
-    	
-    	 //GeomesaService_new gs =new GeomesaService_new();
-    	 
     	 
     	
         Map<String, Serializable> parameters = new HashMap<>();
@@ -226,7 +300,7 @@ public class GeomesaService_new {
 
          millistart = System.currentTimeMillis();
         
-        for(int k=0;k<7;k++)
+        for(int k=0;k<0;k++)
         {
         // create new features locally, and add them to this table
         //System.out.println("Creating new features");
@@ -244,7 +318,7 @@ public class GeomesaService_new {
         System.out.println("Submitting query");
         
         millistart = System.currentTimeMillis();
-        for(int i=0;i<2;i++)
+        for(int i=0;i<0;i++)
         {
         queryFeatures(simpleFeatureTypeName, dataStore,
                 "point_loc", 30, 60, 30.01, 60.01,
@@ -253,6 +327,20 @@ public class GeomesaService_new {
         }
         milliend = System.currentTimeMillis();
         System.out.println("Time taken is:"+(milliend-millistart));
+        
+        long timestamp_min=1389312000000L,timestamp_max=1389744000000L;
+        
+        millistart = System.currentTimeMillis();
+        for(int i=0;i<1;i++)
+        {
+        queryFeatures2(simpleFeatureTypeName, dataStore,
+                "point_loc", 32.000, 63.0000, 33.00, 64.0,
+                "date", timestamp_min, timestamp_max,
+                null);
+        }
+        milliend = System.currentTimeMillis();
+        System.out.println("2 Time taken is:"+(milliend-millistart));
+        
         System.out.println("Done query");
         
         

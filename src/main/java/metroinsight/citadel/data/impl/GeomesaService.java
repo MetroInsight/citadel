@@ -121,7 +121,7 @@ public class GeomesaService implements DataService {
 	  
 	  
 	  //inserting the data points
-	  int count =10000000;
+	  int count =0;//10000000;
 	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -166,27 +166,28 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<300;k++)
+		 for(int k=0;k<30;k++)
 		 {
 		 //query the points just inserted:
-			 /*
-		 double lat_minq=30;
-		 double lat_maxq=30.5;
-		 double lng_minq=60;
-		 double lng_maxq=60.1;
-		 */
 			 
+		 double lat_minq=30.0;
+		 double lat_maxq=35.1;
+		 double lng_minq=59.9;
+		 double lng_maxq=65.1;
+		 
+		 /*	 
 		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
 		 double lat_maxq=lat_minq+0.1;
 		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
 		 double lng_maxq=lng_minq+0.1;
+		 */
 		 
-		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
+		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
 		 DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
 		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR/365)*2));
-		 long timestamp_min=dateTime1.getMillis();
-		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
+		// long timestamp_min=dateTime1.getMillis();
+		 //long timestamp_max=dateTime2.getMillis();//1420070400000L;//
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);

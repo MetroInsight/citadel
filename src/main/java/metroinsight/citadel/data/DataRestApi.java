@@ -22,7 +22,7 @@ public class DataRestApi {
     	} else {
     		System.out.println("Suceeded in DataRestAPI Query Data");
     		String resultStr = ar.result().toString();
-    		System.out.println("Query Results are:"+resultStr);
+    		//System.out.println("Query Results are:"+resultStr);
     		String length = Integer.toString(resultStr.length());
     		rc.response()
     		.putHeader("content-TYPE", "application/json; charset=utf=8")
@@ -39,6 +39,10 @@ public class DataRestApi {
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonArray q = body.getJsonArray("data");
+	  //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");
+	  System.out.println("body is:"+body);
+	//  JsonArray q = body.getJsonArray("data");
+	  
     // Call createPoint in metadataService asynchronously.
     dataService.insertData(q, ar -> { 
       // ar is a result object created in metadataService.createPoint

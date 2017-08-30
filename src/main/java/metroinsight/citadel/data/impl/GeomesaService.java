@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -105,6 +108,11 @@ public class GeomesaService implements DataService {
       }
     }
   
+  /*
+   * Geomesa query performs well when the time range is restricted to the range
+   * actually present in the data sets, else it is very badly affected with arbitrary time ranges
+   * 
+   */
   
   public static void main(String[] args) {	
 	  
@@ -113,7 +121,7 @@ public class GeomesaService implements DataService {
 	  
 	  
 	  //inserting the data points
-	  int count =1000;
+	  int count =10000000;
 	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -122,14 +130,17 @@ public class GeomesaService implements DataService {
 	  double diff_loc=5.0;
 	  String geometryType = "point";
 	  Random random=new Random(5771);
-
+	  DateTime MIN_DATE = new DateTime(2014, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
+	  Long SECONDS_PER_YEAR = 365L * 24L * 60L * 60L;
+	  
 	  for(int i=0;i<count;i++){		 
 			double value = value_min+random.nextDouble()*(value_max-value_min);
-			long millis = System.currentTimeMillis();
-				
-			long timestamp = 1388534500000L;//millis;//note time is used in millisec in the System
-			double lat=30.05;//lat_min+random.nextDouble()*diff_loc;
-			double lng=60.05;//lng_min+random.nextDouble()*diff_loc;	
+			//long millis = System.currentTimeMillis();
+			DateTime dateTime = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
+			
+			long timestamp = dateTime.getMillis();//1388534500000L;//millis;//note time is used in millisec in the System
+			double lat=lat_min+random.nextDouble()*diff_loc;
+			double lng=lng_min+random.nextDouble()*diff_loc;	
 			JsonArray data = new JsonArray();
 			JsonObject datum = new JsonObject();	
 			datum.put("uuid", uuid);
@@ -155,11 +166,27 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 
+		 for(int k=0;k<300;k++)
+		 {
 		 //query the points just inserted:
-		 double lat_minq=30,lat_maxq=30.1,lng_minq=60,lng_maxq=60.1;
-		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;
+			 /*
+		 double lat_minq=30;
+		 double lat_maxq=30.5;
+		 double lng_minq=60;
+		 double lng_maxq=60.1;
+		 */
+			 
+		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
+		 double lat_maxq=lat_minq+0.1;
+		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
+		 double lng_maxq=lng_minq+0.1;
+		 
+		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
+		 DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
+		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR/365)*2));
+		 long timestamp_min=dateTime1.getMillis();
+		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);
@@ -172,6 +199,7 @@ public class GeomesaService implements DataService {
 		 
 		 millistart = System.currentTimeMillis();
 		 
+		 /*
 		 GS.queryDataBox(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
@@ -179,14 +207,19 @@ public class GeomesaService implements DataService {
 		        		
 		        		String result=ar.result().toString();
 		        		System.out.println("Query Results are:"+result);
-		        		System.out.println("Result size is:"+result.length());
+		        		//System.out.println("Result size is:"+result.length());
+		        		JsonArray datarec=new JsonArray(result);
+		    			System.out.println(datarec.size());
+		    			
 		        		System.out.println("Query done in Main");
 		        	}
 		       });
 		 
 		 milliend = System.currentTimeMillis();
 	     System.out.println("Time taken is:"+(milliend-millistart));
-	        
+	     
+	     */
+		 System.out.println(k+" : Query is:"+query);
 	     millistart = System.currentTimeMillis();
 		 GS.queryData(query, ar -> {
 		    	if (ar.failed()) {
@@ -194,12 +227,22 @@ public class GeomesaService implements DataService {
 		        	} else {
 		        		
 		        		String result=ar.result().toString();
-		        		System.out.println("Query 2 Results are:"+result);
-		        		System.out.println("Query 2 done in Main");
+		        		
+		    			
+		        		//System.out.println("Query 2 Results are:"+result);
+		        		JsonArray datarec=new JsonArray(result);
+		    			System.out.println("Result size is: "+datarec.size());
+		    			
+		        		
 		        	}
 		       });
 		 milliend = System.currentTimeMillis();
-	     System.out.println("Time taken is:"+(milliend-millistart));		 
+		 System.out.println(k+" : Query 2 done in Main");
+		 
+	     System.out.println("Time taken is:"+(milliend-millistart));
+	     System.out.println();
+	     
+		 }//end for loop on query
 	  
   }
 

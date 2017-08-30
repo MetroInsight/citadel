@@ -208,7 +208,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			//Data.put("uuid", feature.getProperty("uuid").getValue());
+			Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();
@@ -266,7 +266,7 @@ public class GeomesaHbase {
 			
 			try{
 			JsonObject Data = new JsonObject();
-			//Data.put("uuid", feature.getProperty("uuid").getValue());
+			Data.put("uuid", feature.getProperty("uuid").getValue());
 			Date date=(Date) feature.getProperty("date").getValue();
 			Data.put("timestamp", date.getTime());
 			Point point =(Point) feature.getProperty("point_loc").getValue();

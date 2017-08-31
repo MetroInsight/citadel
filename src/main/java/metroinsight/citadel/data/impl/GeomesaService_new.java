@@ -273,13 +273,13 @@ while (featureItr.hasNext()) {
 
 Feature feature = featureItr.next();
 
-/*
+
 System.out.println((n) + ".  " +
   feature.getProperty("srcid").getValue() + "|" +
   feature.getProperty("value").getValue() + "|" +
   feature.getProperty("date").getValue() + "|" +
   feature.getProperty("point_loc").getValue());
- */ 
+ 
   
 n++;
 }
@@ -315,7 +315,7 @@ featureItr.close();
 
          millistart = System.currentTimeMillis();
         
-        for(int k=0;k<800;k++)
+        for(int k=0;k<0;k++)
         {
         // create new features locally, and add them to this table
         //System.out.println("Creating new features");
@@ -333,23 +333,24 @@ featureItr.close();
         System.out.println("Submitting query");
         
         millistart = System.currentTimeMillis();
+        /*
         for(int i=0;i<0;i++)
         {
         queryFeatures(simpleFeatureTypeName, dataStore,
-                "point_loc", 30, 60, 30.01, 60.01,
+                "point_loc", 30, 60, 30.1, 60.1,
                 "date", "2014-02-01T00:00:00.000Z", "2014-02-03T23:59:59.999Z",
                 null);
         }
         milliend = System.currentTimeMillis();
         System.out.println("Time taken is:"+(milliend-millistart));
-        
+        */
         long timestamp_min=1389312000000L,timestamp_max=1389744000000L;
         
         millistart = System.currentTimeMillis();
-        for(int i=0;i<200;i++)
+        for(int i=0;i<10;i++)
         {
         queryFeatures2(simpleFeatureTypeName, dataStore,
-                "point_loc", 32.0, 63.0, 32.05, 63.05,
+                "point_loc", 30, 60, 30.1, 60.1,
                 "date", timestamp_min, timestamp_max,
                 null);
         }

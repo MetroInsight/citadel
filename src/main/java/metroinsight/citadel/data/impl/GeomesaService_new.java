@@ -34,6 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import org.locationtech.geomesa.index.conf.QueryHints;
+
+
 
 public class GeomesaService_new {
    
@@ -180,7 +183,7 @@ throws CQLException, IOException {
 	String date4=format.format(datemax2);
 	
 	
-	System.out.println("1st Date range is:"+date1.toString()+" : "+date2.toString());
+	//System.out.println("1st Date range is:"+date1.toString()+" : "+date2.toString());
 	//System.out.println("2nd Date range is:"+date3.toString()+" : "+date4.toString());
 
 	
@@ -257,7 +260,9 @@ throws CQLException, IOException {
 Filter cqlFilter = createFilter2(geomField, x0, y0, x1, y1, dateField, t0, t1, attributesQuery);
 
 Query query = new Query(simpleFeatureTypeName, cqlFilter);
-System.out.println("Query is :"+query);
+query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+
+//System.out.println("Query is :"+query);
 // submit the query, and get back an iterator over matching features
 FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
 FeatureIterator featureItr = featureSource.getFeatures(query).features();
@@ -267,13 +272,14 @@ int n = 0;
 while (featureItr.hasNext()) {
 
 Feature feature = featureItr.next();
+
 /*
 System.out.println((n) + ".  " +
   feature.getProperty("srcid").getValue() + "|" +
   feature.getProperty("value").getValue() + "|" +
   feature.getProperty("date").getValue() + "|" +
   feature.getProperty("point_loc").getValue());
-  */
+ */ 
   
 n++;
 }
@@ -309,7 +315,7 @@ featureItr.close();
 
          millistart = System.currentTimeMillis();
         
-        for(int k=0;k<0;k++)
+        for(int k=0;k<800;k++)
         {
         // create new features locally, and add them to this table
         //System.out.println("Creating new features");
@@ -340,10 +346,10 @@ featureItr.close();
         long timestamp_min=1389312000000L,timestamp_max=1389744000000L;
         
         millistart = System.currentTimeMillis();
-        for(int i=0;i<10;i++)
+        for(int i=0;i<200;i++)
         {
         queryFeatures2(simpleFeatureTypeName, dataStore,
-                "point_loc", 32.000, 63.0000, 33.00, 64.0,
+                "point_loc", 32.0, 63.0, 32.05, 63.05,
                 "date", timestamp_min, timestamp_max,
                 null);
         }

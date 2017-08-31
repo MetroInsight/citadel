@@ -21,6 +21,7 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
+import org.locationtech.geomesa.index.conf.QueryHints;
 import org.locationtech.geomesa.utils.text.WKTUtils$;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -254,7 +255,10 @@ public class GeomesaHbase {
 		
 		
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
-
+		
+		/*This line force the geomesa to evaluate the bounding box very accurately*/
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
 		// submit the query, and get back an iterator over matching features
 		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
 		FeatureIterator featureItr = featureSource.getFeatures(query).features();

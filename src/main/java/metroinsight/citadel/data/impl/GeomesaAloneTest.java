@@ -38,7 +38,7 @@ import org.locationtech.geomesa.index.conf.QueryHints;
 
 
 
-public class GeomesaService_new {
+public class GeomesaAloneTest {
    
 
 	 

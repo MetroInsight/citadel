@@ -124,7 +124,7 @@ public class GeomesaService implements DataService {
 	  
 	  
 	  //inserting the data points
-	  int count =300000;
+	  int count =0;
 	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -169,7 +169,7 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<10;k++)
+		 for(int k=0;k<50;k++)
 		 {
 		 //query the points just inserted:
 			 

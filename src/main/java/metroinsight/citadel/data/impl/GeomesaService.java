@@ -85,6 +85,7 @@ public class GeomesaService implements DataService {
   public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
+    	//System.out.println("in queryData GeomesaService query is:"+query);
       Double lat_max = query.getDouble("lat_max");
       Double lat_min = query.getDouble("lat_min");
       Double lng_min = query.getDouble("lng_min");
@@ -97,6 +98,8 @@ public class GeomesaService implements DataService {
       gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
+         
+			//System.out.println("Result in queryData GeomesaService size is: "+resultJson.size());
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
             res.cause().printStackTrace();
@@ -121,13 +124,13 @@ public class GeomesaService implements DataService {
 	  
 	  
 	  //inserting the data points
-	  int count =0;//10000000;
+	  int count =300000;
 	  String uuid="axd";
 	  double value_min=10.0;
 	  double value_max=20.0;
 	  double lat_min=30.0;
 	  double lng_min=60.0;
-	  double diff_loc=5.0;
+	  double diff_loc=2.0;
 	  String geometryType = "point";
 	  Random random=new Random(5771);
 	  DateTime MIN_DATE = new DateTime(2014, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
@@ -166,14 +169,14 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<30;k++)
+		 for(int k=0;k<10;k++)
 		 {
 		 //query the points just inserted:
 			 
 		 double lat_minq=30.0;
-		 double lat_maxq=35.1;
-		 double lng_minq=59.9;
-		 double lng_maxq=65.1;
+		 double lat_maxq=31;
+		 double lng_minq=60.0;
+		 double lng_maxq=61.0;
 		 
 		 /*	 
 		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
@@ -182,12 +185,12 @@ public class GeomesaService implements DataService {
 		 double lng_maxq=lng_minq+0.1;
 		 */
 		 
-		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
+		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
 		 DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
 		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR/365)*2));
-		// long timestamp_min=dateTime1.getMillis();
-		 //long timestamp_max=dateTime2.getMillis();//1420070400000L;//
+		 long timestamp_min=dateTime1.getMillis();
+		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);

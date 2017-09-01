@@ -257,7 +257,9 @@ public class GeomesaHbase {
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 		
 		/*This line force the geomesa to evaluate the bounding box very accurately*/
-		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		//query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
+		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
 		
 		// submit the query, and get back an iterator over matching features
 		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
@@ -267,7 +269,7 @@ public class GeomesaHbase {
 		int n = 0;
 		while (featureItr.hasNext()) {
 			Feature feature = featureItr.next();
-			
+			//System.out.println("Next:"+n++);
 			try{
 			JsonObject Data = new JsonObject();
 			Data.put("uuid", feature.getProperty("uuid").getValue());
@@ -286,7 +288,7 @@ public class GeomesaHbase {
 			
 		}
 		featureItr.close();
-
+		//System.out.println("Next:"+n++);
 		
 		
 		}//end try

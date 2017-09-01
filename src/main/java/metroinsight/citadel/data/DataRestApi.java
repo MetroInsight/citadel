@@ -28,8 +28,7 @@ public class DataRestApi {
     		.putHeader("content-TYPE", "application/json; charset=utf=8")
     		.putHeader("content-length",  length)
       	.setStatusCode(200)
-      	.write(resultStr)
-    		.end();
+      	.write(resultStr);
     	}
     	});
   }
@@ -58,7 +57,7 @@ public class DataRestApi {
     		rc.response()
     		  .putHeader("content-TYPE", "application/text; charset=utf=8")
     		  .setStatusCode(201)
-    		  .end(result.toString());
+    		  .write(result.toString());
     	}
     	});
   }

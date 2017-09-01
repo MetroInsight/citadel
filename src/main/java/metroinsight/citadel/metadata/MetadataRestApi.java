@@ -34,8 +34,7 @@ public class MetadataRestApi extends RestApiTemplate {
     	String cLen = Integer.toString(cStr.length());
     	resp
     	  .putHeader("content-length", cLen)
-    	  .write(cStr)
-    	  .end();
+    	  .write(cStr);
     	});
   }
   
@@ -49,8 +48,7 @@ public class MetadataRestApi extends RestApiTemplate {
   	  String cLen = Integer.toString(cStr.length());
   	  resp.setStatusCode(400)
     	  .putHeader("content-length", cLen)
-    	  .write(cStr)
-  	    .end();
+    	  .write(cStr);
   	} else {
   		metadataService.getPoint(uuid, ar -> {
   		if (ar.failed()) {
@@ -66,8 +64,7 @@ public class MetadataRestApi extends RestApiTemplate {
   	  String cStr = content.toString();
   	  String cLen = Integer.toString(cStr.length());
   	  resp.putHeader("content-length", cLen)
-    	  .write(cStr)
-  	    .end();
+    	  .write(cStr);
   		});
   	}
   }
@@ -89,7 +86,7 @@ public class MetadataRestApi extends RestApiTemplate {
     	  content.setReason(ar.cause().getMessage());
     	  cStr = content.toString();
     	} else {
-    	  // Construct response object and complete with "end".
+    	  // Construct response object.
     	  resp.setStatusCode(201);
     	  JsonObject pointCreateContent = new JsonObject();
     	  pointCreateContent.put("success", true);
@@ -98,8 +95,7 @@ public class MetadataRestApi extends RestApiTemplate {
     	}
     	cLen = Integer.toString(cStr.length());
   	  resp.putHeader("content-length", cLen)
-  	    .write(cStr)
-  	    .end();
+  	    .write(cStr);
     	});
   }
 

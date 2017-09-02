@@ -187,15 +187,15 @@
 			<version>3.4.1</version>
 		</dependency>
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-redis-client</artifactId>
+			<version>3.4.2</version>
+		</dependency>
+		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
 			<version>1.50.0</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-rx-java</artifactId>
-			<version>3.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>

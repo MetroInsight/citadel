@@ -1,7 +1,7 @@
 package metroinsight.citadel;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.rxjava.core.Vertx;
+import io.vertx.core.Vertx;
 
 public class MainVerticle extends AbstractVerticle {
 	

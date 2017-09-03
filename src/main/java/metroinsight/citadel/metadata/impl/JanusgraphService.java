@@ -1,5 +1,6 @@
 package metroinsight.citadel.metadata.impl;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -22,9 +23,10 @@ public class JanusgraphService implements MetadataService  {
   static JanusGraph graph;
   //static Client client;
   static GraphTraversalSource trav;
+  static HashMap pointMap = new HashMap();
   
   private void InitSchema() {
-    // TODO
+    // Parse point type csv.
   }
   
   public JanusgraphService() {//Vertx vertx) {

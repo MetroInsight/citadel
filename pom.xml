@@ -26,6 +26,7 @@
     <hbase.hadoop.version>2.5.2</hbase.hadoop.version>
     <curator.version>2.11.0</curator.version>
     <janusgraph.version>0.1.1</janusgraph.version>
+    <jena.version>3.4.0</jena.version>
   </properties>
 
   <dependencies>
@@ -236,6 +237,16 @@
       <groupId>org.javatuples</groupId>
       <artifactId>javatuples</artifactId>
       <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>${jena.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>${jena.version}</version>
     </dependency>
   </dependencies>
 

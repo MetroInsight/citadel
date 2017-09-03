@@ -32,11 +32,6 @@
 
     <!-- Used in geomesa and Datapoint -->
     <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-    </dependency>
 
     <!-- JanusGraph -->
     <dependency>
@@ -48,6 +43,11 @@
       <groupId>org.janusgraph</groupId>
       <artifactId>janusgraph-core</artifactId>
       <version>${janusgraph.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>18.0</version>
     </dependency>
 
     <!-- GeoMesa -->

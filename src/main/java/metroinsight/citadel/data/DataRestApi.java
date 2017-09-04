@@ -132,6 +132,7 @@ public class DataRestApi extends RestApiTemplate {
         .putHeader("content-length", cLen)
         .write(cStr);
     });
+    rc.next();
     
   }
 

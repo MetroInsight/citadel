@@ -304,7 +304,7 @@ public class ServerTest {
     });
   }
   
-  @Test
+  //@Test
   public void testQuerySimpleBbox(TestContext context) {
     //router.post("/api/querydata/simplebbox").handler(dataRestApi::querySimpleBbox);
     System.out.println("START TESTING Simple BBox Query");

@@ -47,20 +47,20 @@ public class Metadata {
     return pointType;
   }
 
-  public final String getUuid(){
-    return uuid;
-  }
-
-  public final String getUnit(){
-    return unit;
-  }
-  
   public final void setPointType(String pointType){
     this.pointType = pointType;
   }
 
+  public final String getUuid(){
+    return uuid;
+  }
+
   public final void setUuid(String uuid){
     this.uuid = uuid;
+  }
+
+  public final String getUnit(){
+    return unit;
   }
 
   public final void setUnit(String unit){

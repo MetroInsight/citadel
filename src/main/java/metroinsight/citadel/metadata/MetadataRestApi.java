@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.common.RestApiTemplate;
-import metroinsight.citadel.metadata.impl.MongoService;
+import metroinsight.citadel.metadata.impl.VirtuosoService;
 import metroinsight.citadel.model.BaseContent;
 
 public class MetadataRestApi extends RestApiTemplate {
@@ -14,7 +14,8 @@ public class MetadataRestApi extends RestApiTemplate {
   private MetadataService metadataService;
   
   public MetadataRestApi (Vertx vertx) {
-    metadataService = new MongoService (vertx);
+    //metadataService = new MongoService (vertx);
+    metadataService = new VirtuosoService(vertx);
   }
   
   public void queryPoint(RoutingContext rc) {

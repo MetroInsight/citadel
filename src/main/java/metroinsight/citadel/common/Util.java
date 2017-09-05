@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.TimeZone;
 
-public class Util {
+import io.vertx.core.json.JsonObject;
+
+final public class Util {
 	static TimeZone tz = TimeZone.getTimeZone("UTC");
 	static DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
 
@@ -37,7 +39,7 @@ public class Util {
 		}
 	}
 	
-	public List<List<String>> readCsvFile(String filename, char separators) {
+	public static List<List<String>> readCsvFile(String filename, char separators) {
 	  List<List<String>> parsed = new LinkedList<List<String>>();
 	  String csvFile = "resources/point_type.csv";
 	  try {
@@ -105,5 +107,16 @@ public class Util {
 
       return result;
   }
+	
+	public final static JsonObject getSubsetJson(JsonObject rawJson, List<String> keys) {
+	  String key;
+	  JsonObject targetJson = new JsonObject();
+	  for (int i=0; i < keys.size(); i++) {
+	    key = keys.get(i);
+	    targetJson.put(key, rawJson.getJsonObject(key));
+	  }
+	  return targetJson;
+	}
+	
 
 }

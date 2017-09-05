@@ -10,6 +10,8 @@ This is a Maven project. You can use any mvn commands.
  (2) Follow instruction 2.1 and 2.2. The standalone version is sufficient for now.
 3. Geomesa
  (1) Necessary packages will be installed via Maven.
+4. Virtuoso
+ (1) [Install](https://github.com/openlink/virtuoso-opensource)
 
 
 ### Set up dev env.

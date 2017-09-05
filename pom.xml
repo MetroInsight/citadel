@@ -248,6 +248,16 @@
       <artifactId>jena-arq</artifactId>
       <version>${jena.version}</version>
     </dependency>
+    <dependency>
+    	<groupId>com.openlinksw.vos</groupId>
+    	<artifactId>virt_jena</artifactId>
+    	<version>3.0.0</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.openlinksw.vos</groupId>
+    	<artifactId>virtjdbc</artifactId>
+    	<version>4.0.0</version>
+    </dependency>
   </dependencies>
 
   <repositories>
@@ -255,7 +265,6 @@
       <id>locationtech-releases</id>
       <url>https://repo.locationtech.org/content/repositories/releases</url>
     </repository>
-    <!--
     <repository>
       <id>locationtech-snapshots</id>
       <url>https://repo.locationtech.org/content/repositories/snapshots</url>
@@ -272,7 +281,6 @@
       <id>conjars.org</id>
       <url>http://conjars.org/repo</url>
     </repository>
-    -->
   </repositories>
 
   <build>
@@ -329,7 +337,6 @@
           </execution>
         </executions>
       </plugin>
-      <!--
       <plugin>
         <groupId>com.github.joelittlejohn.embedmongo</groupId>
         <artifactId>embedmongo-maven-plugin</artifactId>
@@ -352,7 +359,6 @@
           </execution>
         </executions>
       </plugin>
-      -->
 
     </plugins>
   </build>

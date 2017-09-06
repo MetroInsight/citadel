@@ -5,11 +5,13 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import metroinsight.citadel.common.RestApiTemplate;
+import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.metadata.impl.VirtuosoService;
 import metroinsight.citadel.model.BaseContent;
 
-public class MetadataRestApi extends RestApiTemplate {
+import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
+
+public class MetadataRestApi {
 
   private MetadataService metadataService;
   
@@ -44,7 +46,7 @@ public class MetadataRestApi extends RestApiTemplate {
     BaseContent content = new BaseContent();
   	String uuid = rc.request().getParam("uuid");
   	if (uuid == null) {
-  	  content.setReason(sensorNotFound);
+  	  content.setReason(ErrorMessages.SENSOR_NOT_FOUND);
   	  String cStr = content.toString();
   	  String cLen = Integer.toString(cStr.length());
   	  resp.setStatusCode(400)

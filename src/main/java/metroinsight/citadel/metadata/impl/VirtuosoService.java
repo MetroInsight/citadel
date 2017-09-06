@@ -19,6 +19,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.servicediscovery.ServiceDiscovery;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.Metadata;
@@ -27,8 +28,9 @@ import virtuoso.jena.driver.VirtuosoQueryExecution;
 import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;
 
 public class VirtuosoService implements MetadataService  {
-//  private final Vertx vertx;
-  //static Client client;
+  private final Vertx vertx;
+  private final ServiceDiscovery discovery;
+
   static VirtGraph graph = null;
   
   // Prefixes
@@ -53,6 +55,17 @@ public class VirtuosoService implements MetadataService  {
   }
   
   public VirtuosoService(Vertx vertx) {
+    this.vertx = vertx;
+    this.discovery = ServiceDiscovery.create(vertx);
+    if (graph==null) {
+      graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
+    }
+    initSchema();
+  }
+  
+  public VirtuosoService(Vertx vertx, ServiceDiscovery discovery) {
+    this.vertx = vertx;
+    this.discovery = discovery;
     if (graph==null) {
       graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
     }

@@ -21,5 +21,4 @@ public interface DataService {
   void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
   //query on the data described by the JsonObject query
   
-  
 }

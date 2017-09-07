@@ -14,14 +14,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.data.DataService;
 
-public class GeomesaService implements DataService {
+public class GeomesaService_direct_Call implements DataService {
  
 	static GeomesaHbase gmh;
   
-  public GeomesaService() {
+  public GeomesaService_direct_Call() {
 	  //initialize the geomesa database
-    if(gmh==null) 
-    {
+    if(gmh==null) {
  	   gmh = new GeomesaHbase();
  	   gmh.geomesa_initialize();
     }
@@ -112,6 +111,8 @@ public class GeomesaService implements DataService {
       }
     }
   
+  
+  
   /*
    * Geomesa query performs well when the time range is restricted to the range
    * actually present in the data sets, else it is very badly affected with arbitrary time ranges
@@ -121,11 +122,11 @@ public class GeomesaService implements DataService {
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
-	  GeomesaService GS=new GeomesaService();
+	  GeomesaService_direct_Call GS=new GeomesaService_direct_Call();
 	  
 	  
 	  //inserting the data points
-	  int count =729000;
+	  int count =0*729000;
 	  String uuid="uuid1";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -170,28 +171,19 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<1;k++)
+		 for(int k=0;k<100;k++)
 		 {
 		 //query the points just inserted:
 			 
 		 double lat_minq=31.0;
 		 double lat_maxq=31.5;
 		 double lng_minq=60.0;
-		 double lng_maxq=60.4;
+		 double lng_maxq=60.5;
 		 
-		 /*	 
-		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
-		 double lat_maxq=lat_minq+0.1;
-		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
-		 double lng_maxq=lng_minq+0.1;
-		 */
 		 
-		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
-		                  //1388534400000 
-		// DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
-		// DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR/365)*2));
-		// long timestamp_min=dateTime1.getMillis();
-		// long timestamp_max=dateTime2.getMillis();//1420070400000L;//
+		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;
+		 String date1="2014-02-01T00:00:00.000Z";
+		 String date2="2014-02-10T00:00:00.000Z";
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);
@@ -200,50 +192,35 @@ public class GeomesaService implements DataService {
 		 query.put("lng_max", lng_maxq);
 		 query.put("timestamp_min", timestamp_min);
 		 query.put("timestamp_max", timestamp_max);
-		 long millistart;long milliend;
-		 
-		// millistart = System.currentTimeMillis();
-		 
-		 /*
-		 GS.queryDataBox(query, ar -> {
-		    	if (ar.failed()) {
-		          	System.out.println(ar.cause().getMessage());
-		        	} else {
-		        		
-		        		String result=ar.result().toString();
-		        		System.out.println("Query Results are:"+result);
-		        		//System.out.println("Result size is:"+result.length());
-		        		JsonArray datarec=new JsonArray(result);
-		    			System.out.println(datarec.size());
-		    			
-		        		System.out.println("Query done in Main");
-		        	}
-		       });
-		 
-		 milliend = System.currentTimeMillis();
-	     System.out.println("Time taken is:"+(milliend-millistart));
-	     
-	     */
 		 System.out.println(k+" : Query is:"+query);
+		 
+		 long millistart;long milliend;
 	     millistart = System.currentTimeMillis();
-		 GS.queryData(query, ar -> {
+	    
+	      //JsonArray result=GS.gmh.Query_Box_Lat_Lng_Time_Range( lat_minq,  lat_maxq,  lng_minq,  lng_maxq, timestamp_min , timestamp_max);
+	     
+	     //JsonArray result=GS.gmh.Query_Box_Lat_Lng_Time_Range2( lat_minq,  lat_maxq,  lng_minq,  lng_maxq, date1 , date2);
+	     //System.out.println("Size of result set is:"+result.size());
+	     
+	     
+	      GS.queryData(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
 		        		
-		        		//String result=ar.result().toString();
-		        		
+		        		String result2=ar.result().toString();
+		        		//System.out.println("Query Results are:"+result2);
+		        		//System.out.println("Result size is:"+result2.length());
+		        		JsonArray datarec=new JsonArray(result2);
+		    			System.out.println("Result Size is:"+datarec.size());
 		    			
-		        		//System.out.println("Query 2 Results are:"+result);
-		        		//JsonArray datarec=new JsonArray(result);
-		    			//System.out.println("Result size is: "+datarec.size());
-		    			
-		        		
+		        		//System.out.println("Query done in Main");
 		        	}
 		       });
-		 milliend = System.currentTimeMillis();
-		 System.out.println(k+" : Query 2 done in Main");
-		 
+	      
+	      milliend = System.currentTimeMillis();
+		// System.out.println("Size of result set is:"+result.size());
+		// System.out.println(k+" : Query 2 done in Main");
 	     System.out.println("Time taken is:"+(milliend-millistart));
 	     System.out.println();
 	     

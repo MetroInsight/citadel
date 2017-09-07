@@ -297,7 +297,7 @@ featureItr.close();
     	 
     	
         Map<String, Serializable> parameters = new HashMap<>();
-		parameters.put("bigtable.table.name", "Geomesa4");
+		parameters.put("bigtable.table.name", "Geomesa");
 		DataStore dataStore = DataStoreFinder.getDataStore(parameters);
         assert dataStore != null;
        
@@ -306,7 +306,7 @@ featureItr.close();
         
         
         // establish specifics concerning the SimpleFeatureType to store
-        String simpleFeatureTypeName = "QuickStart";
+        String simpleFeatureTypeName = "MetroInsight";
         SimpleFeatureType simpleFeatureType = createSimpleFeatureType(simpleFeatureTypeName);
         
         

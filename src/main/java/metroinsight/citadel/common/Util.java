@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.TimeZone;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 final public class Util {
@@ -118,5 +119,12 @@ final public class Util {
 	  return targetJson;
 	}
 	
+	public final static List<String> jsonArray2StringArray(JsonArray jsonArray) {
+	  List<String> array = new ArrayList<String>();
+	  for (int i = 0; i < jsonArray.size(); i++) {
+	    array.add(jsonArray.getString(i));
+	  }
+	  return array;
+	}
 
 }

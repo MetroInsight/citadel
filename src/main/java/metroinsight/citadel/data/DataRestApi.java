@@ -1,19 +1,17 @@
 package metroinsight.citadel.data;
 
-import java.util.LinkedList;
-import java.util.List;
+import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.impl.GeomesaService;
 import metroinsight.citadel.model.BaseContent;
 
 
-public class DataRestApi extends RestApiTemplate {
+public class DataRestApi {
 
   private DataService dataService;
   Vertx vertx;

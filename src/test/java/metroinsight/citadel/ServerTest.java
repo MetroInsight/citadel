@@ -28,6 +28,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
+import metroinsight.citadel.metadata.impl.MetadataVerticle;
 import metroinsight.citadel.model.CachedData;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
@@ -44,24 +45,27 @@ public class ServerTest {
   public void setUp(TestContext context) throws IOException{
     ServerSocket socket = null;
     socket = new ServerSocket(0);
-    port =8080; //socket.getLocalPort();
+    //port = socket.getLocalPort();
+    port = 8080; //socket.getLocalPort();
     socket.close();
     
     DeploymentOptions options = new DeploymentOptions()
         .setConfig(new JsonObject().put("http.port", port)
             );
     vertx = Vertx.vertx();
+    //vertx.deployVerticle(RestApiVerticle.class.getName(),
+    vertx.deployVerticle(MetadataVerticle.class.getName(),
+        context.asyncAssertSuccess());
     vertx.deployVerticle(RestApiVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
-    
-    }
+  }
   @After
   public void tearDown(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
   }
 
-  //@Test
+  @Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
     /*JsonObject metadataJo = new JsonObject();
@@ -95,7 +99,7 @@ public class ServerTest {
     }
   }
 
-  //@Test
+  @Test
   public void testQueryPoint(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -112,15 +116,15 @@ public class ServerTest {
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
-    		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
-    			context.assertTrue(body.toJsonObject().getJsonArray("results").size() == 1);
-    			async.complete();
+    		  context.assertEquals(response.statusCode(), 200);
+              context.assertTrue(body.toJsonObject().getJsonArray("results").size() == 1);
+              async.complete();
     		});
     	})
     	.write(queryStr);
   }
-  @Test
+  //@Test
   public void testGetPoint(TestContext context) {
     final Async async = context.async();
     JsonObject testData = getDataTestConfig().getJsonObject(0);
@@ -237,7 +241,7 @@ public class ServerTest {
     	.write(queryStr)
   }
 */
-  //@Test
+  @Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
@@ -291,7 +295,7 @@ public class ServerTest {
     System.out.println("FINISHED TESTING INSERT DATA");
   }
   
-  //@Test
+  @Test
   public void testQueryData(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -331,7 +335,7 @@ public class ServerTest {
     return true;
   }
 
-  //@Test
+  @Test
   public void testQueryDataOnlyUUID(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();

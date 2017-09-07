@@ -18,7 +18,8 @@ import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.Metadata;
 
-public class JanusgraphService implements MetadataService  {
+//Currently deprecated
+public class JanusgraphService {
 //  private final Vertx vertx;
   static JanusGraph graph;
   //static Client client;
@@ -55,16 +56,16 @@ public class JanusgraphService implements MetadataService  {
      */
   }
   
-  @Override
+//  @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   }
 
-  @Override
+ // @Override
   public void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler) {
 
   }
   
-  @Override
+  //@Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     JanusGraphVertex pointType = graph.addVertex("name", jsonMetadata.getString("pointType"));
     String uuid = UUID.randomUUID().toString();
@@ -73,6 +74,16 @@ public class JanusgraphService implements MetadataService  {
         "unit", jsonMetadata.getString("unit"),
         "uuid", jsonMetadata.getString("uuid"));
     v.addEdge("rdf:type", pointType);
+  }
+
+//  @Override
+  public void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
+    assert false;
+  }
+
+//  @Override
+  public void appendMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
+    assert false;
   }
 
   public static void main(String[] args) {	

@@ -1,6 +1,10 @@
 package metroinsight.citadel.metadata.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,6 +43,8 @@ public class VirtuosoService implements MetadataService  {
   final String RDFS = "http://www.w3.org/2000/01/rdf-schema#";
   final String EX = "http://example.com#";
   
+  Map<String, Node> prefixMap;
+  
   // TODO: Maybe add a map between uesr-prop to rdf property. e.g., "pointType" -> rdf:type.
   
   // Common Variables
@@ -46,12 +52,40 @@ public class VirtuosoService implements MetadataService  {
   Node hasUnit;
   Node hasName;
   
+  //Units
+  List<String> units;
+  List<String> types;
+  
   private void initSchema() {
     // Init common variables
+    units = new ArrayList<String>();
+    types = new ArrayList<String>();
+
     a = NodeFactory.createURI(RDF + "type");
     hasUnit = NodeFactory.createURI(CITADEL + "unit");
     hasName = NodeFactory.createURI(CITADEL + "name");
+    
+    // Init Namespace Map
+    // This may be automated once we get a schema file (in Turtle).
+    prefixMap = new HashMap<String, Node>();
+    prefixMap.put("pointType", NodeFactory.createURI(RDF + "type"));
+    prefixMap.put("subClassOf", NodeFactory.createURI(RDFS + "subClassOf"));
+    prefixMap.put("unit", NodeFactory.createURI(CITADEL + "unit"));
+    prefixMap.put("name", NodeFactory.createURI(EX + "name"));
+    
+    // Init units
+    // types
+    List<String> citadelTypes = new ArrayList<String>(units);
+    citadelTypes.addAll(types);
+    for (int i=0; i < citadelTypes.size(); i++) {
+      String v = citadelTypes.get(i);
+      prefixMap.put(v, NodeFactory.createURI(CITADEL + v));
+    }
 
+  }
+  
+  private Node addPrefix(String prop) {
+    return prefixMap.getOrDefault(prop, NodeFactory.createURI(CITADEL + prop));
   }
   
   public VirtuosoService(Vertx vertx) {
@@ -172,6 +206,7 @@ public class VirtuosoService implements MetadataService  {
       if (res.hasNext()) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
+        // Create the point
         String uuid = UUID.randomUUID().toString();
         Node point = NodeFactory.createURI(EX + uuid);
         Node pointType = NodeFactory.createURI(CITADEL + jsonMetadata.getString("pointType"));
@@ -185,7 +220,32 @@ public class VirtuosoService implements MetadataService  {
       resultHandler.handle(Future.failedFuture(e));
     }
   }
-  
+
+  @Override
+  public void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
+    try {
+      Node point = NodeFactory.createURI(EX + uuid);
+      Iterator<String> keys = newMetadata.fieldNames().iterator();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        Node prop = addPrefix(key);
+        Object value = newMetadata.getValue(key);
+        if (value instanceof List) { // TODO: Check this is working. If not working, use try catch.
+          Iterator<String> valueIter = ((List<String>) value).iterator();
+          while (valueIter.hasNext()) {
+            graph.add(new Triple(point, prop, addPrefix(valueIter.next())));
+          }
+        } else if (value instanceof String) {
+            graph.add(new Triple(point, prop, addPrefix((String) value)));
+        }
+      }
+      rh.handle(Future.succeededFuture());
+    } catch (Exception e) {
+      rh.handle(Future.failedFuture(e));
+    }
+  }
+
+
   private ResultSet sparqlQuery(String qStr) {
     Query sparql = QueryFactory.create(qStr);
     VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(sparql, graph);

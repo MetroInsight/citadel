@@ -33,4 +33,7 @@ public interface MetadataService {
   // Create Point with given metadata
 
   void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  
+  void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh);
+
 }

@@ -70,6 +70,11 @@ public class MongoService implements MetadataService {
       }
     });
   }
+
+  @Override
+  public void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
+    assert false;
+  }
   
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {

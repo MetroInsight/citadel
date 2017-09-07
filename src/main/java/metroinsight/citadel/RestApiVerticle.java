@@ -4,32 +4,28 @@ import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
-import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ProxyHelper;
 import metroinsight.citadel.common.MicroServiceVerticle;
 import metroinsight.citadel.data.DataRestApi;
 import metroinsight.citadel.metadata.MetadataRestApi;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.BaseContent;
+import metroinsight.citadel.virtualsensor.VirtualSensorService;
 
 public class RestApiVerticle extends MicroServiceVerticle {
 
   MetadataRestApi metadataRestApi ;
   DataRestApi dataRestApi;
   private MetadataService metadataService;
+  private VirtualSensorService vsService;
   
-  public Future getServiceFuture(Class serviceClass){
-    Future fut = Future.future();
-    EventBusService.getProxy(discovery, serviceClass, fut);
-    return fut;
-  }
- 
   @Override
   public void start(Future<Void> fut){
     // Init service discovery. Future purpose
@@ -37,7 +33,8 @@ public class RestApiVerticle extends MicroServiceVerticle {
     // Init Metadata Service
     //Future<MetadataService> metadataFuture = Future.future();
     //EventBusService.getProxy(discovery, MetadataService.class, metadataFuture);
-    metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, "service.metadata");
+    metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    vsService = ProxyHelper.createProxy(VirtualSensorService.class, vertx, VirtualSensorService.ADDRESS);
 
     // REST API modules
     metadataRestApi = new MetadataRestApi(vertx);
@@ -92,6 +89,32 @@ public class RestApiVerticle extends MicroServiceVerticle {
       } else {
         content.setSucceess(true);;
         content.setResults(ar.result());
+        resp.setStatusCode(200);
+      }
+      String cStr = content.toString();
+      String cLen = Integer.toString(cStr.length());
+      resp
+        .putHeader("content-length", cLen)
+        .write(cStr);
+      });
+  }
+  
+  public void registerVirtualSensor(RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    BaseContent content = new BaseContent();
+    JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
+    String code = q.getString("code");
+    q.remove("code");
+    vsService.registerVirtualSensor(code, q, ar -> {
+      if (ar.failed()) {
+        content.setReason(ar.cause().getMessage());
+        resp.setStatusCode(400);
+      } else {
+        content.setSucceess(true);;
+        String uuid = ar.result();
+        JsonArray resultArray = new JsonArray();
+        resultArray.add(uuid);
+        content.setResults(resultArray);
         resp.setStatusCode(200);
       }
       String cStr = content.toString();

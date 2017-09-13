@@ -1,7 +1,12 @@
 package metroinsight.citadel;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
 
 public class MainVerticle extends AbstractVerticle {
 	
@@ -16,10 +21,28 @@ public class MainVerticle extends AbstractVerticle {
 		
 		DeploymentOptions opts = new DeploymentOptions()
 	            .setWorker(true);
-		
-    vertx.deployVerticle(RestApiVerticle.class.getName(),opts);
+//PropertyConfigurator.configure("/home/citadel/metroinsight/citadel/citadel/src/main/resources/log4j.properties");
+		System.setProperty("log4j.configuration",  new File("resources", "log4j.properties").toURI().toURL().toString());
+	opts.setConfig(config());
+    vertx.deployVerticle(RestApiVerticle.class.getName(), opts, ar -> {
+    	if (ar.failed()) {
+    		ar.cause().printStackTrace();
+    	}
+    });
     
-    
+	}
+	
+	public static void main(String[] args)  {
+	  ClassLoader cl = ClassLoader.getSystemClassLoader();
+	  URL[] urls = ((URLClassLoader)cl).getURLs();
+	  for(URL url: urls) {
+		  System.out.println(url.getFile());
+	  }
+	}
+	
+	public void runner() {
+		  Vertx vertx = Vertx.vertx();
+		  vertx.deployVerticle(new MainVerticle());
 	}
 
 }

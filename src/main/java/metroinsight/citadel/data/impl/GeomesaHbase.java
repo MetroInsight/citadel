@@ -257,7 +257,7 @@ public class GeomesaHbase {
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 		
 		/*This line force the geomesa to evaluate the bounding box very accurately*/
-		//query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
 		
 		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
 		

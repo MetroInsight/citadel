@@ -1,0 +1,65 @@
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Citadel 0.0.1-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] >>> maven-dependency-plugin:2.8:analyze (default-cli) > test-compile @ Citadel >>>
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ Citadel ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/citadel/metroinsight/citadel/citadel/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.3:compile (default-compile) @ Citadel ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ Citadel ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/citadel/metroinsight/citadel/citadel/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.3:testCompile (default-testCompile) @ Citadel ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< maven-dependency-plugin:2.8:analyze (default-cli) < test-compile @ Citadel <<<
+[INFO] 
+[INFO] --- maven-dependency-plugin:2.8:analyze (default-cli) @ Citadel ---
+Unable to process: metroinsight.citadel.RestApiVerticle
+Unable to process: metroinsight.citadel.common.MicroServiceVerticle
+Unable to process: metroinsight.citadel.data.impl.GeomesaService_direct_Call
+Unable to process: metroinsight.citadel.data.impl.GeomesaService
+Unable to process: metroinsight.citadel.data.DataRestApi
+Unable to process: metroinsight.citadel.metadata.MetadataRestApi
+Unable to process: metroinsight.citadel.metadata.impl.MongoService
+Unable to process: metroinsight.citadel.ServerTest
+[WARNING] Used undeclared dependencies found:
+[WARNING]    com.vividsolutions:jts:jar:1.13:compile
+[WARNING]    org.geotools:gt-cql:jar:15.1:compile
+[WARNING]    joda-time:joda-time:jar:2.3:compile
+[WARNING]    org.geotools:gt-api:jar:15.1:compile
+[WARNING]    org.geotools:gt-metadata:jar:15.1:compile
+[WARNING]    org.locationtech.geomesa:geomesa-index-api_2.11:jar:1.3.1:compile
+[WARNING]    com.google.guava:guava:jar:12.0.1:compile
+[WARNING]    org.locationtech.geomesa:geomesa-utils_2.11:jar:1.3.1:compile
+[WARNING] Unused declared dependencies found:
+[WARNING]    org.locationtech.geomesa:geomesa-hbase-datastore_2.11:jar:1.3.1:compile
+[WARNING]    org.apache.hbase:hbase-client:jar:1.1.5:compile
+[WARNING]    org.apache.hbase:hbase-server:jar:1.1.5:compile
+[WARNING]    org.geotools:gt-data:jar:15.1:compile
+[WARNING]    org.geotools:gt-epsg-hsql:jar:15.1:compile
+[WARNING]    io.vertx:vertx-unit:jar:3.4.1:test
+[WARNING]    io.vertx:vertx-web:jar:3.4.1:compile
+[WARNING]    io.vertx:vertx-mongo-client:jar:3.4.1:compile
+[WARNING]    de.flapdoodle.embed:de.flapdoodle.embed.mongo:jar:1.50.0:test
+[WARNING]    io.vertx:vertx-rx-java:jar:3.4.1:compile
+[WARNING]    io.vertx:vertx-config:jar:3.4.1:compile
+[WARNING]    io.vertx:vertx-service-proxy:jar:processor:3.4.1:compile
+[WARNING]    io.vertx:vertx-service-discovery:jar:3.4.1:compile
+[WARNING]    io.vertx:vertx-web-client:jar:3.4.1:compile
+[WARNING]    org.javatuples:javatuples:jar:1.2:compile
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 4.253 s
+[INFO] Finished at: 2017-09-12T04:47:18+00:00
+[INFO] Final Memory: 28M/641M
+[INFO] ------------------------------------------------------------------------

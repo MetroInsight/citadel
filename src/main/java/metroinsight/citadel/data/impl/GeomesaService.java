@@ -125,7 +125,7 @@ public class GeomesaService implements DataService {
 	  
 	  
 	  //inserting the data points
-	  int count =729000;
+	  int count =0*729000;
 	  String uuid="uuid1";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -231,12 +231,12 @@ public class GeomesaService implements DataService {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
 		        		
-		        		//String result=ar.result().toString();
+		        		String result=ar.result().toString();
 		        		
 		    			
 		        		//System.out.println("Query 2 Results are:"+result);
-		        		//JsonArray datarec=new JsonArray(result);
-		    			//System.out.println("Result size is: "+datarec.size());
+		        		JsonArray datarec=new JsonArray(result);
+		    			System.out.println("Result size is: "+datarec.size());
 		    			
 		        		
 		        	}

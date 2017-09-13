@@ -2,6 +2,8 @@ package metroinsight.citadel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 import org.junit.After;
@@ -28,20 +30,28 @@ public class ServerTest {
   
   @Before
   public void setUp(TestContext context) throws IOException{
+
+	  ClassLoader cl = ClassLoader.getSystemClassLoader();
+	  URL[] urls = ((URLClassLoader)cl).getURLs();
+	  for(URL url: urls) {
+		  System.out.println(url.getFile());
+	  }
     ServerSocket socket = null;
     socket = new ServerSocket(0);
-    port =8080; //socket.getLocalPort();
+    port = 8080; //socket.getLocalPort();
     socket.close();
     
     DeploymentOptions options = new DeploymentOptions()
         .setConfig(new JsonObject().put("http.port", port)
             );
+    System.out.println("Deploy options: ");
+    System.out.println(options.toJson());
     vertx = Vertx.vertx();
     vertx.deployVerticle(RestApiVerticle.class.getName(),
+    //vertx.deployVerticle(MainVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
-    
-    }
+  }
   @After
   public void tearDown(TestContext context) {
     vertx.close(context.asyncAssertSuccess());
@@ -125,7 +135,7 @@ public class ServerTest {
     	.end();
   }
 */
-  @Test
+  //@Test
   public void testInsertData(TestContext context) {
     final Async async = context.async();
     String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
@@ -168,12 +178,12 @@ public class ServerTest {
     
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
-  	data.put("lat_min", 30);
-  	data.put("lat_max", 31);
-  	data.put("lng_min", 65);
-  	data.put("lng_max", 66);
-  	data.put("timestamp_min", 1499813707623L);
-  	data.put("timestamp_max", 1499813709623L);
+  	data.put("lat_min", 31);
+  	data.put("lat_max", 31.5);
+  	data.put("lng_min", 60.0);
+  	data.put("lng_max", 60.4);
+  	data.put("timestamp_min", 1388534400000L);
+  	data.put("timestamp_max", 1389312000000L);
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
@@ -183,8 +193,10 @@ public class ServerTest {
     	.handler(response -> {
     		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
-    			System.out.println("Data Query response is:"+body);
-    			context.assertTrue(body.toJsonArray().size() > 0);
+    			//System.out.println("Data Query response is:"+body);
+    			int dataNum = body.toJsonArray().size();
+    			System.out.println("# of data found: " + Integer.toString(dataNum));
+    			context.assertTrue(dataNum > 0);
     			async.complete();
     		});
     		

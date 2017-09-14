@@ -22,7 +22,8 @@ public class MainVerticle extends AbstractVerticle {
 		DeploymentOptions opts = new DeploymentOptions()
 	            .setWorker(true);
 //PropertyConfigurator.configure("/home/citadel/metroinsight/citadel/citadel/src/main/resources/log4j.properties");
-		System.setProperty("log4j.configuration",  new File("resources", "log4j.properties").toURI().toURL().toString());
+		System.setProperty("hadoop.home.dir", "/");
+		//System.setProperty("log4j.configuration",  new File("resources", "log4j.properties").toURI().toURL().toString());
 	opts.setConfig(config());
     vertx.deployVerticle(RestApiVerticle.class.getName(), opts, ar -> {
     	if (ar.failed()) {

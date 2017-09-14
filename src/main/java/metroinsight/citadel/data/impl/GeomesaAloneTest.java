@@ -226,6 +226,8 @@ return CQL.toFilter(cql);
         // and use that as the basis for the query
         Filter cqlFilter = createFilter(geomField, x0, y0, x1, y1, dateField, t0, t1, attributesQuery);
         Query query = new Query(simpleFeatureTypeName, cqlFilter);
+        query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+        
         System.out.println("Query is :"+query);
         // submit the query, and get back an iterator over matching features
         FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
@@ -242,7 +244,7 @@ return CQL.toFilter(cql);
                     feature.getProperty("value").getValue() + "|" +
                     feature.getProperty("date").getValue() + "|" +
                     feature.getProperty("point_loc").getValue());
-             */      
+               */  
         	n++;
         }
         System.out.println("Results: "+n);
@@ -273,13 +275,13 @@ while (featureItr.hasNext()) {
 
 Feature feature = featureItr.next();
 
-
+/*
 System.out.println((n) + ".  " +
   feature.getProperty("srcid").getValue() + "|" +
   feature.getProperty("value").getValue() + "|" +
   feature.getProperty("date").getValue() + "|" +
   feature.getProperty("point_loc").getValue());
- 
+ */
   
 n++;
 }
@@ -297,7 +299,7 @@ featureItr.close();
     	 
     	
         Map<String, Serializable> parameters = new HashMap<>();
-		parameters.put("bigtable.table.name", "Geomesa");
+		parameters.put("bigtable.table.name", "Geomesa2");
 		DataStore dataStore = DataStoreFinder.getDataStore(parameters);
         assert dataStore != null;
        
@@ -324,7 +326,7 @@ featureItr.close();
         insertFeatures(simpleFeatureTypeName, dataStore, featureCollection);
          milliend = System.currentTimeMillis();
 		 System.out.println("count:"+k);
-		 System.out.println("Time"+(milliend-millistart));
+		// System.out.println("Time"+(milliend-millistart));
         }
         System.out.println("Insertion Done");
         
@@ -333,27 +335,28 @@ featureItr.close();
         System.out.println("Submitting query");
         
         millistart = System.currentTimeMillis();
-        /*
-        for(int i=0;i<0;i++)
+        
+        for(int i=0;i<2;i++)
         {
         queryFeatures(simpleFeatureTypeName, dataStore,
-                "point_loc", 30, 60, 30.1, 60.1,
-                "date", "2014-02-01T00:00:00.000Z", "2014-02-03T23:59:59.999Z",
+                "point_loc", 30, 60, 30.5, 60.5,
+                "date", "2014-02-01T00:00:00.000Z", "2014-12-31T23:59:59.999Z",
                 null);
         }
         milliend = System.currentTimeMillis();
         System.out.println("Time taken is:"+(milliend-millistart));
-        */
+        /*
         long timestamp_min=1389312000000L,timestamp_max=1389744000000L;
         
         millistart = System.currentTimeMillis();
         for(int i=0;i<10;i++)
         {
         queryFeatures2(simpleFeatureTypeName, dataStore,
-                "point_loc", 30, 60, 30.1, 60.1,
+                "point_loc", 30, 60, 40.1, 70.1,
                 "date", timestamp_min, timestamp_max,
                 null);
         }
+        */
         milliend = System.currentTimeMillis();
         System.out.println("2 Time taken is:"+(milliend-millistart));
         

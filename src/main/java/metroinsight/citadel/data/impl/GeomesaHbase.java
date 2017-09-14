@@ -14,6 +14,7 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Query;
+import org.geotools.factory.Hints;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -43,6 +44,7 @@ public class GeomesaHbase {
 	public DataStore dataStore=null;
 	static String simpleFeatureTypeName = "MetroInsight";//"QuickStart";//
 	static SimpleFeatureBuilder featureBuilder=null;
+	
 	
 	public void geomesa_initialize() {
 		
@@ -95,9 +97,56 @@ public class GeomesaHbase {
 	}
 
 	
-	static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
+	static FeatureCollection createNewFeatures_old(SimpleFeatureType simpleFeatureType, JsonArray data) {
 		
 		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
+		
+		if(featureBuilder==null)
+		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
+		
+		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
+		
+		try {
+		  /*
+			String uuid = data.getString("uuid");
+			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
+			String value = data.getString("value");
+			Date date= new Date(Long.parseLong(timestamp));
+		  JsonObject geometryJson = data.getJsonObject("geometry");
+		  String geometryType = geometryJson.getString("type").toLowerCase();
+		  */
+		  for (int i = 0; i < data.size(); i++) {
+		    JsonObject datum = data.getJsonObject(i);
+		    Datapoint dp = datum.mapTo(Datapoint.class); 
+		    String geometryType = dp.getGeometryType();
+		    List<List<Double>> coordinates = dp.getCoordinates();
+		    if (geometryType.equals("point")) {
+		      Double lng = coordinates.get(0).get(0);
+		      Double lat = coordinates.get(0).get(1);
+		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+		      simpleFeature.setAttribute("point_loc", geometry);
+		      }
+		    else {
+		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+		      }
+        simpleFeature.setAttribute("uuid", dp.getUuid());
+        simpleFeature.setAttribute("value", dp.getValue());
+        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
+        featureCollection.add(simpleFeature);
+		  }
+
+			// accumulate this new feature in the collection
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return featureCollection;
+	}
+	
+static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
+		
+		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
+		
 		
 		if(featureBuilder==null)
 		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);

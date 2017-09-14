@@ -121,11 +121,20 @@ public class GeomesaService implements DataService {
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
+      //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");
+	  
+      /*
+	   String home = System.getenv("HADOOP_HOME");
+	   System.out.println("Sandeep Home is:"+home);
+	   home = System.getProperty("hadoop.home.dir");
+	   System.out.println("Sandeep Home is:"+home);
+	   */
+	   
 	  GeomesaService GS=new GeomesaService();
 	  
-	  
+	   
 	  //inserting the data points
-	  int count =0*729000;
+	  int count =0;//0*729000;
 	  String uuid="uuid1";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -135,7 +144,7 @@ public class GeomesaService implements DataService {
 	  String geometryType = "point";
 	  Random random=new Random();
 	  DateTime MIN_DATE = new DateTime(2014, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
-	  Long SECONDS_PER_YEAR = 365L * 24L * 60L * 60L;
+	  Long SECONDS_PER_YEAR = 365L;//365L * 24L * 60L * 60L;
 	  
 	  for(int i=0;i<count;i++){		 
 			double value = value_min+random.nextDouble()*(value_max-value_min);
@@ -170,14 +179,14 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<1;k++)
+		 for(int k=0;k<2;k++)
 		 {
 		 //query the points just inserted:
 			 
 		 double lat_minq=31.0;
-		 double lat_maxq=31.5;
+		 double lat_maxq=32.0;
 		 double lng_minq=60.0;
-		 double lng_maxq=60.4;
+		 double lng_maxq=62.0;
 		 
 		 /*	 
 		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
@@ -186,12 +195,12 @@ public class GeomesaService implements DataService {
 		 double lng_maxq=lng_minq+0.1;
 		 */
 		 
-		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
+		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
-		// DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
-		// DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR/365)*2));
-		// long timestamp_min=dateTime1.getMillis();
-		// long timestamp_max=dateTime2.getMillis();//1420070400000L;//
+		DateTime dateTime1 = MIN_DATE;//.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
+		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR)));
+		 long timestamp_min=dateTime1.getMillis();
+		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);

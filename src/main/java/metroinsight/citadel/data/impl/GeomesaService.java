@@ -25,20 +25,13 @@ public class GeomesaService implements DataService {
     gmh = new GeomesaHbase(vertx);
   }
 
+  /*
   public GeomesaService() {
 	  //initialize the geomesa database
     if(gmh==null) 
     {
  	   gmh = new GeomesaHbase();
  	   gmh.geomesa_initialize();
-    }
-  }
-
-  /*
-  static void initialize() {
-    if(gmh==null){
-      gmh = new GeomesaHbase();
-      gmh.geomesa_initialize();
     }
   }
   */
@@ -172,17 +165,12 @@ public class GeomesaService implements DataService {
    * 
    */
   
+  /*
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
       //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");
 	  
-      /*
-	   String home = System.getenv("HADOOP_HOME");
-	   System.out.println("Sandeep Home is:"+home);
-	   home = System.getProperty("hadoop.home.dir");
-	   System.out.println("Sandeep Home is:"+home);
-	   */
 	   
 	  GeomesaService GS=new GeomesaService();
 	  
@@ -242,13 +230,6 @@ public class GeomesaService implements DataService {
 		 double lng_minq=60.0;
 		 double lng_maxq=62.0;
 		 
-		 /*	 
-		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
-		 double lat_maxq=lat_minq+0.1;
-		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
-		 double lng_maxq=lng_minq+0.1;
-		 */
-		 
 		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
 		DateTime dateTime1 = MIN_DATE;//.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
@@ -267,26 +248,6 @@ public class GeomesaService implements DataService {
 		 
 		// millistart = System.currentTimeMillis();
 		 
-		 /*
-		 GS.queryDataBox(query, ar -> {
-		    	if (ar.failed()) {
-		          	System.out.println(ar.cause().getMessage());
-		        	} else {
-		        		
-		        		String result=ar.result().toString();
-		        		System.out.println("Query Results are:"+result);
-		        		//System.out.println("Result size is:"+result.length());
-		        		JsonArray datarec=new JsonArray(result);
-		    			System.out.println(datarec.size());
-		    			
-		        		System.out.println("Query done in Main");
-		        	}
-		       });
-		 
-		 milliend = System.currentTimeMillis();
-	     System.out.println("Time taken is:"+(milliend-millistart));
-	     
-	     */
 		 System.out.println(k+" : Query is:"+query);
 	     millistart = System.currentTimeMillis();
 		 GS.queryData(query, ar -> {
@@ -313,6 +274,7 @@ public class GeomesaService implements DataService {
 		 }//end for loop on query
 	  
   }
+  */
 
 
 

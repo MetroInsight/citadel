@@ -21,9 +21,11 @@ public class DataRestApi {
     this.vertx = vertx;
   }
   
+  /*
   public DataRestApi () {
     dataService = new GeomesaService();
   }
+  */
   
   public void queryData(RoutingContext rc) {
     JsonObject q = rc.getBodyAsJson().getJsonObject("query");

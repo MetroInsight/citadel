@@ -58,8 +58,8 @@ public class RestApiVerticle extends MicroServiceVerticle {
     router.route("/*").handler(BodyHandler.create());
     
     // REST API routing for MetaData
-    router.post("/api/point").handler(metadataRestApi::createPoint);
-    router.get("/api/point/:uuid").handler(metadataRestApi::getPoint);
+    router.post("/api/point").blockingHandler(metadataRestApi::createPoint);
+    router.get("/api/point/:uuid").blockingHandler(metadataRestApi::getPoint);
     router.post("/api/query").blockingHandler(this::queryPoint);
 //    router.post("/api/query").blockingHandler(metadataRestApi::queryPoint);
 

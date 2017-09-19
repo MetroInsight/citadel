@@ -48,6 +48,12 @@
       <version>18.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.locationtech.geomesa</groupId>
+      <artifactId>geomesa-hbase-datastore_${scala.abi.version}</artifactId>
+      <version>${geomesa.version}</version>
+    </dependency>
+
     <!-- HBase -->
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
@@ -131,12 +137,6 @@
 
 
     <!-- GeoMesa -->
-
-    <dependency>
-      <groupId>org.locationtech.geomesa</groupId>
-      <artifactId>geomesa-hbase-datastore_${scala.abi.version}</artifactId>
-      <version>${geomesa.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>

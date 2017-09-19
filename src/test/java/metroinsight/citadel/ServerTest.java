@@ -228,30 +228,7 @@ public class ServerTest {
     
   }
   
-/*
   @Test
-  public void testGetSensor(TestContext context) {
-    final Async async = context.async();
-    String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; //TODO: This needs to be auto-gen later.
-  	JsonObject query = new JsonObject();
-  	query.put("query", (new JsonObject()).put("uuid", uuid));
-    String queryStr = Json.encodePrettily(query);
-    String length = Integer.toString(queryStr.length());
-    vertx.createHttpClient().post(port, "localhost", "/api/query")
-    	.putHeader("content-type", "application/json")
-    	.putHeader("content-length",  length)
-    	.handler(response -> {
-    		context.assertEquals(response.statusCode(), 200);
-    		response.bodyHandler(body -> {
-    			System.out.println("response is:"+body);
-    			context.assertTrue(body.toJsonArray().size() > 0);
-    			async.complete();
-    		});
-    	})
-    	.write(queryStr)
-  }
-*/
-  //@Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
@@ -262,6 +239,8 @@ public class ServerTest {
   	JsonArray data = new JsonArray();
 
   	JsonObject datum1 = new JsonObject();
+//  	Double lng = 31.1;
+//  	Double lat = 60.1;
   	Double lng = -117.231221;
   	Double lat = 32.881454;
   	datum1.put("uuid", uuid);
@@ -298,8 +277,8 @@ public class ServerTest {
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
-    		context.assertEquals(response.statusCode(), 201);
-    			async.complete();
+    	  context.assertEquals(response.statusCode(), 201);
+    	  async.complete();
     	})
     	.write(queryStr);
     System.out.println("FINISHED TESTING INSERT DATA");
@@ -310,10 +289,10 @@ public class ServerTest {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
-  	data.put("lat_min", 31);
-  	data.put("lat_max", 31.5);
-  	data.put("lng_min", 60.0);
-  	data.put("lng_max", 60.4);
+  	data.put("lat_min", 32.868623);
+    data.put("lat_max", 32.893202);
+    data.put("lng_min", -117.244438);
+    data.put("lng_max", -117.214398);
   	data.put("timestamp_min", 1388534400000L);
   	data.put("timestamp_max", 1389312000000L);
   	query.put("query",data);
@@ -347,7 +326,7 @@ public class ServerTest {
     return true;
   }
 
-  @Test
+  //@Test
   public void testQueryDataOnlyUUID(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();

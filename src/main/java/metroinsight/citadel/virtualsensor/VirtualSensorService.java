@@ -20,4 +20,6 @@ public interface VirtualSensorService {
 //  void getVirtualSensor(String uuid, Handler<AsyncResult<VirtualSensor>> rh);
 
   void registerVirtualSensor(String code, JsonObject vsConfig, Handler<AsyncResult<String>> rh);
+  
+  void execVirtualSensor(String uuid, Handler<AsyncResult<Void>> rh);
 }

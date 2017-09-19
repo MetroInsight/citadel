@@ -7,7 +7,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.serviceproxy.ProxyHelper;
-import metroinsight.citadel.common.Util;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.virtualsensor.VirtualSensor;
 import metroinsight.citadel.virtualsensor.VirtualSensorService;
@@ -16,11 +15,13 @@ public class VirtualSensorServiceImpl implements VirtualSensorService {
   private final Vertx vertx;
   private final ServiceDiscovery discovery;
   private MetadataService metadataService;
+  private final String tempCodeDir;
 
   public VirtualSensorServiceImpl (Vertx vertx, ServiceDiscovery discovery) {
     this.vertx = vertx;
     this.discovery = discovery;
     metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    tempCodeDir = "tmp/vs_code/";
   }
   
   //@Override
@@ -42,7 +43,7 @@ public class VirtualSensorServiceImpl implements VirtualSensorService {
       Future<String> createFuture = Future.future();
       metadataService.createPoint(metadata, createFuture);
       String uuid = createFuture.result();
-      
+
       // Update VS-specific metadata
       Future<Void> updateFuture = Future.future();
       metadata.clear();
@@ -60,8 +61,10 @@ public class VirtualSensorServiceImpl implements VirtualSensorService {
 
   }
   
-  public void execVirtualSensor(String uuid) {
-//    VirtualSensor vs = new VirtualSensor(vsConfig.getLong("period"), uuid, code, vsConfig.getString("languageType"), Util.jsonArray2StringArray(vsConfig.getJsonArray("dependentUUIDs")));
+  @Override
+  public void execVirtualSensor(String uuid, Handler<AsyncResult<Void>> rh) {
+    
+    
   }
 
 

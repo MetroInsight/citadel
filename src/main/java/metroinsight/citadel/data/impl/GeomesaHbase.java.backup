@@ -1,0 +1,890 @@
+package metroinsight.citadel.data.impl;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.DataUtilities;
+import org.geotools.data.FeatureReader;
+import org.geotools.data.FeatureStore;
+import org.geotools.data.FeatureWriter;
+import org.geotools.data.Query;
+<<<<<<< HEAD
+import org.geotools.data.Transaction;
+=======
+import org.geotools.factory.Hints;
+import org.geotools.feature.DefaultFeatureCollection;
+>>>>>>> origin/citadel-sandeep
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.SchemaException;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.filter.text.cql2.CQL;
+import org.geotools.filter.text.cql2.CQLException;
+import org.locationtech.geomesa.index.conf.QueryHints;
+import org.locationtech.geomesa.utils.text.WKTUtils$;
+import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import metroinsight.citadel.datacache.DataCacheService;
+import metroinsight.citadel.datacache.impl.RedisDataCacheService;
+import metroinsight.citadel.model.Datapoint;
+
+public class GeomesaHbase {
+<<<<<<< HEAD
+  DataStore dataStore = null;
+  static String simpleFeatureTypeName = "MetroInsight";
+  static SimpleFeatureBuilder featureBuilder = null;
+  static DataCacheService cacheService;
+  Vertx vertx = null;
+  
+  public GeomesaHbase (Vertx vertx) {
+    this.vertx = vertx;
+    GeomesaHbase.cacheService = new RedisDataCacheService(vertx);
+  }
+  
+  public GeomesaHbase() {
+  }
+
+  public void geomesa_initialize() {
+
+    try {
+      if (dataStore == null) {
+        Map<String, Serializable> parameters = new HashMap<>();
+        parameters.put("bigtable.table.name", "Geomesa");
+
+        // DataStoreFinder is from Geotools, returns an indexed datastore if one is
+        // available.
+        dataStore = DataStoreFinder.getDataStore(parameters);
+
+        // establish specifics concerning the SimpleFeatureType to store
+        SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
+
+        // write Feature-specific metadata to the destination table in HBase
+        // (first creating the table if it does not already exist); you only
+        // need
+        // to create the FeatureType schema the *first* time you write any
+        // Features
+        // of this type to the table
+        // System.out.println("Creating feature-type (schema): " +
+        // simpleFeatureTypeName);
+        dataStore.createSchema(simpleFeatureType);
+
+      } // end if
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+  }
+
+  static SimpleFeatureType createSimpleFeatureType() throws SchemaException {
+
+    /*
+     * We use the DataUtilities class from Geotools to create a FeatureType that
+     * will describe the data
+     * 
+     */
+
+    final SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName, "point_loc:Point:srid=4326," + // a
+                                                                                                                         // Geometry
+                                                                                                                         // attribute:
+                                                                                                                         // Point
+                                                                                                                         // type
+        "uuid:String," + // a String attribute
+        "value:String," + // a String attribute
+        "date:Date"// a date attribute for time
+    );
+
+    return simpleFeatureType;
+  }
+  
+  static void upsertCache(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh) {
+    if (cacheService == null) {
+      return;
+    }
+    JsonObject cache = new JsonObject();
+    // This had better use CachedData structure, but because redis can't store null values, it does not make sense to use default values from CachedData
+    JsonArray coordinate = data.getJsonArray("coordinates").getJsonArray(0);
+    cache.put("lng", coordinate.getDouble(0));
+    cache.put("lat", coordinate.getDouble(1));
+    cache.put("value", data.getDouble("value"));
+    cache.put("timestamp", data.getLong("timestamp"));
+    List<String> indexKeys = new ArrayList<String>(2);
+    indexKeys.add(0, "lng");
+    indexKeys.add(1, "lat");
+    cacheService.upsertData(uuid, cache, indexKeys, cacheRh -> {
+      if (cacheRh.succeeded()) {
+        rh.handle(Future.succeededFuture());
+      } else {
+        System.out.println(cacheRh.cause());
+        rh.handle(Future.failedFuture(cacheRh.cause()));
+      }
+    });
+    
+    /*
+    // Update indices. Removing temporarily as it is implemented inside cacheService.
+    JsonObject indexJson = new JsonObject();
+    indexJson.put("lng", cache.getDouble("lng"));
+    indexJson.put("lat", cache.getDouble("lat"));
+    cacheService.upsertIndex(uuid, indexJson, indexRh -> {
+      if (indexRh.failed()) {
+        rh.handle(Future.failedFuture(indexRh.cause()));
+      }
+    });
+    */
+  }
+  
+  public void bboxCacheQuery(Double minLng, Double maxLng, Double minLat, Double maxLat, Handler<AsyncResult<JsonArray>> rh) {
+    cacheService.bboxQuery(minLng, maxLng, minLat, maxLat, csRh -> {
+      if (csRh.succeeded()) {
+        rh.handle(Future.succeededFuture(csRh.result()));
+      } else {
+        rh.handle(Future.failedFuture(csRh.cause()));
+      }
+    });
+  }
+
+  public void geomesa_insertData(JsonArray data) {
+    geomesa_insertData(data, rh -> {
+      if (rh.failed()) {
+        System.out.println(rh.cause());
+      }
+    });
+
+  }// end function
+
+  static JsonArray queryFeatures_Box_Lat_Lng(DataStore dataStore, String geomField, double x0, double y0, double x1,
+      double y1) throws CQLException, IOException {
+    // construct a (E)CQL filter from the search parameters,
+    // and use that as the basis for the query
+    String cqlGeometry = "BBOX(" + geomField + ", " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ")";
+    Filter cqlFilter = CQL.toFilter(cqlGeometry);
+    Query query = new Query(simpleFeatureTypeName, cqlFilter);
+    FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query, Transaction.AUTO_COMMIT);
+    JsonArray ja = new JsonArray();
+    // loop through all results
+    while (reader.hasNext()) {
+      Feature feature = reader.next();
+      try {
+        JsonObject Data = new JsonObject();
+        Data.put("uuid", feature.getProperty("uuid").getValue());
+        Date date = (Date) feature.getProperty("date").getValue();
+        Data.put("timestamp", date.getTime());
+        Point point = (Point) feature.getProperty("point_loc").getValue();
+        Coordinate cd = point.getCoordinates()[0];// since it a single point
+        Data.put("lat", cd.x);
+        Data.put("lng", cd.y);
+        Data.put("value", feature.getProperty("value").getValue());
+        ja.add(Data);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    reader.close();
+    return ja;
+  }// end function
+
+  private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String geomField, String dateField,
+      Double lat_min, Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max,
+      List<String> uuids) {
+    JsonArray ja = new JsonArray();
+
+    try {
+      // construct a (E)CQL filter from the search parameters,
+      // and use that as the basis for the query
+      String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max
+          + ")";
+      Date datemin = new Date(Long.valueOf(timestamp_min));
+      Date datemax = new Date(Long.valueOf(timestamp_max));
+
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+      String date1 = format.format(datemin);
+      String date2 = format.format(datemax);
+
+      String cqlDates = "(" + dateField + " during " + date1 + "/" + date2 + ")";
+      String filter = cqlGeometry + " AND " + cqlDates;
+      Iterator<String> uuidIter = uuids.iterator();
+      String uuid;
+      String uuidQuery = "";
+      while (uuidIter.hasNext()) {
+        uuid = uuidIter.next();
+        uuidQuery += "OR uuid = '" + uuid + "' ";
+      }
+
+      if (!uuidQuery.isEmpty()) {
+        uuidQuery = uuidQuery.substring(2);
+        filter = filter + " AND (" + uuidQuery + ")";
+      }
+      Filter cqlFilter = CQL.toFilter(filter);
+      
+      Query query = new Query(simpleFeatureTypeName, cqlFilter);
+
+
+      // submit the query, and get back an iterator over matching features
+      FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query,
+          Transaction.AUTO_COMMIT);
+
+      // loop through all results
+      while (reader.hasNext()) {
+        Feature feature = reader.next();
+
+        try {
+          JsonObject data = new JsonObject();
+          data.put("uuid", feature.getProperty("uuid").getValue());
+          Date date = (Date) feature.getProperty("date").getValue();
+          data.put("timestamp", date.getTime());
+          Point point = (Point) feature.getProperty("point_loc").getValue();
+          Coordinate cd = point.getCoordinates()[0];// since it a single point
+          JsonArray coordinate = new JsonArray();
+          coordinate.add(cd.x);
+          coordinate.add(cd.y);
+          JsonArray coordinates = new JsonArray();
+          coordinates.add(coordinate);
+          data.put("value", Double.parseDouble((String) feature.getProperty("value").getValue()));
+          data.put("geometryType", "point");
+          data.put("coordinates", coordinates);
+          ja.add(data);
+        } catch (Exception e) {
+          throw e;
+        }
+
+      }
+      reader.close();
+
+    } // end try
+    catch (Exception e) {
+      e.printStackTrace();
+    } // end catch
+    return ja;
+  }// end function
+
+  public JsonArray Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max) {
+    try {
+
+      if (dataStore == null) {
+        geomesa_initialize();
+      }
+
+      // query a few Features from this table
+      // System.out.println("Submitting query in Query_Box_Lat_Lng GeomesaHbase ");
+      JsonArray result = queryFeatures_Box_Lat_Lng(dataStore, "point_loc", lat_min, lng_min, lat_max, lng_max);
+
+      return result;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+
+  }// end function
+
+  private JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+      long timestamp_min, long timestamp_max, List<String> uuids) {
+    try {
+
+      if (dataStore == null) {
+        geomesa_initialize();
+      }
+
+      // query a few Features from this table
+      // System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range
+      // GeomesaHbase ");
+      // the point_loc and date should be part of the config
+      JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range("point_loc", "date", lat_min, lng_min, lat_max,
+          lng_max, timestamp_min, timestamp_max, uuids);
+
+      return result;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }// end function
+
+  public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Void>> rh) {
+
+    try {
+      if (dataStore == null) {
+        geomesa_initialize();
+      }
+      // Init caching buffers
+      JsonObject cacheBuffers = new JsonObject();
+      String uuid;
+
+      
+      FeatureWriter<SimpleFeatureType, SimpleFeature> writer = dataStore.getFeatureWriterAppend(simpleFeatureTypeName,
+          Transaction.AUTO_COMMIT);
+      JsonObject datum;
+      for (int i = 0; i < data.size(); i++) {
+        SimpleFeature f = writer.next();
+        datum = data.getJsonObject(i);
+        Datapoint dp = datum.mapTo(Datapoint.class);
+        String geometryType = dp.getGeometryType();
+        List<List<Double>> coordinates = dp.getCoordinates();
+        if (geometryType.equals("point")) {
+          Double lng = coordinates.get(0).get(0);
+          Double lat = coordinates.get(0).get(1);
+          Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
+          f.setAttribute("point_loc", geometry);
+        } else {
+          throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+        }
+        f.setAttribute("uuid", dp.getUuid());
+        f.setAttribute("value", dp.getValue());
+        f.setAttribute("date", new Date(dp.getTimestamp()));
+        writer.write();
+
+        //Buffering for cache
+        uuid = datum.getString("uuid");
+        JsonObject buf = null;
+        if (cacheBuffers.containsKey(uuid)) {
+          buf = cacheBuffers.getJsonObject(uuid);
+          if (buf.getDouble("timestamp") < datum.getDouble("timestamp")) {
+            cacheBuffers.put(uuid, datum);
+          }
+        } else {
+          cacheBuffers.put(uuid, datum);
+        }
+      }
+      writer.close();
+
+      // Push buffers to the cache
+      Iterator<String> keyIter = cacheBuffers.fieldNames().iterator();
+      while (keyIter.hasNext()) {
+        uuid = keyIter.next();
+        upsertCache(uuid, cacheBuffers.getJsonObject(uuid), rh);
+      }
+        rh.handle(Future.succeededFuture());
+    } catch (Exception e) {
+      e.printStackTrace();
+      rh.handle(Future.failedFuture(e));
+    }
+
+  }// end function
+
+  public void Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max,
+      Handler<AsyncResult<JsonArray>> resultHandler) {
+    JsonArray result = new JsonArray();
+    try {
+      result = Query_Box_Lat_Lng(lat_min, lat_max, lng_min, lng_max);
+      resultHandler.handle(Future.succeededFuture(result));
+    } catch (Exception e) {
+      resultHandler.handle(Future.succeededFuture(result));// in this case the result is empty jsonarray
+      e.printStackTrace();
+    }
+
+  }// end function
+
+  public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+      long timestamp_min, long timestamp_max, List<String> uuids, Handler<AsyncResult<JsonArray>> resultHandler) {
+    JsonArray result = new JsonArray();
+    try {
+      result = Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids);
+      resultHandler.handle(Future.succeededFuture(result));
+    } catch (Exception e) {
+      resultHandler.handle(Future.succeededFuture(result));// in this case the result is empty jsonarray
+      e.printStackTrace();
+    }
+  }
+  
+
+}// end GeomesaHbase class
+=======
+	public DataStore dataStore=null;
+	static String simpleFeatureTypeName = "MetroInsight";//"QuickStart";//
+	static SimpleFeatureBuilder featureBuilder=null;
+	
+	
+	public void geomesa_initialize() {
+		
+		try {
+			if (dataStore == null) {
+				Map<String, Serializable> parameters = new HashMap<>();
+				parameters.put("bigtable.table.name", "Geomesa");
+				
+				//DataStoreFinder is from Geotools, returns an indexed datastore if one is available.
+				dataStore = DataStoreFinder.getDataStore(parameters);
+				
+				// establish specifics concerning the SimpleFeatureType to store
+				SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
+
+				// write Feature-specific metadata to the destination table in HBase
+				// (first creating the table if it does not already exist); you only
+				// need
+				// to create the FeatureType schema the *first* time you write any
+				// Features
+				// of this type to the table
+				//System.out.println("Creating feature-type (schema):  " + simpleFeatureTypeName);
+				dataStore.createSchema(simpleFeatureType);
+				
+				
+			}//end if
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	static SimpleFeatureType createSimpleFeatureType() throws SchemaException {
+		
+		/*
+		 * We use the DataUtilities class from Geotools to create a FeatureType that will describe the data
+		 * 
+		 */
+		
+		SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName,
+				"point_loc:Point:srid=4326,"+// a Geometry attribute: Point type
+				"uuid:String,"+// a String attribute
+				"value:String,"+// a String attribute
+				"date:Date"// a date attribute for time
+				);
+		
+		return simpleFeatureType;
+		
+		
+	}
+
+	
+	static FeatureCollection createNewFeatures_old(SimpleFeatureType simpleFeatureType, JsonArray data) {
+		
+		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
+		
+		if(featureBuilder==null)
+		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
+		
+		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
+		
+		try {
+		  /*
+			String uuid = data.getString("uuid");
+			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
+			String value = data.getString("value");
+			Date date= new Date(Long.parseLong(timestamp));
+		  JsonObject geometryJson = data.getJsonObject("geometry");
+		  String geometryType = geometryJson.getString("type").toLowerCase();
+		  */
+		  for (int i = 0; i < data.size(); i++) {
+		    JsonObject datum = data.getJsonObject(i);
+		    Datapoint dp = datum.mapTo(Datapoint.class); 
+		    String geometryType = dp.getGeometryType();
+		    List<List<Double>> coordinates = dp.getCoordinates();
+		    if (geometryType.equals("point")) {
+		      Double lng = coordinates.get(0).get(0);
+		      Double lat = coordinates.get(0).get(1);
+		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+		      simpleFeature.setAttribute("point_loc", geometry);
+		      }
+		    else {
+		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+		      }
+        simpleFeature.setAttribute("uuid", dp.getUuid());
+        simpleFeature.setAttribute("value", dp.getValue());
+        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
+        featureCollection.add(simpleFeature);
+		  }
+
+			// accumulate this new feature in the collection
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return featureCollection;
+	}
+	
+static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
+		
+		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
+		
+		
+		if(featureBuilder==null)
+		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
+		
+		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
+		
+		try {
+		  /*
+			String uuid = data.getString("uuid");
+			String timestamp = data.getString("timestamp");//timestamp is in milliseconds
+			String value = data.getString("value");
+			Date date= new Date(Long.parseLong(timestamp));
+		  JsonObject geometryJson = data.getJsonObject("geometry");
+		  String geometryType = geometryJson.getString("type").toLowerCase();
+		  */
+		  for (int i = 0; i < data.size(); i++) {
+		    JsonObject datum = data.getJsonObject(i);
+		    Datapoint dp = datum.mapTo(Datapoint.class); 
+		    String geometryType = dp.getGeometryType();
+		    List<List<Double>> coordinates = dp.getCoordinates();
+		    if (geometryType.equals("point")) {
+		      Double lng = coordinates.get(0).get(0);
+		      Double lat = coordinates.get(0).get(1);
+		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lat.toString() + " " + lng.toString() + ")");
+		      simpleFeature.setAttribute("point_loc", geometry);
+		      }
+		    else {
+		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
+		      }
+        simpleFeature.setAttribute("uuid", dp.getUuid());
+        simpleFeature.setAttribute("value", dp.getValue());
+        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
+        featureCollection.add(simpleFeature);
+		  }
+
+			// accumulate this new feature in the collection
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return featureCollection;
+	}
+	
+	static void insertFeatures(DataStore dataStore, FeatureCollection featureCollection)
+			throws IOException {
+
+		FeatureStore featureStore = (FeatureStore) dataStore.getFeatureSource(simpleFeatureTypeName);
+		featureStore.addFeatures(featureCollection);
+	}
+	
+	public void geomesa_insertData(JsonArray data) {
+		
+		//System.out.println("Inserting Data in geomesa_insertData(JsonObject data) in GeomesaHbase");
+		
+		try {
+
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+
+			// establish specifics concerning the SimpleFeatureType to store
+			SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
+
+			// create new features locally, and add them to this table
+			//System.out.println("Creating new features");
+			FeatureCollection featureCollection = createNewFeatures(simpleFeatureType, data);
+			//System.out.println("Inserting new features");
+			insertFeatures(dataStore, featureCollection);
+			//System.out.println("done inserting Data");
+
+			/*
+			 * //querying Data now, results as shown below:
+			 * System.out.println("querying Data now, results as shown below:");
+			 * Query();
+			 */
+			//System.out.println("Done");
+
+		} // end try
+		catch (Exception e) {
+
+			e.printStackTrace();
+		}
+
+	}// end function
+
+	static JsonArray queryFeatures_Box_Lat_Lng(DataStore dataStore, String geomField, double x0,
+			double y0, double x1, double y1) throws CQLException, IOException {
+
+		// construct a (E)CQL filter from the search parameters,
+		// and use that as the basis for the query
+		String cqlGeometry = "BBOX(" + geomField + ", " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ")";
+		Filter cqlFilter = CQL.toFilter(cqlGeometry);
+		
+		Query query = new Query(simpleFeatureTypeName, cqlFilter);
+
+		// submit the query, and get back an iterator over matching features
+		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+        
+		System.out.println("Query is:"+query);
+
+		JsonArray ja = new JsonArray();
+
+		// loop through all results
+		int n = 0;
+		while (featureItr.hasNext()) {
+			Feature feature = featureItr.next();
+
+			
+			try{
+			JsonObject Data = new JsonObject();
+			Data.put("uuid", feature.getProperty("uuid").getValue());
+			Date date=(Date) feature.getProperty("date").getValue();
+			Data.put("timestamp", date.getTime());
+			Point point =(Point) feature.getProperty("point_loc").getValue();
+			Coordinate cd=point.getCoordinates()[0];//since it a single point
+			Data.put("lat", cd.x);
+			Data.put("lng", cd.y);
+			Data.put("value", feature.getProperty("value").getValue());
+			ja.add(Data);	
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			
+		}
+		featureItr.close();
+
+		return ja;
+	}//end function
+	
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(DataStore dataStore2, String geomField, String dateField, Double lat_min,
+			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) {
+		JsonArray ja = new JsonArray();
+
+		
+		try{
+		// construct a (E)CQL filter from the search parameters,
+		// and use that as the basis for the query
+		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		Date datemin=new Date(Long.valueOf(timestamp_min));
+		Date datemax=new Date(Long.valueOf(timestamp_max));
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		//format.setTimeZone(TimeZone.getTimeZone("PDT"));
+		String date1=format.format(datemin);
+		String date2=format.format(datemax);
+		//Date date3=format.parse(date1);
+		//System.out.println("Date range is:"+date1.toString()+" : "+date2.toString());
+		
+		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+		String filter=cqlGeometry+" AND "+cqlDates;
+		
+		Filter cqlFilter = CQL.toFilter(filter);
+		
+		
+		Query query = new Query(simpleFeatureTypeName, cqlFilter);
+		
+		/*This line force the geomesa to evaluate the bounding box very accurately*/
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
+		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
+		
+		// submit the query, and get back an iterator over matching features
+		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+		
+		// loop through all results
+		int n = 0;
+		while (featureItr.hasNext()) {
+			Feature feature = featureItr.next();
+			//System.out.println("Next:"+n++);
+			try{
+			JsonObject Data = new JsonObject();
+			Data.put("uuid", feature.getProperty("uuid").getValue());
+			Date date=(Date) feature.getProperty("date").getValue();
+			Data.put("timestamp", date.getTime());
+			Point point =(Point) feature.getProperty("point_loc").getValue();
+			Coordinate cd=point.getCoordinates()[0];//since it a single point
+			Data.put("lat", cd.x);
+			Data.put("lng", cd.y);
+			Data.put("value", feature.getProperty("value").getValue());
+			ja.add(Data);	
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			
+		}
+		featureItr.close();
+		//System.out.println("Next:"+n++);
+		
+		
+		}//end try
+		catch(Exception e){
+			e.printStackTrace();
+		}//end catch
+		return ja;
+	}//end function
+	
+	
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range2(DataStore dataStore2, String geomField, String dateField, Double lat_min,
+			Double lng_min, Double lat_max, Double lng_max, String date1, String date2) {
+		JsonArray ja = new JsonArray();
+
+		
+		try{
+		// construct a (E)CQL filter from the search parameters,
+		// and use that as the basis for the query
+		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		
+		
+		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+		String filter=cqlGeometry+" AND "+cqlDates;
+		
+		Filter cqlFilter = CQL.toFilter(filter);
+		
+		
+		Query query = new Query(simpleFeatureTypeName, cqlFilter);
+		
+		/*This line force the geomesa to evaluate the bounding box very accurately*/
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
+		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
+		
+		// submit the query, and get back an iterator over matching features
+		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+		
+		// loop through all results
+		int n = 0;
+		while (featureItr.hasNext()) {
+			Feature feature = featureItr.next();
+			//System.out.println("Next:"+n++);
+			try{
+			JsonObject Data = new JsonObject();
+			Data.put("uuid", feature.getProperty("uuid").getValue());
+			Date date=(Date) feature.getProperty("date").getValue();
+			Data.put("timestamp", date.getTime());
+			Point point =(Point) feature.getProperty("point_loc").getValue();
+			Coordinate cd=point.getCoordinates()[0];//since it a single point
+			Data.put("lat", cd.x);
+			Data.put("lng", cd.y);
+			Data.put("value", feature.getProperty("value").getValue());
+			ja.add(Data);	
+			}
+			catch(Exception e){
+				e.printStackTrace();
+			}
+			
+		}
+		featureItr.close();
+		//System.out.println("Next:"+n++);
+		
+		
+		}//end try
+		catch(Exception e){
+			e.printStackTrace();
+		}//end catch
+		return ja;
+	}//end function
+	
+	
+	public JsonArray Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max) {
+		try {
+
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+		
+
+			// query a few Features from this table
+			System.out.println("Submitting query in Query_Box_Lat_Lng GeomesaHbase ");
+			JsonArray result = queryFeatures_Box_Lat_Lng(dataStore, "point_loc", lat_min, lng_min, lat_max, lng_max);
+
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}//end function
+
+	JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max) {
+		try {
+
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+		
+
+			// query a few Features from this table
+			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
+			//the point_loc and date should be part of the config
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
+
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}//end function
+	
+	JsonArray Query_Box_Lat_Lng_Time_Range2(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			String timestamp_min, String timestamp_max) {
+		try {
+
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+		
+
+			// query a few Features from this table
+			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
+			//the point_loc and date should be part of the config
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range2(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
+
+			return result;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}//end function
+
+
+	public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
+		
+		try{
+		    geomesa_insertData(data);
+		    resultHandler.handle(Future.succeededFuture(true));
+		}
+		catch(Exception e){
+			resultHandler.handle(Future.succeededFuture(false));
+			e.printStackTrace();
+		}
+		
+	}//end function
+
+	public void Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max,Handler<AsyncResult<JsonArray>> resultHandler) {
+		JsonArray result=new JsonArray();
+		try{
+			result = Query_Box_Lat_Lng( lat_min,  lat_max,  lng_min,  lng_max);
+			resultHandler.handle(Future.succeededFuture(result));
+		}
+		catch(Exception e){
+			resultHandler.handle(Future.succeededFuture(result));//in this case the result is empty jsonarray
+			e.printStackTrace();
+		}
+		
+	}//end function
+
+	public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
+		JsonArray result=new JsonArray();
+		try{
+			result=Query_Box_Lat_Lng_Time_Range( lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
+			resultHandler.handle(Future.succeededFuture(result));
+		}
+		catch(Exception e){
+			resultHandler.handle(Future.succeededFuture(result));//in this case the result is empty jsonarray
+			e.printStackTrace();
+		}
+		
+	}
+
+
+
+	
+	
+	
+}//end GeomesaHbase class
+>>>>>>> origin/citadel-sandeep

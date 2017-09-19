@@ -1,6 +1,7 @@
 package metroinsight.citadel.data.impl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.joda.time.DateTime;
@@ -9,49 +10,49 @@ import org.joda.time.DateTimeZone;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.data.DataService;
 
-public class GeomesaService implements DataService {
+public class GeomesaService_direct_Call implements DataService {
  
-  static GeomesaHbase gmh;
-  Vertx vertx = null;
+	static GeomesaHbase gmh;
   
-  public GeomesaService(Vertx vertx) {
+  public GeomesaService_direct_Call() {
 	  //initialize the geomesa database
-    this.vertx = vertx;
-    gmh = new GeomesaHbase(vertx);
-  }
-
-  public GeomesaService() {
-	  //initialize the geomesa database
-    if(gmh==null) 
-    {
+    if(gmh==null) {
  	   gmh = new GeomesaHbase();
  	   gmh.geomesa_initialize();
     }
   }
 
-  /*
   static void initialize() {
-    if(gmh==null){
-      gmh = new GeomesaHbase();
-      gmh.geomesa_initialize();
-    }
-  }
-  */
+	  if(gmh==null){
+	   gmh = new GeomesaHbase();
+	   gmh.geomesa_initialize();
+	 }
+	}
   
   @Override
-  public void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler) {
+  public void insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
 	   // Validate if it complies to the schema. No actual usage
 	    // TODO: Need to change this to proper validation instead.
 	   // DataPoint dataPoint = data.mapTo(DataPoint.class); 
 	    
-    // TODO: data schema validation
-    gmh.geomesa_insertData(data, resultHandler);
-  } 
+	    gmh.geomesa_insertData(data, res -> {
+		      if (res.succeeded()) {
+			        // Load result to future if success.
+			        //System.out.println("Succeeded in InsertPoint GeomesaService");
+			        resultHandler.handle(Future.succeededFuture(true));
+			      } else {
+			        // TODO: Need to add failure behavior.
+			    	//System.out.println("Failed in InsertPoint GeomesaService");
+			    	resultHandler.handle(Future.succeededFuture(false));
+			      }
+	          });
+	    
+		
+	} 
 	  
   @Override
   public void queryDataBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
@@ -81,80 +82,24 @@ public class GeomesaService implements DataService {
   }
   
   @Override
-  public void querySimpleBbox(Double minLng, Double maxLng, Double minLat, Double maxLat,Handler<AsyncResult<JsonArray>> rh) {
-    gmh.bboxCacheQuery(minLng, maxLng, minLat, maxLat, gmhRh -> {
-      if (gmhRh.succeeded()) {
-        rh.handle(Future.succeededFuture(gmhRh.result())); 
-      } else {
-        rh.handle(Future.failedFuture(gmhRh.cause()));
-      }
-    });
-  }
-  
-  @Override
   public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
-      Double lat_max;
-      Double lat_min;
-      Double lng_min;
-      Double lng_max;
-      long timestamp_min;
-      long timestamp_max;
-      if (query.containsKey("lat_max")) {
-        lat_max = query.getDouble("lat_max");
-      } else {
-        lat_max = lat_default_max;
-      }
-      if (query.containsKey("lat_min")) {
-        lat_min = query.getDouble("lat_min");
-      } else {
-        lat_min = lat_default_min;
-      }
-      if (query.containsKey("lng_min")) {
-        lng_min = query.getDouble("lng_min");
-      } else {
-        lng_min = lng_default_min;
-      }
-      if (query.containsKey("lng_max")) {
-        lng_max = query.getDouble("lng_max");
-      } else {
-        lng_max = lng_default_max;
-      }
-      
-      if (query.containsKey("timestamp_min")) {
-        timestamp_min = query.getLong("timestamp_min");
-      } else {
-        timestamp_min = timestamp_default_min;
-      }
-      if (query.containsKey("timestamp_max")) {
-        timestamp_max = query.getLong("timestamp_max");
-      } else {
-        timestamp_max = System.currentTimeMillis();
-      }
-      
-      ArrayList<String> uuids = new ArrayList<String>();
-      if (query.containsKey("uuids")) {
-        JsonArray uuidJsonArray = query.getJsonArray("uuids");
-        for (int i=0; i<uuidJsonArray.size(); i++) {
-          uuids.add(uuidJsonArray.getString(i));
-        }
-      }
-      /*
-=======
+    	//System.out.println("in queryData GeomesaService query is:"+query);
       Double lat_max = query.getDouble("lat_max");
       Double lat_min = query.getDouble("lat_min");
       Double lng_min = query.getDouble("lng_min");
       Double lng_max = query.getDouble("lng_max");
       long timestamp_min = query.getLong("timestamp_min");
       long timestamp_max = query.getLong("timestamp_max");
->>>>>>> origin/citadel-sandeep */
       
       //String boxAndRangeQuery=lat_min+lat_max+lng_min+lng_max+timestamp_min+timestamp_max;
         //query is box and range both, other cases need to be implemented too
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
+         
+			//System.out.println("Result in queryData GeomesaService size is: "+resultJson.size());
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
             res.cause().printStackTrace();
@@ -162,9 +107,11 @@ public class GeomesaService implements DataService {
         });
       }//end if
       catch(Exception e){
-        resultHandler.handle(Future.failedFuture(e));
+        e.printStackTrace();
       }
     }
+  
+  
   
   /*
    * Geomesa query performs well when the time range is restricted to the range
@@ -175,20 +122,11 @@ public class GeomesaService implements DataService {
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
-      //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");
+	  GeomesaService_direct_Call GS=new GeomesaService_direct_Call();
 	  
-      /*
-	   String home = System.getenv("HADOOP_HOME");
-	   System.out.println("Sandeep Home is:"+home);
-	   home = System.getProperty("hadoop.home.dir");
-	   System.out.println("Sandeep Home is:"+home);
-	   */
-	   
-	  GeomesaService GS=new GeomesaService();
 	  
-	   
 	  //inserting the data points
-	  int count =0;//0*729000;
+	  int count =0*729000;
 	  String uuid="uuid1";
 	  double value_min=10.0;
 	  double value_max=20.0;
@@ -198,7 +136,7 @@ public class GeomesaService implements DataService {
 	  String geometryType = "point";
 	  Random random=new Random();
 	  DateTime MIN_DATE = new DateTime(2014, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
-	  Long SECONDS_PER_YEAR = 365L;//365L * 24L * 60L * 60L;
+	  Long SECONDS_PER_YEAR = 365L * 24L * 60L * 60L;
 	  
 	  for(int i=0;i<count;i++){		 
 			double value = value_min+random.nextDouble()*(value_max-value_min);
@@ -233,28 +171,19 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
-		 for(int k=0;k<2;k++)
+		 for(int k=0;k<100;k++)
 		 {
 		 //query the points just inserted:
 			 
 		 double lat_minq=31.0;
-		 double lat_maxq=32.0;
+		 double lat_maxq=31.5;
 		 double lng_minq=60.0;
-		 double lng_maxq=62.0;
+		 double lng_maxq=60.5;
 		 
-		 /*	 
-		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
-		 double lat_maxq=lat_minq+0.1;
-		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
-		 double lng_maxq=lng_minq+0.1;
-		 */
 		 
-		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
-		                  //1388534400000 
-		DateTime dateTime1 = MIN_DATE;//.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
-		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR)));
-		 long timestamp_min=dateTime1.getMillis();
-		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
+		 long timestamp_min=1388534400000L,timestamp_max=1389312000000L;
+		 String date1="2014-02-01T00:00:00.000Z";
+		 String date2="2014-02-10T00:00:00.000Z";
 		 
 		 JsonObject query = new JsonObject();
 		 query.put("lat_min", lat_minq);
@@ -263,50 +192,35 @@ public class GeomesaService implements DataService {
 		 query.put("lng_max", lng_maxq);
 		 query.put("timestamp_min", timestamp_min);
 		 query.put("timestamp_max", timestamp_max);
-		 long millistart;long milliend;
-		 
-		// millistart = System.currentTimeMillis();
-		 
-		 /*
-		 GS.queryDataBox(query, ar -> {
-		    	if (ar.failed()) {
-		          	System.out.println(ar.cause().getMessage());
-		        	} else {
-		        		
-		        		String result=ar.result().toString();
-		        		System.out.println("Query Results are:"+result);
-		        		//System.out.println("Result size is:"+result.length());
-		        		JsonArray datarec=new JsonArray(result);
-		    			System.out.println(datarec.size());
-		    			
-		        		System.out.println("Query done in Main");
-		        	}
-		       });
-		 
-		 milliend = System.currentTimeMillis();
-	     System.out.println("Time taken is:"+(milliend-millistart));
-	     
-	     */
 		 System.out.println(k+" : Query is:"+query);
+		 
+		 long millistart;long milliend;
 	     millistart = System.currentTimeMillis();
-		 GS.queryData(query, ar -> {
+	    
+	      //JsonArray result=GS.gmh.Query_Box_Lat_Lng_Time_Range( lat_minq,  lat_maxq,  lng_minq,  lng_maxq, timestamp_min , timestamp_max);
+	     
+	     //JsonArray result=GS.gmh.Query_Box_Lat_Lng_Time_Range2( lat_minq,  lat_maxq,  lng_minq,  lng_maxq, date1 , date2);
+	     //System.out.println("Size of result set is:"+result.size());
+	     
+	     
+	      GS.queryData(query, ar -> {
 		    	if (ar.failed()) {
 		          	System.out.println(ar.cause().getMessage());
 		        	} else {
 		        		
-		        		String result=ar.result().toString();
-		        		
+		        		String result2=ar.result().toString();
+		        		//System.out.println("Query Results are:"+result2);
+		        		//System.out.println("Result size is:"+result2.length());
+		        		JsonArray datarec=new JsonArray(result2);
+		    			System.out.println("Result Size is:"+datarec.size());
 		    			
-		        		//System.out.println("Query 2 Results are:"+result);
-		        		JsonArray datarec=new JsonArray(result);
-		    			System.out.println("Result size is: "+datarec.size());
-		    			
-		        		
+		        		//System.out.println("Query done in Main");
 		        	}
 		       });
-		 milliend = System.currentTimeMillis();
-		 System.out.println(k+" : Query 2 done in Main");
-		 
+	      
+	      milliend = System.currentTimeMillis();
+		// System.out.println("Size of result set is:"+result.size());
+		// System.out.println(k+" : Query 2 done in Main");
 	     System.out.println("Time taken is:"+(milliend-millistart));
 	     System.out.println();
 	     

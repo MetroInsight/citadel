@@ -25,36 +25,6 @@ public class DataRestApi {
     dataService = new GeomesaService();
   }
   
-  /*
-  
-  public void queryData(RoutingContext rc) {
-    HttpServerResponse resp = getDefaultResponse(rc);
-    BaseContent content = new BaseContent();
-    JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
-    dataService.queryData(q, ar -> {
-      String cStr;
-      String cLen;
-    	if (ar.failed()) {
-    	  content.setReason(ar.cause().getMessage());
-    	  resp.setStatusCode(400);
-    	} else {
-    		System.out.println("Suceeded in DataRestAPI Query Data");
-    		//String resultStr = ar.result().toString();
-    		System.out.println("Query Results are:" + ar.result().toString());
-    		//String length = Integer.toString(resultStr.length());
-    		resp.setStatusCode(200);
-    		content.setSucceess(true);
-    		content.setResults(ar.result());
-    	}
-    	cStr = content.toString();
-    	cLen = Integer.toBinaryString(cStr.length());
-    	resp
-    	  .putHeader("content-length", cLen)
-    	  .write(cStr)
-    	  .end();
-    	});
-  }
-   */
   public void queryData(RoutingContext rc) {
     JsonObject q = rc.getBodyAsJson().getJsonObject("query");
     HttpServerResponse resp = getDefaultResponse(rc);
@@ -90,6 +60,10 @@ public class DataRestApi {
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonArray q = body.getJsonArray("data");
+	  //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");
+	  System.out.println("body is:"+body);
+	//  JsonArray q = body.getJsonArray("data");
+	  
     // Call createPoint in metadataService asynchronously.
     HttpServerResponse resp = getDefaultResponse(rc);
     dataService.insertData(q, ar -> { 
@@ -130,7 +104,6 @@ public class DataRestApi {
         .putHeader("content-length", cLen)
         .write(cStr);
     });
-    
   }
 
 }

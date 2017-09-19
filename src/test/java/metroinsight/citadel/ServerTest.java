@@ -2,6 +2,8 @@ package metroinsight.citadel;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,20 +45,28 @@ public class ServerTest {
   
   @Before
   public void setUp(TestContext context) throws IOException{
+
+	  ClassLoader cl = ClassLoader.getSystemClassLoader();
+	  URL[] urls = ((URLClassLoader)cl).getURLs();
+	  for(URL url: urls) {
+		  System.out.println(url.getFile());
+	  }
     ServerSocket socket = null;
     socket = new ServerSocket(0);
-    //port = socket.getLocalPort();
     port = 8080; //socket.getLocalPort();
     socket.close();
     
     DeploymentOptions options = new DeploymentOptions()
         .setConfig(new JsonObject().put("http.port", port)
             );
+    System.out.println("Deploy options: ");
+    System.out.println(options.toJson());
     vertx = Vertx.vertx();
     //vertx.deployVerticle(RestApiVerticle.class.getName(),
     vertx.deployVerticle(MetadataVerticle.class.getName(),
         context.asyncAssertSuccess());
     vertx.deployVerticle(RestApiVerticle.class.getName(),
+    //vertx.deployVerticle(MainVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
   }
@@ -241,7 +251,7 @@ public class ServerTest {
     	.write(queryStr)
   }
 */
-  @Test
+  //@Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
@@ -300,25 +310,27 @@ public class ServerTest {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
-  	data.put("lat_min", 32.868623);
-  	data.put("lat_max", 32.893202);
-  	data.put("lng_min", -117.244438);
-  	data.put("lng_max", -117.214398);
-  	data.put("timestamp_min", 1499813707623L);
-  	data.put("timestamp_max", 1499813709623L);
+  	data.put("lat_min", 31);
+  	data.put("lat_max", 31.5);
+  	data.put("lng_min", 60.0);
+  	data.put("lng_max", 60.4);
+  	data.put("timestamp_min", 1388534400000L);
+  	data.put("timestamp_max", 1389312000000L);
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, serverip, "/api/querydata")
-      .putHeader("content-type", "application/json")
-      .putHeader("content-length",  length)
-      .handler(response -> {
-        context.assertEquals(response.statusCode(), 200);
-        response.bodyHandler(body -> {
-          System.out.println("Data Query response is:"+body);
-          context.assertTrue(body.toJsonObject().getJsonArray("results").size() > 0);
-          async.complete();
-          });
+    	.putHeader("content-type", "application/json")
+    	.putHeader("content-length",  length)
+    	.handler(response -> {
+    		context.assertEquals(response.statusCode(), 200);
+    		response.bodyHandler(body -> {
+    			//System.out.println("Data Query response is:"+body);
+    			int dataNum = body.toJsonArray().size();
+    			System.out.println("# of data found: " + Integer.toString(dataNum));
+    			context.assertTrue(dataNum > 0);
+    			async.complete();
+    		});
     	})
       .write(queryStr);
   }

@@ -2,6 +2,10 @@ package metroinsight.citadel;
 
 import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
@@ -51,6 +55,8 @@ public class RestApiVerticle extends MicroServiceVerticle {
           .end("<h1>Hello from my first Vert.x 3 application</h1>");
     });
     
+    router.route("/*").handler(BodyHandler.create());
+    
     // REST API routing for MetaData
     router.post("/api/point").handler(metadataRestApi::createPoint);
     router.get("/api/point/:uuid").handler(metadataRestApi::getPoint);
@@ -63,19 +69,20 @@ public class RestApiVerticle extends MicroServiceVerticle {
     router.post("/api/querydata/simplebbox").blockingHandler(dataRestApi::querySimpleBbox);
     
     Integer port = config().getInteger("http.port", 8080);
+
     vertx
-        .createHttpServer()
-        .requestHandler(router::accept)
-        .listen(
-           port,
-           result -> {
-             if (result.succeeded()) {
-               fut.complete();
-               System.out.println("REST_API_VERTICLE STARTED at " + port.toString());
-             } else {
-               fut.fail(result.cause());
-             }
-           });
+      .createHttpServer()
+      .requestHandler(router::accept)
+      .listen(
+          port,
+          result -> {
+            if (result.succeeded()) {
+              fut.complete();
+              System.out.println("REST_API_VERTICLE STARTED at " + port.toString());
+            } else {
+              fut.fail(result.cause());
+            }
+          });
   }
 
   public void queryPoint(RoutingContext rc) {

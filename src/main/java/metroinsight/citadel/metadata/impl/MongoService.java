@@ -19,7 +19,7 @@ public class MongoService implements MetadataService {
   String collName;
   
   public MongoService(Vertx vertx) {
-  	/*
+  	/*//
     String uri = vertx.config().getString("mongo_uri");
     if (uri == null) {
       uri = "mongodb://localhost:27017";

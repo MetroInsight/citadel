@@ -410,67 +410,6 @@ public class GeomesaHbase {
     return ja;
   }// end function
 	
-  private JsonArray queryFeatures_Box_Lat_Lng_Time_Range2(DataStore dataStore2, String geomField, String dateField, Double lat_min,
-			Double lng_min, Double lat_max, Double lng_max, String date1, String date2) {
-		JsonArray ja = new JsonArray();
-
-		
-		try{
-		// construct a (E)CQL filter from the search parameters,
-		// and use that as the basis for the query
-		String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max + ")";
-		
-		
-		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
-		String filter=cqlGeometry+" AND "+cqlDates;
-		
-		Filter cqlFilter = CQL.toFilter(filter);
-		
-		
-		Query query = new Query(simpleFeatureTypeName, cqlFilter);
-		
-		/*This line force the geomesa to evaluate the bounding box very accurately*/
-		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
-		
-		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
-		
-		// submit the query, and get back an iterator over matching features
-		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
-		FeatureIterator featureItr = featureSource.getFeatures(query).features();
-		
-		// loop through all results
-		int n = 0;
-		while (featureItr.hasNext()) {
-			Feature feature = featureItr.next();
-			//System.out.println("Next:"+n++);
-			try{
-			JsonObject Data = new JsonObject();
-			Data.put("uuid", feature.getProperty("uuid").getValue());
-			Date date=(Date) feature.getProperty("date").getValue();
-			Data.put("timestamp", date.getTime());
-			Point point =(Point) feature.getProperty("point_loc").getValue();
-			Coordinate cd=point.getCoordinates()[0];//since it a single point
-			Data.put("lat", cd.x);
-			Data.put("lng", cd.y);
-			Data.put("value", feature.getProperty("value").getValue());
-			ja.add(Data);	
-			}
-			catch(Exception e){
-				e.printStackTrace();
-			}
-			
-		}
-		featureItr.close();
-		//System.out.println("Next:"+n++);
-		
-		
-		}//end try
-		catch(Exception e){
-			e.printStackTrace();
-		}//end catch
-		return ja;
-	}//end function
-
   public JsonArray Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max) {
     try {
 
@@ -510,27 +449,6 @@ public class GeomesaHbase {
     }
     return null;
   }// end function
-	
-  JsonArray Query_Box_Lat_Lng_Time_Range2(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-			String timestamp_min, String timestamp_max) {
-		try {
-
-			if (dataStore == null) {
-				geomesa_initialize();
-			}
-		
-
-			// query a few Features from this table
-			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
-			//the point_loc and date should be part of the config
-			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range2(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
-
-			return result;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}//end function
 	
   public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Void>> rh) {
     try {

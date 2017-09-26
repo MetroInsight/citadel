@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -32,6 +33,7 @@ import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.metadata.impl.MetadataVerticle;
 import metroinsight.citadel.model.CachedData;
+import metroinsight.citadel.rest.RestApiVerticle;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
 import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;;
@@ -41,16 +43,10 @@ public class ServerTest {
   
   private Vertx vertx;
   private Integer port;
-  String serverip="localhost";
+  String serverip = "localhost";
   
   @Before
   public void setUp(TestContext context) throws IOException{
-
-	  ClassLoader cl = ClassLoader.getSystemClassLoader();
-	  URL[] urls = ((URLClassLoader)cl).getURLs();
-	  for(URL url: urls) {
-		  System.out.println(url.getFile());
-	  }
     ServerSocket socket = null;
     socket = new ServerSocket(0);
     port = 8080; //socket.getLocalPort();
@@ -65,8 +61,9 @@ public class ServerTest {
     //vertx.deployVerticle(RestApiVerticle.class.getName(),
     vertx.deployVerticle(MetadataVerticle.class.getName(),
         context.asyncAssertSuccess());
+    //vertx.deployVerticle(DataVerticle.class.getName(),
+    //    context.asyncAssertSuccess());
     vertx.deployVerticle(RestApiVerticle.class.getName(),
-    //vertx.deployVerticle(MainVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
   }
@@ -97,7 +94,8 @@ public class ServerTest {
 //              context.assertEquals(response.statusCode(), 201);
               response.bodyHandler(body -> {
                 JsonObject jsonBody = body.toJsonObject();
-                if (jsonBody.getString("reason").equals(ErrorMessages.EXISTING_POINT_NAME)) {
+                if (jsonBody.getString("reason").equals(ErrorMessages.EXISTING_POINT_NAME) |
+                    jsonBody.getString("reason").equals(ErrorMessages.EXISTING_UUID)) {
                   async.complete();
                 } else {
                   context.assertTrue(jsonBody.getBoolean("success"));
@@ -122,7 +120,7 @@ public class ServerTest {
     data.put("query", query);
     String queryStr = Json.encodePrettily(data);
     String length = Integer.toString(queryStr.length());
-    vertx.createHttpClient().post(port, "localhost", "/api/query")
+    vertx.createHttpClient().post(port, serverip, "/api/query")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
@@ -196,7 +194,7 @@ public class ServerTest {
     String queryStr = Json.encodePrettily(data);
     String length = Integer.toString(queryStr.length());
     HttpClient client = vertx.createHttpClient();
-    client.post(port, "localhost", "/api/query")
+    client.post(port, serverip, "/api/query")
     	.putHeader("content-type", "application/json")
     	.putHeader("content-length",  length)
     	.handler(response -> {
@@ -204,7 +202,7 @@ public class ServerTest {
     		response.bodyHandler(body -> {
     		  String uuid = body.toJsonObject().getJsonArray("results").getString(0);
     		  HttpClient client2 = vertx.createHttpClient();
-    		  client2.get(port, "localhost", "/api/point/" + uuid)
+    		  client2.get(port, serverip, "/api/point/" + uuid)
     		    .handler(resp2 -> {
     		     resp2.bodyHandler(body2 -> {
     		       JsonArray res = body2.toJsonObject().getJsonArray("results");
@@ -228,50 +226,61 @@ public class ServerTest {
     
   }
   
+  private String getUuidByName(String name) {
+  	JsonObject data = new JsonObject();
+  	JsonObject query = new JsonObject();
+  	HttpClient client = vertx.createHttpClient();
+    query.put("name", name);
+    data.put("query", query);
+    String queryStr = Json.encodePrettily(data);
+    String length = Integer.toString(queryStr.length());
+    Future<String> fut = Future.future();
+    vertx.createHttpClient().post(port, serverip, "/api/query")
+    	.putHeader("content-type", "application/json")
+    	.putHeader("content-length",  length)
+    	.handler(response -> {
+    		response.bodyHandler(body -> {
+    		  String uuid1 = body.toJsonObject().getJsonArray("results").getString(0);
+    		  fut.complete(uuid1);
+    		});
+    	})
+    	.write(queryStr);
+    while (!fut.isComplete()) {
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      // TODO: This is not a good implementation.
+    }
+    return fut.result();
+  }
+  
   @Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
-    String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
-    String uuid2 = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-  	JsonObject query = new JsonObject();
-
-  	JsonArray data = new JsonArray();
-
-  	JsonObject datum1 = new JsonObject();
-//  	Double lng = 31.1;
-//  	Double lat = 60.1;
-  	Double lng = -117.231221;
-  	Double lat = 32.881454;
-  	datum1.put("uuid", uuid);
-  	datum1.put("timestamp", 1499813708623L);
-  	datum1.put("value", 15);
-  	datum1.put("geometryType", "point");
-  	ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
-  	ArrayList<Double> coordinate = new ArrayList<Double>();
-  	coordinate.add(lng);
-  	coordinate.add(lat);
-  	coordinates.add(coordinate);
-  	datum1.put("coordinates", coordinates);
-  	data.add(datum1);
-
-  	JsonObject datum2 = new JsonObject();
-  	lng = -117.231230;
-  	lat = 32.881450;
-  	datum2.put("uuid", uuid2);
-  	datum2.put("timestamp", 1499813708600L);
-  	datum2.put("value", 20);
-  	datum2.put("geometryType", "point");
-  	ArrayList<ArrayList<Double>> coordinates2 = new ArrayList<ArrayList<Double>>();
-  	ArrayList<Double> coordinate2 = new ArrayList<Double>();
-  	coordinate2.add(lng);
-  	coordinate2.add(lat);
-  	coordinates2.add(coordinate2);
-  	datum2.put("coordinates", coordinates2);
-  	data.add(datum2);
-  	
-  	query.put("data",data);
-    String queryStr = Json.encodePrettily(query);
+    JsonArray testData = getDataTestConfig();
+    JsonObject queryData = new JsonObject();
+    queryData.put("data", new JsonArray());
+    for (int i=0; i < testData.size(); i++) {
+      JsonObject datum = testData.getJsonObject(i);
+      String uuid = getUuidByName(datum.getString("name"));
+      context.assertNotEquals(uuid, null);
+      JsonObject queryDatum = new JsonObject();
+      queryDatum.put("uuid", uuid); 
+      ArrayList<Double> coordinate = new ArrayList<Double>();
+      coordinate.add(datum.getJsonArray("coordinates").getJsonArray(0).getDouble(0));
+      coordinate.add(datum.getJsonArray("coordinates").getJsonArray(0).getDouble(1));
+      List<List<Double>> coordinates = new ArrayList(Arrays.asList(coordinate));
+      queryDatum.put("coordinates", coordinates);
+      queryDatum.put("timestamp", datum.getLong("timestamp"));
+      queryDatum.put("value", datum.getDouble("value"));
+      queryDatum.put("geometryType", "point");
+      queryData.getJsonArray("data").add(queryDatum);
+    }
+    String queryStr = Json.encodePrettily(queryData);
     String length = Integer.toString(queryStr.length());
     vertx.createHttpClient().post(port, serverip, "/api/data")
     	.putHeader("content-type", "application/json")
@@ -281,7 +290,7 @@ public class ServerTest {
     	  async.complete();
     	})
     	.write(queryStr);
-    System.out.println("FINISHED TESTING INSERT DATA");
+    System.out.println("Insertion Test Finished");
   }
   
   @Test
@@ -289,12 +298,19 @@ public class ServerTest {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
+    JsonArray testData = getDataTestConfig();
+    Double minLng = 0.0;
+    Double maxLng = 0.0;
+    Double minLat = 0.0;
+    Double maxLat = 0.0;
+    testData.getJsonObject(0).getJsonArray("coordinates").getJsonArray(0).getDouble(0);
+
   	data.put("lat_min", 32.868623);
     data.put("lat_max", 32.893202);
     data.put("lng_min", -117.244438);
     data.put("lng_max", -117.214398);
   	data.put("timestamp_min", 1388534400000L);
-  	data.put("timestamp_max", 1389312000000L);
+  	data.put("timestamp_max", 1500813708623L);
   	query.put("query",data);
     String queryStr = Json.encodePrettily(query);
     String length = Integer.toString(queryStr.length());
@@ -305,7 +321,7 @@ public class ServerTest {
     		context.assertEquals(response.statusCode(), 200);
     		response.bodyHandler(body -> {
     			//System.out.println("Data Query response is:"+body);
-    			int dataNum = body.toJsonArray().size();
+    			int dataNum = body.toJsonObject().getJsonArray("results").size();
     			System.out.println("# of data found: " + Integer.toString(dataNum));
     			context.assertTrue(dataNum > 0);
     			async.complete();
@@ -326,11 +342,12 @@ public class ServerTest {
     return true;
   }
 
-  //@Test
+  @Test
   public void testQueryDataOnlyUUID(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
   	JsonObject data = new JsonObject();
+  	// TODO: Need to exploit data sample file.
     String uuid = "90fb26f6-4449-482b-87be-83e5741d213e"; 
     JsonArray uuids = new JsonArray();
     uuids.add(uuid);
@@ -386,6 +403,33 @@ public class ServerTest {
       async.complete();
     }); 
   }
+  
+  /*
+  @Test
+  public void testData(TestContext context) {
+    TestSuite suite = TestSuite.create("data_test_suite");
+    suite
+      .test("insert_data_test", ctx -> {
+      testInsertData(ctx);
+    }).test("query_data_test", ctx -> {
+      testQueryData(ctx);
+    }).after(ctx -> {
+      context.assertTrue(true);
+    });
+    suite.run(vertx);
+    TestCompletion completion = suite.run(vertx);
+
+    // Simple completion callback
+    completion.handler(ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Test suite passed!");
+      } else {
+        System.out.println("Test suite failed:");
+        ar.cause().printStackTrace();
+      }
+    });
+  }
+  */
   
   //@Test
   public void testRedisRead(TestContext context) {

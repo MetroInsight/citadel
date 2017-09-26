@@ -16,7 +16,7 @@ public class MetadataVerticle extends MicroServiceVerticle {
     MetadataService service = new VirtuosoService(vertx, discovery);
     ProxyHelper.registerService(MetadataService.class, vertx, service, ADDRESS);
     
-    publishEventBusService("metadata", ADDRESS, VirtualSensorService.class, rh -> {
+    publishEventBusService("metadata", ADDRESS, MetadataService.class, rh -> {
       if (rh.failed()) {
         rh.cause().printStackTrace();
       } else {

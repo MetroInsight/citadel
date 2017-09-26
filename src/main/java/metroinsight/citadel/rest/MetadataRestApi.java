@@ -1,4 +1,4 @@
-package metroinsight.citadel.metadata;
+package metroinsight.citadel.rest;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
@@ -6,6 +6,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.common.ErrorMessages;
+import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.metadata.impl.VirtuosoService;
 import metroinsight.citadel.model.BaseContent;
 

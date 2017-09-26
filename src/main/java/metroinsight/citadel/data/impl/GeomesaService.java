@@ -12,17 +12,32 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.servicediscovery.ServiceDiscovery;
 import metroinsight.citadel.data.DataService;
 
 public class GeomesaService implements DataService {
+  
+  private final Vertx vertx;
+  private final ServiceDiscovery discovery;
  
   static GeomesaHbase gmh;
-  Vertx vertx = null;
-  
+
   public GeomesaService(Vertx vertx) {
-	  //initialize the geomesa database
     this.vertx = vertx;
-    gmh = new GeomesaHbase(vertx);
+    this.discovery = null;
+    if (gmh==null) {
+      gmh = new GeomesaHbase(vertx);
+      gmh.geomesa_initialize();
+    }
+  }
+  
+  public GeomesaService(Vertx vertx, ServiceDiscovery discovery) {
+    this.vertx = vertx;
+    this.discovery = discovery;
+    if (gmh==null) {
+      gmh = new GeomesaHbase(vertx);
+      gmh.geomesa_initialize();
+    }
   }
 
   /*
@@ -164,15 +179,13 @@ public class GeomesaService implements DataService {
    * actually present in the data sets, else it is very badly affected with arbitrary time ranges
    * 
    */
-  
-  /*
   public static void main(String[] args) {	
 	  
 	  //testing the fucntionality of Geomesa service:
       //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");
 	  
 	   
-	  GeomesaService GS=new GeomesaService();
+	  GeomesaService GS=new GeomesaService(null);
 	  
 	   
 	  //inserting the data points
@@ -274,8 +287,6 @@ public class GeomesaService implements DataService {
 		 }//end for loop on query
 	  
   }
-  */
-
 
 
 }

@@ -1,6 +1,7 @@
 package metroinsight.citadel.metadata.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -190,24 +191,41 @@ public class VirtuosoService implements MetadataService  {
       pss.setNsPrefix("citadel", CITADEL);
       return pss;
   }
-
+  
+  private ResultSet findByTagValues(List<List<String>> tagValuePairs) {
+    ParameterizedSparqlString pss = getDefaultPss();
+    String qStr = "select ?s where {\n";
+    for (int i=0; i < tagValuePairs.size(); i++) {
+      List<String> tagValue = tagValuePairs.get(i);
+      String tag = tagValue.get(0);
+      String value = tagValue.get(1);
+      qStr += String.format("{?s citadel:%s ex:%s .}\n", tag, value);
+      qStr += "UNION\n";
+      qStr += String.format("{?s citadel:%s citadel:%s .}\n", tag, value);
+    }
+    qStr += "}";
+    pss.setCommandText(qStr);
+    return sparqlQuery(pss.toString());
+  }
+  
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
-      // Check if it already exists
-      ParameterizedSparqlString pss = getDefaultPss();
-      pss.setCommandText("select ?s where {?s citadel:name ?name .}");
+      // Check if the name already exists
       String nameStr = jsonMetadata.getString("name");
       Node name = NodeFactory.createURI(EX + nameStr); // TODO: Change name to Literal later
-      //Node name = NodeFactory.createLiteral(nameStr);
+      /*
+      ParameterizedSparqlString pss = getDefaultPss();
+      pss.setCommandText("select ?s where {?s citadel:name ?name .}");
       pss.setParam("name", name);
-      String qStr = pss.toString();
       ResultSet res = sparqlQuery(pss.toString());
+      */
+      ResultSet res = findByTagValues(Arrays.asList(Arrays.asList("name", nameStr)));
       if (res.hasNext()) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
         // Create the point
-        String uuid = UUID.randomUUID().toString();
+        String uuid = jsonMetadata.getString("uuid");
         Node point = NodeFactory.createURI(EX + uuid);
         Node pointType = NodeFactory.createURI(CITADEL + jsonMetadata.getString("pointType"));
         graph.add(new Triple(point, a, pointType));

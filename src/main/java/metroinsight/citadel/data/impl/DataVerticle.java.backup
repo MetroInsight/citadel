@@ -1,0 +1,34 @@
+package metroinsight.citadel.data.impl;
+
+import static metroinsight.citadel.data.DataService.ADDRESS;
+import static metroinsight.citadel.data.DataService.EVENT_ADDRESS;
+
+import io.vertx.serviceproxy.ProxyHelper;
+import metroinsight.citadel.common.MicroServiceVerticle;
+import metroinsight.citadel.data.DataService;
+
+public class DataVerticle extends MicroServiceVerticle {
+  
+  @Override
+  public void start() {
+    super.start();
+    DataService service = new GeomesaService(vertx, discovery);
+    ProxyHelper.registerService(DataService.class, vertx, service, ADDRESS);
+
+    publishEventBusService("data", ADDRESS, DataService.class, rh -> {
+      if (rh.failed()) {
+        rh.cause().printStackTrace();
+      } else {
+        System.out.println("Data service published: " + rh.succeeded());
+      }
+    });
+    
+    publishMessageSource("data-events", EVENT_ADDRESS, rh -> {
+      if (rh.failed()) {
+        rh.cause().printStackTrace();
+      } else {
+        System.out.println("Data event service published: " + rh.succeeded());
+      }
+    });
+  }
+}

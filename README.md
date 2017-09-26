@@ -12,6 +12,8 @@ This is a Maven project. You can use any mvn commands.
  (1) Necessary packages will be installed via Maven.
 4. Virtuoso
  (1) [Install](https://github.com/openlink/virtuoso-opensource)
+5. Redis 
+ (1) [Install](https://redis.io/topics/quickstart)
 
 
 ### Set up dev env.

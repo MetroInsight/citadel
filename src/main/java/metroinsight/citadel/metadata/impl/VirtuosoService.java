@@ -44,7 +44,7 @@ public class VirtuosoService implements MetadataService  {
   final String RDFS = "http://www.w3.org/2000/01/rdf-schema#";
   final String EX = "http://example.com#";
   
-  Map<String, Node> prefixMap;
+  Map<String, Node> propertyMap;
   
   // TODO: Maybe add a map between uesr-prop to rdf property. e.g., "pointType" -> rdf:type.
   
@@ -57,6 +57,15 @@ public class VirtuosoService implements MetadataService  {
   List<String> units;
   List<String> types;
   
+  public VirtuosoService(Vertx vertx, ServiceDiscovery discovery) {
+    this.vertx = vertx;
+    this.discovery = discovery;
+    if (graph==null) {
+      graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
+    }
+    initSchema();
+  }
+  
   private void initSchema() {
     // Init common variables
     units = new ArrayList<String>();
@@ -68,11 +77,11 @@ public class VirtuosoService implements MetadataService  {
     
     // Init Namespace Map
     // This may be automated once we get a schema file (in Turtle).
-    prefixMap = new HashMap<String, Node>();
-    prefixMap.put("pointType", NodeFactory.createURI(RDF + "type"));
-    prefixMap.put("subClassOf", NodeFactory.createURI(RDFS + "subClassOf"));
-    prefixMap.put("unit", NodeFactory.createURI(CITADEL + "unit"));
-    prefixMap.put("name", NodeFactory.createURI(EX + "name"));
+    propertyMap = new HashMap<String, Node>();
+    propertyMap.put("pointType", NodeFactory.createURI(RDF + "type"));
+    propertyMap.put("subClassOf", NodeFactory.createURI(RDFS + "subClassOf"));
+    propertyMap.put("unit", NodeFactory.createURI(CITADEL + "unit"));
+    propertyMap.put("name", NodeFactory.createURI(EX + "name"));
     
     // Init units
     // types
@@ -80,39 +89,47 @@ public class VirtuosoService implements MetadataService  {
     citadelTypes.addAll(types);
     for (int i=0; i < citadelTypes.size(); i++) {
       String v = citadelTypes.get(i);
-      prefixMap.put(v, NodeFactory.createURI(CITADEL + v));
+      propertyMap.put(v, NodeFactory.createURI(CITADEL + v));
     }
 
   }
   
-  private Node addPrefix(String prop) {
-    return prefixMap.getOrDefault(prop, NodeFactory.createURI(CITADEL + prop));
+  private Node withPrefix(String prop) {
+    return propertyMap.getOrDefault(prop, NodeFactory.createURI(EX + prop));
   }
   
-  public VirtuosoService(Vertx vertx) {
-    this.vertx = vertx;
-    this.discovery = ServiceDiscovery.create(vertx);
-    if (graph==null) {
-      graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
-    }
-    initSchema();
+  private ParameterizedSparqlString getDefaultPss() {
+      ParameterizedSparqlString pss = new ParameterizedSparqlString();
+      pss.setBaseUri(EX);
+      pss.setNsPrefix("ex", EX);
+      pss.setNsPrefix("rdf", RDF);
+      pss.setNsPrefix("rdfs", RDFS);
+      pss.setNsPrefix("citadel", CITADEL);
+      return pss;
   }
   
-  public VirtuosoService(Vertx vertx, ServiceDiscovery discovery) {
-    this.vertx = vertx;
-    this.discovery = discovery;
-    if (graph==null) {
-      graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
+  private ResultSet findByTagValues(List<List<String>> tagValuePairs) {
+    ParameterizedSparqlString pss = getDefaultPss();
+    String qStr = "select ?s where {\n";
+    for (int i=0; i < tagValuePairs.size(); i++) {
+      List<String> tagValue = tagValuePairs.get(i);
+      String tag = tagValue.get(0);
+      String value = tagValue.get(1);
+      qStr += String.format("{?s citadel:%s ex:%s .}\n", tag, value);
+      qStr += "UNION\n";
+      qStr += String.format("{?s citadel:%s citadel:%s .}\n", tag, value);
     }
-    initSchema();
+    qStr += "}";
+    pss.setCommandText(qStr);
+    return sparqlQuery(pss.toString());
   }
   
   @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
     try {
+      // Construct a SPARQL query.
       ParameterizedSparqlString pss = getDefaultPss();
       String qStr = "SELECT ?s WHERE {\n";
-      //pss.setCommandText("SELECT ?s WHERE ");
       for (int i=0; i< query.fieldNames().size(); i++) {
         qStr += "?s ? ? . \n";
       }
@@ -121,9 +138,11 @@ public class VirtuosoService implements MetadataService  {
       Set<String> keys = query.fieldNames();
       Iterator<String> keyIter = keys.iterator();
       int i = 0;
+      String key;
+      String value;
       while (keyIter.hasNext()) {
-        String key = keyIter.next();
-        String value = query.getString(key);
+        key = keyIter.next();
+        value = query.getString(key);
         if (key.equals("pointType")) { // TODO: Use map to organize below.
           key = RDF + "type";
           value = CITADEL + value;
@@ -136,10 +155,18 @@ public class VirtuosoService implements MetadataService  {
         }
         pss.setIri(i * 2, key);
         pss.setIri(i * 2 + 1, value);
+        /*
+        Node keyNode = withPrefix(key);
+        Node valueNode = withPrefix(value);
+        pss.setParam(i * 2, keyNode);
+        pss.setParam(i * 2 + 1, valueNode);
+        */
         i += 1;
       }
+      // Run SPARQL query.
       ResultSet results = sparqlQuery(pss.toString());
       JsonArray uuids = new JsonArray();
+      // Get UUIDs from the result.
       while (results.hasNext()) {
         String uuid = results.nextSolution().get("s").toString().split("#")[1];
         uuids.add(uuid);
@@ -182,32 +209,6 @@ public class VirtuosoService implements MetadataService  {
     }
   }
   
-  private ParameterizedSparqlString getDefaultPss() {
-      ParameterizedSparqlString pss = new ParameterizedSparqlString();
-      pss.setBaseUri(EX);
-      pss.setNsPrefix("ex", EX);
-      pss.setNsPrefix("rdf", RDF);
-      pss.setNsPrefix("rdfs", RDFS);
-      pss.setNsPrefix("citadel", CITADEL);
-      return pss;
-  }
-  
-  private ResultSet findByTagValues(List<List<String>> tagValuePairs) {
-    ParameterizedSparqlString pss = getDefaultPss();
-    String qStr = "select ?s where {\n";
-    for (int i=0; i < tagValuePairs.size(); i++) {
-      List<String> tagValue = tagValuePairs.get(i);
-      String tag = tagValue.get(0);
-      String value = tagValue.get(1);
-      qStr += String.format("{?s citadel:%s ex:%s .}\n", tag, value);
-      qStr += "UNION\n";
-      qStr += String.format("{?s citadel:%s citadel:%s .}\n", tag, value);
-    }
-    qStr += "}";
-    pss.setCommandText(qStr);
-    return sparqlQuery(pss.toString());
-  }
-  
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
@@ -246,15 +247,15 @@ public class VirtuosoService implements MetadataService  {
       Iterator<String> keys = newMetadata.fieldNames().iterator();
       while (keys.hasNext()) {
         String key = keys.next();
-        Node prop = addPrefix(key);
+        Node prop = withPrefix(key);
         Object value = newMetadata.getValue(key);
         if (value instanceof List) { // TODO: Check this is working. If not working, use try catch.
           Iterator<String> valueIter = ((List<String>) value).iterator();
           while (valueIter.hasNext()) {
-            graph.add(new Triple(point, prop, addPrefix(valueIter.next())));
+            graph.add(new Triple(point, prop, withPrefix(valueIter.next())));
           }
         } else if (value instanceof String) {
-            graph.add(new Triple(point, prop, addPrefix((String) value)));
+            graph.add(new Triple(point, prop, withPrefix((String) value)));
         }
       }
       rh.handle(Future.succeededFuture());

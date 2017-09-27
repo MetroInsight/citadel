@@ -5,10 +5,10 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.serviceproxy.ProxyHelper;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.metadata.MetadataService;
-import metroinsight.citadel.metadata.impl.VirtuosoService;
 import metroinsight.citadel.model.BaseContent;
 
 
@@ -18,8 +18,7 @@ public class MetadataRestApi extends RestApiTemplate {
   Vertx vertx;
   
   public MetadataRestApi (Vertx vertx) {
-    //metadataService = new MongoService (vertx);
-    metadataService = new VirtuosoService(vertx);
+    metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
     this.vertx = vertx;
   }
   

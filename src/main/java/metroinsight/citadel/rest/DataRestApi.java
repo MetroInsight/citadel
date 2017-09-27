@@ -1,9 +1,8 @@
 package metroinsight.citadel.rest;
 
-import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
-
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +16,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ProxyHelper;
+import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.DataService;
 import metroinsight.citadel.data.impl.GeomesaService;
 import metroinsight.citadel.datacache.DataCacheService;
@@ -26,7 +26,7 @@ import metroinsight.citadel.model.BaseContent;
 
 
 //TODO: This should be deprecated
-public class DataRestApi {
+public class DataRestApi extends RestApiTemplate{
 
   DataCacheService cacheService = null;
   MetadataService metadataService = null;
@@ -37,16 +37,11 @@ public class DataRestApi {
   public DataRestApi (Vertx vertx) {
     dataService = new GeomesaService(vertx);
     this.vertx = vertx;
-    //cacheService = new RedisDataCacheService(vertx);
+    cacheService = new RedisDataCacheService(vertx);
     metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
   }
-  
-  /*
-  public DataRestApi () {
-    dataService = new GeomesaService();
-  }
-  */
 
+  
   void upsertCache(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh) {
     if (cacheService == null) {
       return;
@@ -104,18 +99,13 @@ public class DataRestApi {
 
   public void insertData(RoutingContext rc) {
     HttpServerResponse resp = getDefaultResponse(rc);
-    JsonArray q = rc.getBodyAsJson().getJsonArray("data");
-
-    if (cacheService != null) {
-      //Update Cache if available.
-      
-    }
+    JsonArray data = rc.getBodyAsJson().getJsonArray("data");
 
     //// Validate if the UUIDs are valid.
     // Extract unique uuids in the data.
     Set<String> uuids = new HashSet<String>();
-    for (int i=0; i < q.size(); i++) {
-      uuids.add(q.getJsonObject(i).getString("uuid"));
+    for (int i=0; i < data.size(); i++) {
+      uuids.add(data.getJsonObject(i).getString("uuid"));
     }
     
     // Check if all uuids exist in metadata db.
@@ -131,24 +121,47 @@ public class DataRestApi {
       });
       uuidFutList.add(uuidFut);
     }
-    
+
+    //Update Cache if available.
+    Future<Void> cacheFuture = Future.future();
+    if (cacheService != null) {
+      String uuid;
+      JsonObject cacheBuffers = new JsonObject();
+      JsonObject datum;
+      for (int i = 0; i < data.size(); i++) {
+      //Buffering for cache
+        datum = data.getJsonObject(i);
+        uuid = datum.getString("uuid");
+        JsonObject buf = null;
+        if (cacheBuffers.containsKey(uuid)) {
+          datum = data.getJsonObject(i);
+          buf = cacheBuffers.getJsonObject(uuid);
+          if (buf.getDouble("timestamp") < datum.getDouble("timestamp")) {
+            cacheBuffers.put(uuid, datum);
+          }
+        } else {
+          cacheBuffers.put(uuid, datum);
+        }
+      }
+      Iterator<String> keyIter = cacheBuffers.fieldNames().iterator();
+      while (keyIter.hasNext()) {
+        uuid = keyIter.next();
+        upsertCache(uuid, cacheBuffers.getJsonObject(uuid), ar -> {
+          if (ar.failed()) {
+            cacheFuture.fail(ar.cause());
+          }
+        });
+      }
+    }
+
     // Actual running of uuid checking and then run the insertion.
     CompositeFuture.join(uuidFutList).setHandler(uuidAr -> {
       BaseContent content = new BaseContent();
       if (uuidAr.failed()) {
-        String cStr = "";
-        String cLen = "";
         // If any of uuid does not exist.
-        content.setReason(uuidAr.cause().getMessage());
-        cStr = content.toString();
-        cLen = Integer.toString(cStr.length());
-        resp
-          .setStatusCode(400)
-          .putHeader("content-length", cLen)
-          .write(cStr);
+        sendErrorResponse(resp, 400, uuidAr.cause().getMessage());
       } else {
-        // Try to insert Data
-        dataService.insertData(q, dataAr -> {
+        dataService.insertData(data, dataAr -> {
           String cStr = "";
           String cLen = "";
           if (dataAr.failed()) {
@@ -166,28 +179,10 @@ public class DataRestApi {
             .putHeader("content-length", cLen)
             .write(cStr);
         });
+        cacheFuture.complete();
       }
     });
   }
 
-  public void querySimpleBbox(RoutingContext rc) {
-    HttpServerResponse resp = getDefaultResponse(rc);
-    BaseContent content = new BaseContent();
-    JsonObject bbox = rc.getBodyAsJson().getJsonObject("query");
-    dataService.querySimpleBbox(bbox.getDouble("min_lng"), bbox.getDouble("max_lng"), bbox.getDouble("min_lat"), bbox.getDouble("max_lat"), rh -> {
-      if (rh.succeeded()) {
-        content.setResults(rh.result());
-        resp.setStatusCode(200);
-      } else {
-        content.setReason(rh.cause().getMessage());
-        resp.setStatusCode(400);
-      }
-      String cStr = content.toString();
-      String cLen = Integer.toString(cStr.length());
-      resp
-        .putHeader("content-length", cLen)
-        .write(cStr);
-    });
-  }
 
 }

@@ -34,7 +34,4 @@ public interface DataService {
   void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
   // query on the data described by the JsonObject query
 
-  void querySimpleBbox(Double minLng, Double maxLng, Double minLat, Double maxLat,Handler<AsyncResult<JsonArray>> rh);
-  // query simple bbox. It returns JsonArray with metadata + latest location + latest value + latest timestamp
-  
 }

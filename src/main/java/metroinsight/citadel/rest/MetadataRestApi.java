@@ -6,19 +6,21 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.common.ErrorMessages;
+import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.metadata.impl.VirtuosoService;
 import metroinsight.citadel.model.BaseContent;
 
-import static metroinsight.citadel.common.RestApiTemplate.getDefaultResponse;
 
-public class MetadataRestApi {
+public class MetadataRestApi extends RestApiTemplate {
 
   private MetadataService metadataService;
+  Vertx vertx;
   
   public MetadataRestApi (Vertx vertx) {
     //metadataService = new MongoService (vertx);
     metadataService = new VirtuosoService(vertx);
+    this.vertx = vertx;
   }
   
   public void queryPoint(RoutingContext rc) {
@@ -26,20 +28,20 @@ public class MetadataRestApi {
     BaseContent content = new BaseContent();
     JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
     metadataService.queryPoint(q, ar -> {
-    	if (ar.failed()) {
-    	  content.setReason(ar.cause().getMessage());
-    	  resp.setStatusCode(400);
-    	} else {
-    	  content.setSucceess(true);;
-    	  content.setResults(ar.result());
-    	  resp.setStatusCode(200);
-    	}
-    	String cStr = content.toString();
-    	String cLen = Integer.toString(cStr.length());
-    	resp
-    	  .putHeader("content-length", cLen)
-    	  .write(cStr);
-    	});
+      if (ar.failed()) {
+        content.setReason(ar.cause().getMessage());
+        resp.setStatusCode(400);
+      } else {
+        content.setSucceess(true);;
+        content.setResults(ar.result());
+        resp.setStatusCode(200);
+      }
+      String cStr = content.toString();
+      String cLen = Integer.toString(cStr.length());
+      resp
+        .putHeader("content-length", cLen)
+        .write(cStr);
+      });
   }
   
   public void getPoint(RoutingContext rc) {

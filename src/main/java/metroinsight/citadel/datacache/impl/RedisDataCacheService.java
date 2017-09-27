@@ -39,15 +39,12 @@ public class RedisDataCacheService implements DataCacheService {
         }
         upsertIndex(uuid, indexJson, indexRh -> {
           if (indexRh.succeeded()) {
-            System.out.println("22222222222222222222222222222222222222222222222");
             rh.handle(Future.succeededFuture());
           } else {
-            System.out.println("333333333333333333333333333333333333333333");
             rh.handle(Future.failedFuture(indexRh.cause()));
           }
         });
       } else {
-        System.out.println("44444444444444444444444444444444444444444444444");
         rh.handle(Future.failedFuture(redisRh2.cause()));
       }
     });

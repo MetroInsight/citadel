@@ -271,10 +271,6 @@ public class VirtuosoService implements MetadataService  {
   }
   
   public static void main(String[] args) {	
-    //client.submit("graph.addVertex(T.label,'x','name','tom')");
-    //Vertx vertx = new Vertx();
-    //VirtuosoService vs = new VirtuosoService();
-    
     // Test inserting
     graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
     //graph.clear();

@@ -26,7 +26,7 @@
     <hbase.hadoop.version>2.5.2</hbase.hadoop.version>
     <curator.version>2.11.0</curator.version>
     <janusgraph.version>0.1.1</janusgraph.version>
-    <jena.version>3.4.0</jena.version>
+    <jena.version>3.0.0</jena.version>
   </properties>
 
   <dependencies>

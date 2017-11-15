@@ -17,6 +17,7 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -168,8 +169,11 @@ public class VirtuosoService implements MetadataService  {
       JsonArray uuids = new JsonArray();
       // Get UUIDs from the result.
       while (results.hasNext()) {
-        String uuid = results.nextSolution().get("s").toString().split("#")[1];
-        uuids.add(uuid);
+        String ent = results.nextSolution().get("s").toString();
+        if (ent.contains(EX)) {
+          String uuid = results.nextSolution().get("s").toString().split("#")[1];
+          uuids.add(uuid);
+        }
       }
       resultHandler.handle(Future.succeededFuture(uuids));
     }catch (Exception e) {

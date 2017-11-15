@@ -133,7 +133,7 @@ public class VirtuosoService implements MetadataService  {
       for (int i=0; i< query.fieldNames().size(); i++) {
         qStr += "?s ? ? . \n";
       }
-      qStr += "}";
+      qStr += "?s ?p ?o\n}";
       pss.setCommandText(qStr);
       Set<String> keys = query.fieldNames();
       Iterator<String> keyIter = keys.iterator();

@@ -171,7 +171,7 @@ public class VirtuosoService implements MetadataService  {
       while (results.hasNext()) {
         String ent = results.nextSolution().get("s").toString();
         if (ent.contains(EX)) {
-          String uuid = results.nextSolution().get("s").toString().split("#")[1];
+          String uuid = ent.split("#")[1];
           uuids.add(uuid);
         }
       }
@@ -216,6 +216,12 @@ public class VirtuosoService implements MetadataService  {
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
+      if (jsonMetadata.getString("name").contains(" ")) {
+        throw new Exception("Empty space is not allowed in name.");
+      }
+      else if (jsonMetadata.getString("unit").contains(" ")) {
+        throw new Exception("Empty space is not allowed in unit.");
+      }
       // Check if the name already exists
       String nameStr = jsonMetadata.getString("name");
       Node name = NodeFactory.createURI(EX + nameStr); // TODO: Change name to Literal later

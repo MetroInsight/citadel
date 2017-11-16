@@ -205,13 +205,13 @@ public class VirtuosoService implements MetadataService  {
         }
         jsonMetadata.put("uuid", uuid);
         Metadata metadata = jsonMetadata.mapTo(Metadata.class); // Validation // TODO: Not working. FIX!
-        System.out.println(metadata.toJson());
         resultHandler.handle(Future.succeededFuture(metadata));
       }
     } catch (Exception e) {
       resultHandler.handle(Future.failedFuture(e));
     }
   }
+
   
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {

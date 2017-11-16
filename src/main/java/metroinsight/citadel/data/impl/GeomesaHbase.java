@@ -3,7 +3,6 @@ package metroinsight.citadel.data.impl;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +19,6 @@ import org.geotools.data.FeatureWriter;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
@@ -45,6 +43,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.model.Datapoint;
+
+import static metroinsight.citadel.common.Util.cds2json;
 
 public class GeomesaHbase {
   DataStore dataStore = null;
@@ -210,7 +210,7 @@ public class GeomesaHbase {
       Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max, List<String> uuids) throws Exception {
 
     JsonArray ja = new JsonArray();
-    try{
+    try {
       // construct a (E)CQL filter from the search parameters,
       // and use that as the basis for the query
       String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max + ")";
@@ -257,10 +257,10 @@ public class GeomesaHbase {
         Date date=(Date) feature.getProperty("date").getValue();
         Data.put("timestamp", date.getTime());
         Point point =(Point) feature.getProperty("point_loc").getValue();
-        Coordinate cd=point.getCoordinates()[0];//since it a single point
-        Data.put("lat", cd.x);
-        Data.put("lng", cd.y);
+        Coordinate[] cds = point.getCoordinates();
+        Data.put("coordinates", cds2json(cds)); 
         Data.put("value", feature.getProperty("value").getValue());
+        // TODO: Add geometry type later
         ja.add(Data);	
       }
       featureItr.close();

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.TimeZone;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -21,6 +23,17 @@ final public class Util {
 
 	public Util () {
 		df.setTimeZone(tz);
+	}
+	
+	public static JsonArray cds2json (Coordinate[] cds) {
+	  JsonArray cdsJson = new JsonArray();
+	  for (int i = 0; i < cds.length; i++) {
+	    JsonArray cdJson = new JsonArray();
+	    cdJson.add(cds[i].x);
+	    cdJson.add(cds[i].y);
+	    cdsJson.add(cdJson);
+	  }
+	  return cdsJson;
 	}
 	
 	public static String date2str (Date date) {

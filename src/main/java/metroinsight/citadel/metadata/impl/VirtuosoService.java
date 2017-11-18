@@ -3,6 +3,7 @@ package metroinsight.citadel.metadata.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.RDFNode;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -156,25 +156,20 @@ public class VirtuosoService implements MetadataService  {
         }
         pss.setIri(i * 2, key);
         pss.setIri(i * 2 + 1, value);
-        /*
-        Node keyNode = withPrefix(key);
-        Node valueNode = withPrefix(value);
-        pss.setParam(i * 2, keyNode);
-        pss.setParam(i * 2 + 1, valueNode);
-        */
         i += 1;
       }
       // Run SPARQL query.
       ResultSet results = sparqlQuery(pss.toString());
-      JsonArray uuids = new JsonArray();
       // Get UUIDs from the result.
+      HashSet<String> uuidSet = new HashSet<String>();
       while (results.hasNext()) {
         String ent = results.nextSolution().get("s").toString();
         if (ent.contains(EX)) {
           String uuid = ent.split("#")[1];
-          uuids.add(uuid);
+          uuidSet.add(uuid);
         }
       }
+      JsonArray uuids = new JsonArray(new ArrayList<String>(uuidSet));
       resultHandler.handle(Future.succeededFuture(uuids));
     }catch (Exception e) {
       resultHandler.handle(Future.failedFuture(e));

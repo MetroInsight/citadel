@@ -1,139 +1,259 @@
-#%RAML 1.0
-title: Citadel REST API
-version: v1
-schemas:
-  - Metadata: |
-     { 
-       "$schema": "http://json-schema.org/draft-03/schema",
-       "type": "object",
-       "properties": {
-         "uuid": { "type": "string"},
-         "unit": { "type": "string"},
-         "pointType": { "type": "string"}
-       }
-     }
-  - Datum: |
-      {
-        "$schema": "http://json-schema.org/draft-03/schema",
-        "type": "object",
-        "properties": {
-          "uuid": { "type": "string"},
-          "value": { "type": "double"},
-          "geometryType": { "type": "string"},
-          "coordinates": {
-            "type": "array",
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "double"
-              }
-            }
-        }
-      }
-  - Data: |
-      [
-        schema: Datum
-      ]
-  - DataQuery: |
-      {
-        "$schema": "http://json-schema.org/draft-03/schema",
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "object",
-            "properties": {
-              "uuids": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "lat_max": {"type": "double"},
-              "lat_min": {"type": "double"},
-              "lng_max": {"type": "double"},
-              "lng_min": {"type": "double"},
-              "timestamp_min": {"type": "integer"}, #long to be precise
-              "timestamp_max": {"type": "integer"}  #long to be precise
-            }
-          }
-        }
-      }
-
-/api:
-  get:
-    responses:
-      200:
-        body:
-          {API Documentation}
+swagger: '2.0'
+info:
+  description: >-
+    This is Citadel, a city-scale data hub. You can interact with Citadel to
+    store/retrieve city data in a unified way in a safe way.
+  version: 0.0.1
+  title: Citadel
+  contact:
+    email: jbkoh@ucsd.edu
+  license:
+    name: Apache 2.0
+    url: 'https://github.com/MetroInsight/citadel/blob/master/LICENSE'
+host: xxx.yyyy.io
+basePath: /api
+tags:
+  - name: metadata
+    description: Contextual information of data points.
+  - name: data
+    description: >-
+      Spatio-temporal data interface. Its contextual information is stored as
+      metadata.
+schemes:
+  - http
+paths:
   /point:
     post:
-      description: Create a point with given metadata.
+      tags:
+        - metadata
+      summary: Add a Point.
+      description: ''
+      operationId: createPoint
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: >-
+            Metadata of a point to make. The name should be unique in the
+            system.
+          required: true
+          schema:
+            $ref: '#/definitions/Metadata'
       responses:
-        201:
-          body:
-            application/json:
-              example: 
-    /{uuid}
-      get:
-        description: Retrieve metadata given uuid.
-        responses:
-          200:
-            body:
-              application/json:
-                schema: Metadata
-  /data:
-    post:
-      description: Posting data. 
-      body:
-        application/json:
-          schema: Data
+        '200':
+          description: successful creation
+        '400':
+          description: Various reasons.
+  '/point/{uuid}':
+    get:
+      tags:
+        - metadata
+      summary: Get metadata corresponding to a UUID.
+      description: Get metadata corresponding to a UUID.
+      operationId: getPoint
+      produces:
+        - application/json
+      parameters:
+        - name: uuid
+          in: path
+          description: UUID of a Point
+          required: true
+          type: string
       responses:
-        201:
-          body:
-            {}
+        '200':
+          description: Get Point's metadata object.
+          schema:
+            $ref: '#/definitions/Metadata'
+        '400':
+          description: Various reasons.
+        '404':
+          description: Point not found (TODO)
   /query:
     post:
-      description: Retrieve metadata with a query. Finding Metadata mathching the query.
-      body:
-        application/json:
-          {}
+      tags:
+        - metadata
+      summary: Query points matching given tag-value pairs.
+      description: Query points matching given tag-value pairs.
+      operationId: queryPoint
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: >-
+            Metadata of a point to make. The name should be unique in the
+            system.
+          required: true
+          schema:
+            $ref: '#/definitions/MetadataQuery'
       responses:
-        200:
-          body:
-            application/json:
-              schema: |
-                {}
+        '200':
+          description: Get Point's metadata object.
+          schema:
+            $ref: '#/definitions/MetadataResult'
+        '400':
+          description: Various reasons.
+        '404':
+          description: Point not found (TODO)
+  /data:
+    post:
+      tags:
+        - data
+      summary: Push data
+      description: Pushing given spatio-temporal data.
+      operationId: insertData
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: List of data.
+          required: true
+          schema:
+            $ref: '#/definitions/Data'
+      responses:
+        '200':
+          description: successful push
+        '400':
+          description: Various reasons.
   /querydata:
     post:
-      description: Retrieving data with a query. Box lat,long, time range, UUIDs can be specified.
-      body:
-        application/json:
-          {}
-      responses: 
-        200:
-          body:
-            application/json:
-              schema: |
-                {}
-    /simplebbox:
-      post:
-        description: Retrieving points with most recent location and value in a bbox
-          body:
-            application/json:
-              {
-                "query": {
-                  "min_lng": -112.0,
-                  "max_lng": -111.0,
-                  "min_lat": 32.0,
-                  "max_lat": 33.0
-                }
-              }
-          responses:
-            200:
-              body:
-                application.json:
-                  {
-                    "results": [],
-                    "success": True,
-                    "reason" ""
-                  }
+      tags:
+        - data
+      summary: Spatio-temporal Query for Data
+      description: 'Data query based on i) Bounding box, ii) time range, and iii) UUIDs'
+      operationId: queryData
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: ''
+          required: true
+          schema:
+            $ref: '#/definitions/DataQuery'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/DataResult'
+        '400':
+          description: Various reasons.
+definitions:
+  Metadata:
+    type: object
+    required:
+      - name
+      - pointType
+    properties:
+      name:
+        type: string
+        example: mySensor1
+      pointType:
+        type: string
+        example: temperature
+      unit:
+        type: string
+        example: DEG_F
+  MetadataQuery:
+    type: object
+    properties:
+      query:
+        type: object
+        properties:
+          name:
+            type: string
+            example: mySensor1 (optional)
+          pointType:
+            type: string
+            example: temperature (optional)
+          unit:
+            type: string
+            example: DEG_F (optional)
+  MetadataResult:
+    type: object
+    properties:
+      results:
+        type: array
+        items:
+          type: string
+        example:
+          - UUID_1
+          - UUID_2
+      success:
+        type: boolean
+      reason:
+        type: string
+  Datum:
+    type: object
+    properties:
+      uuid:
+        type: string
+        example: UUID_1
+      timestamp:
+        type: integer
+        example: 1511046384000
+        description: UNIX timestamp in microseconds.
+      geometryType:
+        type: string
+        example: point
+        description: 'One of "point", "line", and "polygon"'
+      coordinates:
+        type: array
+        items:
+          type: array
+          items:
+            type: number
+        example:
+          - - -117.231778
+            - 32.882319
+      value:
+        type: number
+        example: '71.0'
+  Data:
+    type: array
+    items:
+      $ref: '#/definitions/Datum'
+  DataQuery:
+    type: object
+    properties:
+      lat_min:
+        type: number
+        example: 32.88231
+      lat_max:
+        type: number
+        example: 32.88232
+      lng_min:
+        type: number
+        example: -117.23178
+      lng_max:
+        type: number
+        example: -117.23177
+      timestamp_min:
+        type: integer
+        example: 1511046284000
+      timestamp_max:
+        type: integer
+        example: 1511046584000
+      uuids:
+        type: array
+        items:
+          type: string
+        example:
+          - UUID_1
+          - UUID_2
+  DataResult:
+    type: object
+    properties:
+      results:
+        $ref: '#/definitions/Data'
+      success:
+        type: boolean
+      reason:
+        type: string
+externalDocs:
+  description: Find out more about Citadel and MetroInsight
+  url: 'https://metroinsight.io'

@@ -41,6 +41,14 @@ public class RestApiVerticle extends MicroServiceVerticle {
     
     router.route("/*").handler(BodyHandler.create());
     
+    // Redirection to API Doc (TODO: Swagger should be tightly integrated.) 
+    router.get("/doc/api").handler(rc -> {
+      HttpServerResponse response = rc.response();
+      response.putHeader("Location", "http://localhost:9090/api/ui/"); //TODO: Need to fill this everytime for now.
+      response.setStatusCode(302);
+      response.end();
+    });
+    
     // REST API routing for MetaData
     router.post("/api/point").blockingHandler(metadataRestApi::createPoint);
     router.get("/api/point/:uuid").blockingHandler(metadataRestApi::getPoint);

@@ -408,7 +408,7 @@ public class ServerTest {
     }); 
   }
   
-  @Test
+  //@Test
   public void testRedisRead(TestContext context) {
     System.out.println("CACHE READ START");
     // Read config

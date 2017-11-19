@@ -251,7 +251,6 @@ public class GeomesaHbase {
       int n = 0;
       while (featureItr.hasNext()) {
         Feature feature = featureItr.next();
-        //System.out.println("Next:"+n++);
         JsonObject Data = new JsonObject();
         Data.put("uuid", feature.getProperty("uuid").getValue());
         Date date=(Date) feature.getProperty("date").getValue();

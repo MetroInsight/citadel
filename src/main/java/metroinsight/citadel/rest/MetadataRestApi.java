@@ -61,7 +61,7 @@ public class MetadataRestApi extends RestApiTemplate {
   		  resp.setStatusCode(400);
   		} else {
   		  JsonArray pointResult = new JsonArray();
-  		  pointResult.add(ar.result());
+  		  pointResult.add(ar.result().toJson());
   		  resp.setStatusCode(200);
   		  content.setSucceess(true);
   		  content.setResults(pointResult);

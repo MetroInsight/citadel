@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <geomesa.version>1.3.1</geomesa.version>
+    <geomesa.version>1.3.4</geomesa.version>
     <gt.version>17.2</gt.version>
     <scala.abi.version>2.11</scala.abi.version>
     <scala.version>2.11.6</scala.version>

@@ -159,6 +159,7 @@ public class VirtuosoService implements MetadataService  {
         i += 1;
       }
       // Run SPARQL query.
+      String qqStr = pss.toString();
       ResultSet results = sparqlQuery(pss.toString());
       // Get UUIDs from the result.
       HashSet<String> uuidSet = new HashSet<String>();

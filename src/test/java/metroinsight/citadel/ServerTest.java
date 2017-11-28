@@ -72,7 +72,7 @@ public class ServerTest {
     vertx.close(context.asyncAssertSuccess());
   }
 
-  @Test
+  //@Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
     /*JsonObject metadataJo = new JsonObject();
@@ -107,7 +107,7 @@ public class ServerTest {
     }
   }
 
-  @Test
+  //@Test
   public void testQueryPoint(TestContext context) {
     final Async async = context.async();
   	JsonObject query = new JsonObject();
@@ -223,7 +223,6 @@ public class ServerTest {
     		});
     	})
     	.write(queryStr);
-    
   }
   
   private String getUuidByName(String name) {
@@ -256,7 +255,7 @@ public class ServerTest {
     return fut.result();
   }
   
-  //@Test
+  @Test
   public void testInsertData(TestContext context) {
     System.out.println("START TESTING INSERT DATA");
     final Async async = context.async();
@@ -271,10 +270,6 @@ public class ServerTest {
       queryDatum.put("uuid", uuid); 
       ArrayList<Double> coordinate = new ArrayList<Double>();
       datum.getJsonArray("coordinates");
-      //coordinate.add(datum.getJsonArray("coordinates").getJsonArray(0).getDouble(0));
-      //coordinate.add(datum.getJsonArray("coordinates").getJsonArray(0).getDouble(1));
-      //List<List<Double>> coordinates = new ArrayList(Arrays.asList(coordinate));
-      //queryDatum.put("coordinates", coordinates);
       queryDatum.put("coordinates", datum.getJsonArray("coordinates"));
       queryDatum.put("timestamp", datum.getLong("timestamp"));
       queryDatum.put("value", datum.getDouble("value"));

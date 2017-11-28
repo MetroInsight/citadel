@@ -20,6 +20,7 @@
     <vertx.version>3.5.0</vertx.version>
     <hbase.version>1.2.6</hbase.version>
     <jena.version>3.0.0</jena.version>
+    <hbase.hadoop.version>2.5.2</hbase.hadoop.version>
   </properties>
 
   <dependencies>
@@ -42,6 +43,12 @@
           <artifactId>netty-all</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hbase.hadoop.version}</version>
+      <scope>compile</scope>
     </dependency>
     
     <!-- GeoMesa -->

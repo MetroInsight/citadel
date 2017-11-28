@@ -73,20 +73,15 @@ public class GeomesaHbase {
       if (dataStore == null) {
         Map<String, Serializable> parameters = new HashMap<>();
         parameters.put("bigtable.table.name", "Geomesa");
-//        parameters.put("geomesa.ignore.dtg", true);
 
         // DataStoreFinder is from Geotools, returns an indexed datastore if one is
         // available.
-        
         try {
           dataStore = DataStoreFinder.getDataStore(parameters);
-          SimpleFeatureType simpleFeatureType = null;
-          simpleFeatureType = createSimpleFeatureType();
+          SimpleFeatureType simpleFeatureType = createSimpleFeatureType();
           dataStore.createSchema(simpleFeatureType);
         } catch (Exception e) {
-          System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
           e.printStackTrace();
-          System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
           System.exit(1);
         }
         System.out.println("Geomesa connected");
@@ -153,15 +148,18 @@ public class GeomesaHbase {
   static SimpleFeatureType createSimpleFeatureType() throws SchemaException {
     SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
     b.setName(simpleFeatureTypeName);
-    //b.add("loc", Geometry.class, 4326);
-    b.add("loc", Point.class, 4326);
+    b.add("loc", Geometry.class, 4326);
     b.setDefaultGeometry("loc");
     b.add("uuid", String.class);
     b.add("date", Date.class);
     b.add("value", String.class); // TODO: Should this be String? Can't perform value-based query.
     SimpleFeatureType sft = b.buildFeatureType();
     sft.getUserData().put("geomesa.mixed.geometries", "true");
-    //sft.getUserData().put("geomesa.xz.precision", 14); // Default is 12.
+    // TODO: Below should work but does not.
+    //       When featureWriter is generrated, "Could not read table name from metadata for index xz2:1"
+    //sft.getDescriptor("uuid").getUserData().put("index", "join");
+    //sft.getDescriptor("uuid").getUserData().put("cardinality", "high");
+    //sft.getUserData().put("geomesa.xz.precision", 14); // Default is 12. Experimental.
     return sft;
   }
   
@@ -239,7 +237,6 @@ public class GeomesaHbase {
     JsonArray ja = new JsonArray();
 
     // loop through all results
-    int n = 0;
     while (featureItr.hasNext()) {
       Feature feature = featureItr.next();
       try {
@@ -306,23 +303,13 @@ public class GeomesaHbase {
       FeatureIterator<SimpleFeature> featureItr = featureSource.getFeatures(query).features();
 
       // loop through all results
-      int n = 0;
-      //while (featureItr.hasNext()) {
-      while (true) {
+      while (featureItr.hasNext()) {
         Feature feature = null;
-        try {
-          feature = featureItr.next();
-        } catch (Exception e) {
-          System.out.println("=======================");
-          e.printStackTrace();
-          System.out.println("=======================");
-          break;
-        }
+        feature = featureItr.next();
         JsonObject Data = new JsonObject();
         Data.put("uuid", feature.getProperty("uuid").getValue());
         Date date = (Date) feature.getProperty("date").getValue();
         Data.put("timestamp", date.getTime());
-        // TODO: Below line needs to adapt to various geometry types.
         Geometry loc = (Geometry) feature.getProperty("loc").getValue();
         String geometryType = loc.getGeometryType();
         Coordinate[] cds = loc.getCoordinates();

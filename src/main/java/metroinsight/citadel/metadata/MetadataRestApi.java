@@ -53,9 +53,12 @@ public class MetadataRestApi {
   }
   
   public void createPoint(RoutingContext rc) {
+	
+	System.out.println("In createPoint: MetadataRestApi");
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonObject q = (JsonObject)(body.getValue("query"));
+    System.out.println("Sensor is:"+q);
     // Call createPoint in metadataService asynchronously.
     metadataService.createPoint(q, ar -> { 
       // ar is a result object created in metadataService.createPoint

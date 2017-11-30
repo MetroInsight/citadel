@@ -7,6 +7,7 @@ import java.net.URLClassLoader;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import metroinsight.citadel.authorization.AuthorizationVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 	
@@ -31,7 +32,9 @@ public class MainVerticle extends AbstractVerticle {
     	}
     });
     
-	}
+    vertx.deployVerticle(AuthorizationVerticle.class.getName());
+    
+	}//end start()
 	
 	public static void main(String[] args)  {
 	  ClassLoader cl = ClassLoader.getSystemClassLoader();

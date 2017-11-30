@@ -171,6 +171,22 @@
             
 <!-- end debug pom -->
          
+         <!-- used in Access control -->
+         <!-- This is the google token verification -->
+<dependency>
+     <groupId>com.google.api-client</groupId>
+     <artifactId>google-api-client</artifactId>
+     <version>1.22.0</version>
+   </dependency>
+         <!-- This is for the jade template engine -->
+ <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-templ-jade</artifactId>
+      <version>3.4.1</version>
+      <classifier>shaded</classifier>
+</dependency>
+         <!-- End used in Access control -->
+         
 		<!-- End used in geomesa and Datapoint -->
 		<dependency>
 			<groupId>junit</groupId>

@@ -24,7 +24,7 @@ public class GoogleLogin {
 	//String username="";
 	
 	
-	 public void DisplayToken(RoutingContext rc) {
+	public void DisplayToken(RoutingContext rc) {
 		 
 		 System.out.println("Display Token Called");
 		 String body=rc.getBodyAsString();
@@ -62,7 +62,7 @@ public class GoogleLogin {
 		
 		 
 		GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-			    .setAudience(Collections.singletonList("829484849047-coi3emtbkks9ogljaaili2eru5b6m7vp.apps.googleusercontent.com"))
+			    .setAudience(Collections.singletonList("647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com"))
 			    // Or, if multiple clients access the backend:
 			    //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
 			    .build();
@@ -93,8 +93,8 @@ public class GoogleLogin {
 		  // Use or store profile information
 		  // ...
 		  
-		 // System.out.println("Email:"+email);
-		 // System.out.println("Name:"+name);
+		  System.out.println("Email:"+email);
+		  System.out.println("Name:"+name);
 		  
 		  
 		  

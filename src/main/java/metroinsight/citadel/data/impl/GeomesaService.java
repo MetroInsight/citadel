@@ -100,7 +100,7 @@ public class GeomesaService implements DataService {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
          
-			//System.out.println("Result in queryData GeomesaService size is: "+resultJson.size());
+		System.out.println("Result in queryData GeomesaService size is: "+resultJson.size());
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
             res.cause().printStackTrace();

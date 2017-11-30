@@ -15,7 +15,10 @@ public class DataRestApi {
   }
   
   public void queryData(RoutingContext rc) {
+	  
+	System.out.println("In queryData DataRestApi.java");  
     JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
+    System.out.println("Query is:"+q);
     dataService.queryData(q, ar -> {
     	if (ar.failed()) {
       	System.out.println(ar.cause().getMessage());
@@ -35,6 +38,8 @@ public class DataRestApi {
   
   
   public void insertData(RoutingContext rc) {
+	 
+	System.out.println("In insertData DataRestApi.java");
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
     JsonArray q = body.getJsonArray("data");
@@ -54,8 +59,10 @@ public class DataRestApi {
     	  System.out.println("Suceeded in DataRestAPI insertData");
     	  JsonObject result = new JsonObject();
     	  result.put("result", "SUCCESS");
+    	  String length = Integer.toString(result.toString().length());
     		rc.response()
     		  .putHeader("content-TYPE", "application/text; charset=utf=8")
+    		  .putHeader("content-length",  length)
     		  .setStatusCode(201)
     		  .write(result.toString());
     	}

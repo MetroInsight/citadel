@@ -5,7 +5,9 @@ import java.net.URLClassLoader;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -30,12 +32,20 @@ public class RestApiVerticle extends AbstractVerticle {
     
     Router router = Router.router(vertx);
     
+    HttpServerOptions options = new HttpServerOptions()
+			  .setSsl(true)
+			  .setKeyStoreOptions(
+			  new JksOptions().
+			    setPath("/home/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
+			    setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
+			);
+    
     // Main page. TODO
     router.route("/").handler(rc -> {
       HttpServerResponse response = rc.response();
       response
           .putHeader("content-type", "text/html")
-          .end("<h1>Hello from my first Vert.x 3 application</h1>");
+          .end("<h1>Welcome to Citadel</h1>");
     });
     
     router.route("/*").handler(BodyHandler.create());
@@ -53,7 +63,7 @@ public class RestApiVerticle extends AbstractVerticle {
     //router.route("/api/querydata*").handler(BodyHandler.create());
     router.post("/api/querydata").handler(dataRestApi::queryData);
     vertx
-        .createHttpServer()
+        .createHttpServer(options)
         .requestHandler(router::accept)
         .listen(
             config().getInteger("http.port", 8080),

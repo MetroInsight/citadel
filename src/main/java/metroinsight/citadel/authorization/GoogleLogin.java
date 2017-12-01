@@ -258,6 +258,8 @@ public class GoogleLogin {
 			 
 			 System.out.println("User is logged in DisplayIndexJade");
 			 
+			 UserTokenManager.initialize();
+			 
 			 String userToken=UserTokenManager.generateToken(email);
 			 
 			 rc.put("username", email);

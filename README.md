@@ -4,17 +4,28 @@ This is a Maven project. You can use any mvn commands.
 
 ### System Requirements
 1. Mongodb
- (1) [Install](https://docs.mongodb.com/manual/installation/)
+
+   (1) [Install](https://docs.mongodb.com/manual/installation/)
+ 
 2. Hbase
- (1) [Install](https://hbase.apache.org/book.html#quickstart)
- (2) Follow instruction 2.1 and 2.2. The standalone version is sufficient for now.
- (3) Copy ``hbase-site.xml`` into ``${projectDir}/conf/``
+
+   (1) [Install](https://hbase.apache.org/book.html#quickstart)
+ 
+   (2) Follow instruction 2.1 and 2.2. The standalone version is sufficient for now.
+ 
+   (3) Copy ``hbase-site.xml`` into ``${projectDir}/conf/``
+ 
 3. Geomesa
- (1) Necessary packages will be installed via Maven.
+
+   (1) Necessary packages will be installed via Maven.
+ 
 4. Virtuoso
- (1) [Install](https://github.com/openlink/virtuoso-opensource)
+
+   (1) [Install](https://github.com/openlink/virtuoso-opensource)
+ 
 5. Redis 
- (1) [Install](https://redis.io/topics/quickstart)
+
+   (1) [Install](https://redis.io/topics/quickstart)
 
 
 

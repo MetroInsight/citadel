@@ -25,7 +25,6 @@ import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.BaseContent;
 
 
-//TODO: This should be deprecated
 public class DataRestApi extends RestApiTemplate{
 
   DataCacheService cacheService = null;

@@ -16,6 +16,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.ResultScanner;
@@ -37,10 +38,10 @@ public class Authorization_MetaData {
 
 	  static TableName table_meta = TableName.valueOf("metadata");
 	  static String family_ds = "ds";
-	  static String family_user = "owner";
+	  static String family_user = "user";
 	  static String family_policy = "policy";//this family will be storing like: userid and policy with it,
 	  //Since userid is changing and growing or shrinking, we don't have a string array below.
-	  String [] owner_qualifier= {"ID","token"};
+	  String [] owner_qualifier= {"token"};
 	
 	
 	  Authorization_MetaData meta=null;
@@ -105,22 +106,24 @@ public class Authorization_MetaData {
 		String token="";
 		try 
 		{
-		 // Instantiating the Scan class
-	     Scan scan = new Scan();
-	  // Scanning the required columns
-	     scan.addColumn(Bytes.toBytes(family_user), Bytes.toBytes(owner_qualifier[0]));
-	      
-	  // Getting the scan result
-	      ResultScanner scanner = table.getScanner(scan);
-	      
-	   // Reading values from scan result
-	      for (Result result = scanner.next(); result != null; result = scanner.next())
-
-	      System.out.println("Found row : " + result);
-	      //closing the scanner
-	      scanner.close();
-	      
-	      
+			byte[] row_id = Bytes.toBytes(userID);
+			Get g = new Get(row_id);
+			Result r = table.get(g);
+			if(r.containsColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[0])))
+			{
+				
+				byte[] value=r.getValue(family_user.getBytes(), Bytes.toBytes(owner_qualifier[0]));
+				token=Bytes.toString(value);
+				//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
+				System.out.println("Token Exist");
+				return token; 
+			}//end if
+			else
+			{
+				System.out.println("Token doesn't exits:"+r.toString());
+				//the token doesn't exist for this user. This user is not registered with us.
+				return token;
+			}
 		//token = UUID.randomUUID().toString();//"115239272283116371008";
 		}//end try
 		
@@ -142,12 +145,13 @@ public class Authorization_MetaData {
 		 String token="";
 	   try 
 	   {
+		   token=UUID.randomUUID().toString();//randomly generate a token for user
 		   String rowid=userID;//UUID.randomUUID().toString();
 		   byte[] row_id = Bytes.toBytes(rowid);
 		   Put p = new Put(row_id);
-		   p.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[0]), Bytes.toBytes(userID));
-		    token=UUID.randomUUID().toString();//randomly generate a token for user
-		   p.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[1]), Bytes.toBytes(token));
+		   p.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[0]), Bytes.toBytes(token));
+		    
+		   //p.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[1]), Bytes.toBytes(token));
 		   table.put(p);
 	   }
 	   catch(Exception e)
@@ -168,10 +172,11 @@ public class Authorization_MetaData {
 		Authorization_MetaData met = new Authorization_MetaData();
 		met.create_connection();
 		met.create_table();
-		//String token=met.insert_token("sand.iitr@gmail.com");
-		//System.out.println("Token is:"+token);
-		met.get_token("sand.iitr@gmail.com");
-		
+		String token="";
+		//token=met.insert_token("sand.iitr@gmail.com");
+		//System.out.println("Token Inserted is:"+token);
+		 token=met.get_token("sand.iitr@gmail.com");
+		System.out.println("Token Queried is:"+token);
 		
 	}//end main
 	

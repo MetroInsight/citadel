@@ -28,8 +28,11 @@ public class UserTokenManager {
 	{
 		String token=hmetadata.get_token(email);//email is the userID
 		
-		
-		
+		if(token.equals(""))//empty token, user is logging first time.
+		{
+			System.out.println("Creating New Token");
+			token=hmetadata.insert_token(email);
+		}//end if
 		
 		return token;
 	}//end generateToken()

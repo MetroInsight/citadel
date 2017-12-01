@@ -9,7 +9,8 @@ public class Metadata {
   private String unit;
   private String uuid;
   private String name;
-  private String userToken;
+  private String userToken;//added by Sandeep, coming as input
+  private String userID;//added by Sandeep, 
   public Metadata(){
     
   }
@@ -74,7 +75,7 @@ public class Metadata {
     json.put("pointType", pointType);
     json.put("unit", unit);
     json.put("uuid", uuid);
-    json.put("userToken",userToken);
+    
    // MetadataConverter.toJson(this, json);
     return json;
   }

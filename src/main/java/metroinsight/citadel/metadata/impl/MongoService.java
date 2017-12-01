@@ -9,6 +9,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
+import metroinsight.citadel.authorization.Authorization_MetaData;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.Metadata;
 
@@ -17,6 +18,8 @@ public class MongoService implements MetadataService {
   private static MongoClient mongoClient ;
   private final Vertx vertx;
   String collName;
+  
+  Authorization_MetaData Auth_meta;
   
   public MongoService(Vertx vertx) {
   	/*//
@@ -37,6 +40,9 @@ public class MongoService implements MetadataService {
     mongoClient = MongoClient.createNonShared(vertx, mongoConfig);
     collName = "metadata";
     this.vertx = vertx;
+    Auth_meta=new Authorization_MetaData();
+    
+    
   }
   
   @Override
@@ -73,21 +79,57 @@ public class MongoService implements MetadataService {
   
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
-    String uuid = UUID.randomUUID().toString();
-    jsonMetadata.put("uuid", uuid);
+   
     // Validate if it complies to the schema. No actual usage
     // TODO: Need to change this to proper validation instead.
     //changed by sandeep
     //Metadata metadata = jsonMetadata.mapTo(Metadata.class); 
-    Metadata metadata =new Metadata(jsonMetadata);
-    mongoClient.insert(collName, jsonMetadata, res -> {
-      if (res.succeeded()) {
-        // Load result to future if success.
-        resultHandler.handle(Future.succeededFuture(uuid));
-      } else {
-        // TODO: Need to add failure behavior.
-      }
-    });
-  }
+    try 
+     {
+    	//check token is present in the jsonMetadata
+    	if(jsonMetadata.containsKey("userToken"))
+    	{
+    		
+    		String userToken = jsonMetadata.getString("userToken");
+    		
+    		//check if this token exists in the HBase, and if it exists, what is the userID
+    		String userId=Auth_meta.get_userID(userToken);
+    		
+    		if(!userId.equals(""))
+    		{
+    		 String uuid = UUID.randomUUID().toString();
+    		 jsonMetadata.put("uuid", uuid);
+    		 jsonMetadata.put("userId", userId);
+    		//Metadata metadata =new Metadata(jsonMetadata);
+    		mongoClient.insert(collName, jsonMetadata, res -> {
+    		      if (res.succeeded()) {
+    		        // Load result to future if success.
+    		        resultHandler.handle(Future.succeededFuture(uuid));
+    		      } else {
+    		        // TODO: Need to add failure behavior.
+    		      }
+    		    });
+    		}//end if(!userId.equals(""))
+    		else
+    		{	
+    		System.out.println("Token is not Valid");	
+    		return;
+    		}
+    		
+    	}//end if(jsonMetadata.containsKey("userToken"))
+    	else
+		{	
+		System.out.println("Token is missing");	
+		return;
+		}
+     
+     }//end try
+    catch(Exception e)
+    {
+    	e.printStackTrace();
+    }
+    
+    
+  }//end createPoint
 
 }

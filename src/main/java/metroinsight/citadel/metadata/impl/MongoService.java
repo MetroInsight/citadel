@@ -77,7 +77,9 @@ public class MongoService implements MetadataService {
     jsonMetadata.put("uuid", uuid);
     // Validate if it complies to the schema. No actual usage
     // TODO: Need to change this to proper validation instead.
-    Metadata metadata = jsonMetadata.mapTo(Metadata.class); 
+    //changed by sandeep
+    //Metadata metadata = jsonMetadata.mapTo(Metadata.class); 
+    Metadata metadata =new Metadata(jsonMetadata);
     mongoClient.insert(collName, jsonMetadata, res -> {
       if (res.succeeded()) {
         // Load result to future if success.

@@ -9,7 +9,7 @@ public class Metadata {
   private String unit;
   private String uuid;
   private String name;
-  
+  private String userToken;
   public Metadata(){
     
   }
@@ -19,6 +19,7 @@ public class Metadata {
   	this.unit = json.getString("unit");
   	this.uuid = json.getString("uuid");
   	this.name = json.getString("name");
+  	this.userToken=json.getString("userToken");
   }
   
   public Metadata(String pointType, String unit, String uuid, String name){
@@ -73,7 +74,7 @@ public class Metadata {
     json.put("pointType", pointType);
     json.put("unit", unit);
     json.put("uuid", uuid);
-    
+    json.put("userToken",userToken);
    // MetadataConverter.toJson(this, json);
     return json;
   }

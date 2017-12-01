@@ -36,7 +36,8 @@ public class RestApiVerticle extends MicroServiceVerticle {
       HttpServerResponse response = rc.response();
       response
           .putHeader("content-type", "text/html")
-          .end("<h1>Hello from my first Vert.x 3 application</h1>");
+          .end("<h1>Welcome to Citadel</h1>\n"
+              + "<h1><a href=\"http://metroinsight.westus.cloudapp.azure.com/doc/api/\">API Documentation</a></h1>");
     });
     
     router.route("/*").handler(BodyHandler.create());

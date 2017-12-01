@@ -157,8 +157,8 @@ public class GeomesaHbase {
     sft.getUserData().put("geomesa.mixed.geometries", "true");
     // TODO: Below should work but does not.
     //       When featureWriter is generrated, "Could not read table name from metadata for index xz2:1"
-    //sft.getDescriptor("uuid").getUserData().put("index", "join");
-    //sft.getDescriptor("uuid").getUserData().put("cardinality", "high");
+    sft.getDescriptor("uuid").getUserData().put("index", "join");
+    sft.getDescriptor("uuid").getUserData().put("cardinality", "high");
     //sft.getUserData().put("geomesa.xz.precision", 14); // Default is 12. Experimental.
     return sft;
   }

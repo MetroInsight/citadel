@@ -248,6 +248,13 @@
 			<artifactId>vertx-web-client</artifactId>
 			<version>3.4.1</version>
 		</dependency>
+		
+	<dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-auth-jwt</artifactId>
+      <version>3.4.1</version>
+    </dependency>
+    
 	</dependencies>
 
 	<repositories>

@@ -84,7 +84,7 @@ public class GeomesaHbase {
           e.printStackTrace();
           System.exit(1);
         }
-        System.out.println("Geomesa connected");
+        System.out.println("Geomesa initialized");
     } // end if
 
   }

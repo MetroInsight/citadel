@@ -42,7 +42,8 @@ public class Authorization_MetaData {
 	  static String family_policy = "policy";//this family will be storing like: userid and policy with it,
 	  //Since userid is changing and growing or shrinking, we don't have a string array below.
 	  String [] owner_qualifier= {"token","userId"};
-	
+	  String [] datastream_qualifier= {"ownerToken"};//owner qualifier is fixed, every user is stored as a separate userID qualifies with the dataStream.
+	  
 	  Connection connection=null;
 	  Table table=null;
 	
@@ -104,7 +105,9 @@ public class Authorization_MetaData {
 		}
 	}//end create_table
 	
-	
+	/*
+	 * Given a userID as input, returns backs the token if it exists
+	 */
 	String get_token(String userID)
 	{
 		String token="";
@@ -162,8 +165,6 @@ public class Authorization_MetaData {
 		   row_id = Bytes.toBytes(rowid);
 		   Put p2 = new Put(row_id);
 		   p2.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[1]), Bytes.toBytes(userID));
-		   
-		   //p.addColumn(family_user.getBytes(), Bytes.toBytes(owner_qualifier[1]), Bytes.toBytes(token));
 		   table.put(p);
 		   table.put(p2);
 	   }
@@ -175,6 +176,60 @@ public class Authorization_MetaData {
 	   return token;
 	}//end insert_token
 	
+	 //inserts datastream id and ownerToken details into the metadata table
+	 public void insert_ds_owner(String dsId, String ownerToken)
+	 {
+		 try
+		 {
+			  //rowid is dsId, family is ds, qualifier is ownerToken and value is owner-token-value
+			   String rowid=dsId;
+			   byte[] row_id = Bytes.toBytes(rowid);
+			   Put p = new Put(row_id);
+			   p.addColumn(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[0]), Bytes.toBytes(ownerToken));
+			   table.put(p);
+			 
+		 }//end try
+		 catch(Exception e)
+		 {
+			 e.printStackTrace();
+		 }
+		 System.out.println("In Authorization_MetaData insert_ds_owner");
+	 }//end insert_ds_owner
+	 
+	 String get_ds_owner_token(String dsId)
+	 {
+		 String token="";
+		 try{
+			 byte[] row_id = Bytes.toBytes(dsId);
+				Get g = new Get(row_id);
+				Result r = table.get(g);
+				if(r.containsColumn(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[0])))
+				{
+					
+					byte[] value=r.getValue(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[0]));
+					token=Bytes.toString(value);
+					//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
+					System.out.println("Owner Token Exist"+token);
+					return token; 
+				}//end if
+				else
+				{
+					System.out.println("Owner Token doesn't exits:"+r.toString());
+					//the token doesn't exist for this user. This user is not registered with us.
+					return token;
+				}
+				
+			 
+		 }//end try
+		 
+		catch(Exception e)
+		 {
+			e.printStackTrace();
+		 }
+		 
+		 return token;
+	 }
+	 
 	 /*
 	  *given a userToken return the userID if it exists in table 
 	  */
@@ -193,7 +248,7 @@ public class Authorization_MetaData {
 				byte[] value=r.getValue(family_user.getBytes(), Bytes.toBytes(owner_qualifier[1]));
 				userID=Bytes.toString(value);
 				//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
-				System.out.println("userId Exist"+userID);
+				System.out.println("userId Exist: "+userID);
 				return userID; 
 			}//end if
 			else

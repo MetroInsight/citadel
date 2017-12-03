@@ -149,7 +149,11 @@ public class MongoService implements MetadataService {
     		
     		if(!userId.equals(""))
     		{
-    		 String uuid = UUID.randomUUID().toString();
+    			 String uuid = UUID.randomUUID().toString();
+    			//token exists and is linked to the valid userId
+    			//inserts the owner token and ds_ID into the hbase metadata table
+    			 Auth_meta.insert_ds_owner(uuid,userToken);
+    		
     		 jsonMetadata.put("uuid", uuid);
     		 jsonMetadata.put("userId", userId);
     		//Metadata metadata =new Metadata(jsonMetadata);

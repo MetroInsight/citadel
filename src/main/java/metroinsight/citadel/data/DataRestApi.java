@@ -42,6 +42,17 @@ public class DataRestApi {
 	System.out.println("In insertData DataRestApi.java");
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
+    
+    /*
+     * verify the user Token is valid and he as authority to insert Data into the System
+     */
+    
+    
+    /*
+     * 
+     */
+    
+    
     JsonArray q = body.getJsonArray("data");
 	  //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");
 	  System.out.println("body is:"+body);

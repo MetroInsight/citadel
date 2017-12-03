@@ -3,15 +3,18 @@ package metroinsight.citadel.data;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import metroinsight.citadel.authorization.Authorization_MetaData;
 import metroinsight.citadel.data.impl.GeomesaService;
 
 
 public class DataRestApi {
 
-	 private DataService dataService;
-  
+	private DataService dataService;
+	Authorization_MetaData Auth_meta_data;
+	
   public DataRestApi () {
 	  dataService=new GeomesaService();
+	  Auth_meta_data=new Authorization_MetaData();
   }
   
   public void queryData(RoutingContext rc) {
@@ -46,38 +49,60 @@ public class DataRestApi {
     /*
      * verify the user Token is valid and he as authority to insert Data into the System
      */
+    //get_ds_owner_token(String dsId)
+    if(body.containsKey("userToken")&&body.containsKey("uuid")&&body.containsKey("data"))
+    {
     
+    	String token=body.getString("userToken");
+    	String uuid=body.getString("uuid");
+    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);
+    	
+    	if(token_owner.equals(token)) {
+    		
+		    	JsonArray q = body.getJsonArray("data");
+		   	   //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");
+		   	    System.out.println("body is:"+body);
+		   	   //  JsonArray q = body.getJsonArray("data");
+		   	  
+		        // Call createPoint in metadataService asynchronously.
+		        dataService.insertData(q, ar -> { 
+		         // ar is a result object created in metadataService.createPoint
+		         // We pass what to do with the result in this format.
+		       	if (ar.failed()) {
+		       	  // if the service is failed
+		       	  // TODO: add response here.
+		         	System.out.println(ar.cause().getMessage());
+		       	} else {
+		       	  System.out.println("Suceeded in DataRestAPI insertData");
+		       	  JsonObject result = new JsonObject();
+		       	  result.put("result", "SUCCESS");
+		       	  String length = Integer.toString(result.toString().length());
+		       		rc.response()
+		       		  .putHeader("content-TYPE", "application/text; charset=utf=8")
+		       		  .putHeader("content-length",  length)
+		       		  .setStatusCode(201)
+		       		  .write(result.toString());
+		       	}
+		       	});
+       
+    	}//if(token_owner.equals(token))
+    	else{
+    		System.out.println("Token doesn't have required preveleges");	
+    	}
+    		
+    }//end  if(body.containsKey("userToken"))
+    else
+    {
+    	System.out.println("parameters are missing");	
+		return;
+    }
     
     /*
      * 
      */
     
-    
-    JsonArray q = body.getJsonArray("data");
-	  //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");
-	  System.out.println("body is:"+body);
-	//  JsonArray q = body.getJsonArray("data");
-	  
-    // Call createPoint in metadataService asynchronously.
-    dataService.insertData(q, ar -> { 
-      // ar is a result object created in metadataService.createPoint
-      // We pass what to do with the result in this format.
-    	if (ar.failed()) {
-    	  // if the service is failed
-    	  // TODO: add response here.
-      	System.out.println(ar.cause().getMessage());
-    	} else {
-    	  System.out.println("Suceeded in DataRestAPI insertData");
-    	  JsonObject result = new JsonObject();
-    	  result.put("result", "SUCCESS");
-    	  String length = Integer.toString(result.toString().length());
-    		rc.response()
-    		  .putHeader("content-TYPE", "application/text; charset=utf=8")
-    		  .putHeader("content-length",  length)
-    		  .setStatusCode(201)
-    		  .write(result.toString());
-    	}
-    	});
-  }
+  
+  }//end insertData(RoutingContext rc) 
+  
 
 }

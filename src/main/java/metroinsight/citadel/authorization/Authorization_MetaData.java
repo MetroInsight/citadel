@@ -196,7 +196,7 @@ public class Authorization_MetaData {
 		 System.out.println("In Authorization_MetaData insert_ds_owner");
 	 }//end insert_ds_owner
 	 
-	 String get_ds_owner_token(String dsId)
+	 public String get_ds_owner_token(String dsId)
 	 {
 		 String token="";
 		 try{

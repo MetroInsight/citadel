@@ -47,19 +47,71 @@ public class MongoService implements MetadataService {
   
   @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
-  	mongoClient.find(collName, query, res -> {
-  		if (res.succeeded()) {
-  			JsonArray ja = new JsonArray();
-  			for (JsonObject json: res.result()) {
-  				json.remove("_id");
-  				ja.add(json);
-  			}
-  			resultHandler.handle(Future.succeededFuture(ja));
-  		} else {
-      	res.cause().printStackTrace();
-  		}
-  	});
-  }
+	  
+	  try{
+		  
+		  if(query.containsKey("userToken"))
+	       {
+			  String userToken = query.getString("userToken");
+	    		
+	    	 //check if this token exists in the HBase, and if it exists, what is the userID
+	    	  String userId=Auth_meta.get_userID(userToken);
+	    	
+	    	  //next check if this userID matches the user who created this Sensor
+	    	  //we store the userID in the Sensor Metadata, fetch sensor metadata, and confirm, it and then return it
+	    	  if(!userId.equals(""))
+	    		{
+			  mongoClient.find(collName, query, res -> {
+			  		if (res.succeeded()) {
+			  			JsonArray ja = new JsonArray();
+			  			for (JsonObject json: res.result()) {
+			  				
+			  				if(json.containsKey("userId"))
+			  				{
+			  					//match the userID
+			  				  if(json.getString("userId").equals(userId))
+			  				  {
+			  				    json.remove("_id");
+				  			    json.remove("userId");
+				  			    json.remove("userToken");
+			  				    ja.add(json);    
+			  				  }//end if
+			  				  
+			  				}//end if
+			  				
+			  			}//end for
+			  			resultHandler.handle(Future.succeededFuture(ja));
+			  		} else {
+			      	res.cause().printStackTrace();
+			  		}
+			  	});
+	    		}//end if(!userId.equals(""))
+	    	  else
+	    		{	
+	    		System.out.println("Token is not Valid");	
+	    		return;
+	    		}
+	    	  
+	    	  
+	    	}//end if(query.containsKey("userToken"))
+		  else
+			{	
+			System.out.println("Token is missing");	
+			return;
+			}//end else
+		  
+		  
+		  
+	  }//end try
+	  catch(Exception e)
+	  {
+		  e.printStackTrace();
+		  return;
+	  }
+	  
+  	
+  	
+  }//end queryPoint
 
   @Override
   public void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler){

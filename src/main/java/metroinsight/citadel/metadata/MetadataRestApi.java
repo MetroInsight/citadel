@@ -34,6 +34,9 @@ public class MetadataRestApi {
     	});
   }
   
+  /*
+   * this is not used, check if we can disable it.
+   */
   public void getPoint(RoutingContext rc) {
   	String uuid = rc.request().getParam("uuid");
   	if (uuid == null) {

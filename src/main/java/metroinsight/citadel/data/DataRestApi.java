@@ -20,24 +20,54 @@ public class DataRestApi {
   public void queryData(RoutingContext rc) {
 	  
 	System.out.println("In queryData DataRestApi.java");  
-    JsonObject q = (JsonObject) rc.getBodyAsJson().getValue("query");
-    System.out.println("Query is:"+q);
-    dataService.queryData(q, ar -> {
-    	if (ar.failed()) {
-      	System.out.println(ar.cause().getMessage());
-    	} else {
-    		System.out.println("Suceeded in DataRestAPI Query Data");
-    		String resultStr = ar.result().toString();
-    		//System.out.println("Query Results are:"+resultStr);
-    		String length = Integer.toString(resultStr.length());
-    		rc.response()
-    		.putHeader("content-TYPE", "application/json; charset=utf=8")
-    		.putHeader("content-length",  length)
-      	.setStatusCode(200)
-      	.write(resultStr);
+	JsonObject body = rc.getBodyAsJson();
+	
+	/*
+     * verify the user Token is valid and used has authority to query Data on provided uuid into the System
+     */
+    //get_ds_owner_token(String dsId), we also need to check query parameters
+    if(body.containsKey("userToken")&&body.containsKey("uuid")&&body.containsKey("query"))
+    {
+    	String token=body.getString("userToken");
+    	String uuid=body.getString("uuid");
+    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
+    	
+    	if(token_owner.equals(token)) {
+    		
+    		JsonObject q = body.getJsonObject("query");
+            System.out.println("Query is:"+q);
+            dataService.queryData(q, ar -> {
+            	if (ar.failed()) {
+              	System.out.println(ar.cause().getMessage());
+            	} else {
+            		System.out.println("Suceeded in DataRestAPI Query Data");
+            		String resultStr = ar.result().toString();
+            		//System.out.println("Query Results are:"+resultStr);
+            		String length = Integer.toString(resultStr.length());
+            		rc.response()
+            		.putHeader("content-TYPE", "application/json; charset=utf=8")
+            		.putHeader("content-length",  length)
+              	.setStatusCode(200)
+              	.write(resultStr);
+            	}
+            	});
+        	
+    		
+    	}//end if(token_owner.equals(token))
+    	else
+    	{
+    		System.out.println("In DataRestApi: Token doesn't have required priveleges");
     	}
-    	});
-  }
+    	
+    	
+    }//end  if(body.containsKey("userToken")&&body.containsKey("uuid"))
+    else
+    {
+    	System.out.println("In DataRestApi: Query parameters are missing");
+    }
+	
+    
+  }//end queryData(RoutingContext rc)
   
   
   public void insertData(RoutingContext rc) {

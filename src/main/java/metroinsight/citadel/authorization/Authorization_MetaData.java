@@ -209,12 +209,12 @@ public class Authorization_MetaData {
 					byte[] value=r.getValue(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[0]));
 					token=Bytes.toString(value);
 					//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
-					System.out.println("Owner Token Exist"+token);
+					System.out.println("Owner Token Exist: "+token);
 					return token; 
 				}//end if
 				else
 				{
-					System.out.println("Owner Token doesn't exits:"+r.toString());
+					System.out.println("Owner Token doesn't exits: "+r.toString());
 					//the token doesn't exist for this user. This user is not registered with us.
 					return token;
 				}

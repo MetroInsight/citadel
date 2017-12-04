@@ -42,7 +42,7 @@ public class Authorization_MetaData {
 	  static String family_policy = "policy";//this family will be storing like: userid and policy with it,
 	  //Since userid is changing and growing or shrinking, we don't have a string array below.
 	  String [] owner_qualifier= {"token","userId"};
-	  String [] datastream_qualifier= {"ownerToken"};//owner qualifier is fixed, every user is stored as a separate userID qualifies with the dataStream.
+	  String [] datastream_qualifier= {"ownerToken","ownerId"};//owner qualifier is fixed, every user is stored as a separate userID qualifies with the dataStream.
 	  
 	  Connection connection=null;
 	  Table table=null;
@@ -77,6 +77,9 @@ public class Authorization_MetaData {
 		
 	}//end create connection
 	
+	  /*
+	   * creates the required table structure in HBase
+	   */
 	 void create_table()
 	{
 		try{
@@ -108,7 +111,7 @@ public class Authorization_MetaData {
 	/*
 	 * Given a userID as input, returns backs the token if it exists
 	 */
-	String get_token(String userID)
+	public String get_token(String userID)
 	{
 		String token="";
 		try 
@@ -177,7 +180,7 @@ public class Authorization_MetaData {
 	}//end insert_token
 	
 	 //inserts datastream id and ownerToken details into the metadata table
-	 public void insert_ds_owner(String dsId, String ownerToken)
+	 public void insert_ds_owner(String dsId, String ownerToken, String ownerId)
 	 {
 		 try
 		 {
@@ -188,6 +191,11 @@ public class Authorization_MetaData {
 			   p.addColumn(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[0]), Bytes.toBytes(ownerToken));
 			   table.put(p);
 			 
+			  //rowid is dsId, family is ds, qualifier is ownerId and value is ownerId-value
+			   Put p2 = new Put(row_id);
+			   p2.addColumn(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[1]), Bytes.toBytes(ownerId));
+			   table.put(p2);
+			   
 		 }//end try
 		 catch(Exception e)
 		 {

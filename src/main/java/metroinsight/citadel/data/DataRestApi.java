@@ -29,10 +29,10 @@ public class DataRestApi {
     if(body.containsKey("userToken")&&body.containsKey("uuid")&&body.containsKey("query"))
     {
     	String token=body.getString("userToken");
-    	String uuid=body.getString("uuid");
+    	String uuid=body.getString("uuid");//uuid is the ds_id
     	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
     	
-    	if(token_owner.equals(token)) {
+    	if(token_owner.equals(token)) {//verify that owner token is same as token of person querying the data
     		
     		JsonObject q = body.getJsonObject("query");
             System.out.println("Query is:"+q);

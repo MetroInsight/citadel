@@ -40,7 +40,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.model.Datapoint;
 
-public class GeomesaHbase {
+public class GeomesaHbase_old1 {
 	public DataStore dataStore=null;
 	static String simpleFeatureTypeName = "MetroInsight";//"QuickStart";//
 	static SimpleFeatureBuilder featureBuilder=null;
@@ -143,7 +143,7 @@ public class GeomesaHbase {
 		return featureCollection;
 	}
 	
-static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, String uuid, JsonArray data) {
+static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, JsonArray data) {
 		
 		DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
 		
@@ -176,8 +176,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		    else {
 		      throw new java.lang.RuntimeException("Only Point is supported for geometry type.");
 		      }
-        //simpleFeature.setAttribute("uuid", dp.getUuid());//made uuid change to the static
-		    simpleFeature.setAttribute("uuid", uuid);
+        simpleFeature.setAttribute("uuid", dp.getUuid());
         simpleFeature.setAttribute("value", dp.getValue());
         simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
         featureCollection.add(simpleFeature);
@@ -198,7 +197,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		featureStore.addFeatures(featureCollection);
 	}
 	
-	public void geomesa_insertData(String uuid, JsonArray data) {
+	public void geomesa_insertData(JsonArray data) {
 		
 		//System.out.println("Inserting Data in geomesa_insertData(JsonObject data) in GeomesaHbase");
 		
@@ -213,7 +212,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 
 			// create new features locally, and add them to this table
 			//System.out.println("Creating new features");
-			FeatureCollection featureCollection = createNewFeatures(simpleFeatureType, uuid, data);
+			FeatureCollection featureCollection = createNewFeatures(simpleFeatureType, data);
 			//System.out.println("Inserting new features");
 			insertFeatures(dataStore, featureCollection);
 			//System.out.println("done inserting Data");
@@ -474,10 +473,10 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 	}//end function
 
 
-	public void geomesa_insertData(String uuid, JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
+	public void geomesa_insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
 		
 		try{
-		    geomesa_insertData(uuid, data);
+		    geomesa_insertData(data);
 		    resultHandler.handle(Future.succeededFuture(true));
 		}
 		catch(Exception e){

@@ -16,26 +16,27 @@ import metroinsight.citadel.data.DataService;
 
 public class GeomesaService_direct_Call implements DataService {
  
-	static GeomesaHbase gmh;
+	static GeomesaHbase_old1 gmh;
   
   public GeomesaService_direct_Call() {
 	  //initialize the geomesa database
     if(gmh==null) {
- 	   gmh = new GeomesaHbase();
+ 	   gmh = new GeomesaHbase_old1();
  	   gmh.geomesa_initialize();
     }
   }
 
   static void initialize() {
 	  if(gmh==null){
-	   gmh = new GeomesaHbase();
+	   gmh = new GeomesaHbase_old1();
 	   gmh.geomesa_initialize();
 	 }
 	}
   
   @Override
-  public void insertData(JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
-	   // Validate if it complies to the schema. No actual usage
+  public void insertData(String uuid, JsonArray data, Handler<AsyncResult<Boolean>> resultHandler) {
+	  //string uuid is dummy here, and not used 
+	  // Validate if it complies to the schema. No actual usage
 	    // TODO: Need to change this to proper validation instead.
 	   // DataPoint dataPoint = data.mapTo(DataPoint.class); 
 	    
@@ -161,7 +162,7 @@ public class GeomesaService_direct_Call implements DataService {
 			data.add(datum);
 			
 			System.out.println(i+ ": Data Point to Insert is:" + data.toString());
-			GS.insertData(data, ar -> {
+			GS.insertData("xxxx",data, ar -> {//"xxxx" is dummy string
 			   	if (ar.failed()) {
 			         	System.out.println(ar.cause().getMessage());
 			       	} else {

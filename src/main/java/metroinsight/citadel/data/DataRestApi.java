@@ -55,7 +55,7 @@ public class DataRestApi {
     
     	String token=body.getString("userToken");
     	String uuid=body.getString("uuid");
-    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);
+    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
     	
     	if(token_owner.equals(token)) {
     		
@@ -64,8 +64,9 @@ public class DataRestApi {
 		   	    System.out.println("body is:"+body);
 		   	   //  JsonArray q = body.getJsonArray("data");
 		   	  
+		   	    //have to add UUID to the dataService.insertData function
 		        // Call createPoint in metadataService asynchronously.
-		        dataService.insertData(q, ar -> { 
+		        dataService.insertData(uuid, q, ar -> { 
 		         // ar is a result object created in metadataService.createPoint
 		         // We pass what to do with the result in this format.
 		       	if (ar.failed()) {

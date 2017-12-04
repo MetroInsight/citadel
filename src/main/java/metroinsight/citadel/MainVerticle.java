@@ -8,6 +8,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import metroinsight.citadel.authorization.AuthorizationVerticle;
+import metroinsight.citadel.policy.PolicyVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 	
@@ -33,6 +34,8 @@ public class MainVerticle extends AbstractVerticle {
     });
     
     vertx.deployVerticle(AuthorizationVerticle.class.getName());
+    
+    vertx.deployVerticle(PolicyVerticle.class.getName());
     
 	}//end start()
 	

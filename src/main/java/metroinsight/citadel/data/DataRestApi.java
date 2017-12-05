@@ -30,10 +30,32 @@ public class DataRestApi {
     {
     	String token=body.getString("userToken");
     	String uuid=body.getString("uuid");//uuid is the ds_id
-    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
+    	JsonObject query=body.getJsonObject("query");
     	
-    	if(token_owner.equals(token)) {//verify that owner token is same as token of person querying the data
+    	if(token.equals("")||uuid.equals(""))//TODO: also check that query is not empty here!!
+    	{
+    		System.out.println("The parameters are missing");
+    		return;
+    	}
+    	
+    	//from token extract the userId.
+    	String userId=Auth_meta_data.get_userID(token);
+    	
+    	if(userId.equals(""))
+    	{
+    		System.out.println("The Token is invalid or you don't have required priveleges");
+    		return;
+    	}
+    	
+    	//for this userId extract the policy
+    	String policy = Auth_meta_data.get_policy(uuid, userId);
+    	
+    	/*
+    	 * old model updated considering HBase consistency constraint
+    	 */
+    	//String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
     		
+    	if(policy.equals("true")) { //true is default policy with no-space time constraints
     		JsonObject q = body.getJsonObject("query");
             System.out.println("Query is:"+q);
             dataService.queryData(q, ar -> {
@@ -52,11 +74,10 @@ public class DataRestApi {
             	}
             	});
         	
-    		
-    	}//end if(token_owner.equals(token))
+    	}//end if(policy.equals("true")) 
     	else
     	{
-    		System.out.println("In DataRestApi: Token doesn't have required priveleges");
+    		System.out.println("In DataRestApi: Policy for user doesn't exist");
     	}
     	
     	

@@ -179,6 +179,10 @@ public class Authorization_MetaData {
 	   return token;
 	}//end insert_token
 	
+	 /* MODEL:
+	  * rowID(dsId-value),Column(family_ds),qualifier(ownerToken),(token-value)
+        rowID(dsId-value),Column(family_ds),qualifier(ownerId),(ownerId-value)
+	  */
 	 //inserts datastream id and ownerToken details into the metadata table
 	 public void insert_ds_owner(String dsId, String ownerToken, String ownerId)
 	 {
@@ -204,6 +208,73 @@ public class Authorization_MetaData {
 		 System.out.println("In Authorization_MetaData insert_ds_owner");
 	 }//end insert_ds_owner
 	 
+	 /* MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value), (Policy-Value)
+	  * 
+	  */
+	 public void insert_policy(String dsId, String userId, String policy)
+	 {   
+		 try
+		 {
+			  //rowid is dsId, family is ds, qualifier is ownerToken and value is owner-token-value
+			   String rowid=dsId;
+			   byte[] row_id = Bytes.toBytes(rowid);
+			   Put p = new Put(row_id);
+			   p.addColumn(family_policy.getBytes(), Bytes.toBytes(userId), Bytes.toBytes(policy));
+			   table.put(p);
+			   
+		 }//end try
+		 catch(Exception e)
+		 {
+			 e.printStackTrace();
+		 }
+		 System.out.println("In Authorization_MetaData insert_policy");
+		
+		 
+	 }//end insert_policy()
+	
+	 /*
+	  * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value), (Policy-Value)
+	  */
+	 public String get_policy(String dsId, String userId)
+	 {
+		 String policy="";
+		 
+		 try{
+			 byte[] row_id = Bytes.toBytes(dsId);
+				Get g = new Get(row_id);
+				Result r = table.get(g);
+				if(r.containsColumn(family_policy.getBytes(), Bytes.toBytes(userId)))
+				{
+					
+					byte[] value=r.getValue(family_policy.getBytes(), Bytes.toBytes(userId));
+					policy=Bytes.toString(value);
+					//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
+					System.out.println("User Policy Exists: "+policy);
+					return policy; 
+				}//end if
+				else
+				{
+					System.out.println("User Policy Exists: "+r.toString());
+					//the token doesn't exist for this user. This user is not registered with us.
+					return policy;
+				}
+				
+			 
+		 }//end try
+		 
+		catch(Exception e)
+		 {
+			e.printStackTrace();
+		 }
+		 
+		 
+		 return policy;
+	 }//end get_policy
+	 
+	 /*
+	  * input is: dsID
+	  * return: Token of the Owner of dsId
+	  */
 	 public String get_ds_owner_token(String dsId)
 	 {
 		 String token="";
@@ -236,6 +307,41 @@ public class Authorization_MetaData {
 		 }
 		 
 		 return token;
+	 }
+	 
+	 
+	 public String get_ds_owner_id(String dsId)
+	 {
+		 String ownerId="";
+		 try{
+			 byte[] row_id = Bytes.toBytes(dsId);
+				Get g = new Get(row_id);
+				Result r = table.get(g);
+				if(r.containsColumn(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[1])))
+				{
+					
+					byte[] value=r.getValue(family_ds.getBytes(), Bytes.toBytes(datastream_qualifier[1]));
+					ownerId=Bytes.toString(value);
+					//System.out.println("Token  exits- Token is:"+token+" : Row-ID is :"+r.toString());
+					System.out.println("OwnerId Exist: "+ownerId);
+					return ownerId; 
+				}//end if
+				else
+				{
+					System.out.println("OwnerId doesn't exits: "+r.toString());
+					//the token doesn't exist for this user. This user is not registered with us.
+					return ownerId;
+				}
+				
+			 
+		 }//end try
+		 
+		catch(Exception e)
+		 {
+			e.printStackTrace();
+		 }
+		 
+		 return ownerId;
 	 }
 	 
 	 /*

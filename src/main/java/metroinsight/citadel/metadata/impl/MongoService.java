@@ -151,20 +151,25 @@ public class MongoService implements MetadataService {
     		{
     			 String uuid = UUID.randomUUID().toString();
     			//token exists and is linked to the valid userId
-    			//inserts the owner token, userId and ds_ID into the hbase metadata table
-    			 Auth_meta.insert_ds_owner(uuid,userToken,userId);
+    			
+    			 //not-used depreciated
+    			 //inserts the owner token, userId and ds_ID into the hbase metadata table
+    			 //Auth_meta.insert_ds_owner(uuid,userToken,userId);
     		
-    		 jsonMetadata.put("uuid", uuid);
-    		 jsonMetadata.put("userId", userId);
-    		//Metadata metadata =new Metadata(jsonMetadata);
-    		mongoClient.insert(collName, jsonMetadata, res -> {
-    		      if (res.succeeded()) {
-    		        // Load result to future if success.
-    		        resultHandler.handle(Future.succeededFuture(uuid));
-    		      } else {
-    		        // TODO: Need to add failure behavior.
-    		      }
-    		    });
+    			 //insert the policy for Owner to default "true", no-space-time constraints
+    			 Auth_meta.insert_policy(uuid, userId, "true");
+    			 
+	    		 jsonMetadata.put("uuid", uuid);
+	    		 jsonMetadata.put("userId", userId);
+	    		//Metadata metadata =new Metadata(jsonMetadata);
+	    		 mongoClient.insert(collName, jsonMetadata, res -> {
+	    		      if (res.succeeded()) {
+	    		        // Load result to future if success.
+	    		        resultHandler.handle(Future.succeededFuture(uuid));
+	    		      } else {
+	    		        // TODO: Need to add failure behavior.
+	    		      }
+	    		    });
     		}//end if(!userId.equals(""))
     		else
     		{	

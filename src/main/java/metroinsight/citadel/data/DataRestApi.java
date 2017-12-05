@@ -39,8 +39,11 @@ public class DataRestApi extends RestApiTemplate {
     	
     	if(token.equals("")||uuid.equals(""))//TODO: also check that query is not empty here!!
     	{
-    		System.out.println("The parameters are missing");
-    		return;
+    		//System.out.println("The parameters are missing");
+    		//return;
+    		System.out.println("In DataRestApi: Query parameters are missing");
+        	sendErrorResponse(resp, 400, "Query parameters are missing");
+    		
     	}
     	
     	//from token extract the userId.
@@ -48,8 +51,10 @@ public class DataRestApi extends RestApiTemplate {
     	
     	if(userId.equals(""))
     	{
-    		System.out.println("The Token is invalid or you don't have required priveleges");
-    		return;
+    		//System.out.println("The Token is invalid or you don't have required priveleges");
+    		//return;
+    		System.out.println("In DataRestApi: Policy for user doesn't exist");
+    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
     	}
     	
     	//for this userId extract the policy
@@ -108,6 +113,7 @@ public class DataRestApi extends RestApiTemplate {
     	else
     	{
     		System.out.println("In DataRestApi: Policy for user doesn't exist");
+    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
     	}
     	
     	

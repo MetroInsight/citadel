@@ -279,7 +279,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		return ja;
 	}//end function
 	
-	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(DataStore dataStore2, String geomField, String dateField, Double lat_min,
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String uuid, DataStore dataStore2, String geomField, String dateField, Double lat_min,
 			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) {
 		JsonArray ja = new JsonArray();
 
@@ -301,8 +301,16 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
 		String filter=cqlGeometry+" AND "+cqlDates;
 		
+		if(!uuid.equals(""))
+		{
+			String uuid_filter=" "+"uuid ='" + uuid +"'"+" ";
+			filter=filter + " AND "+ uuid_filter;
+			
+		}//adding constrains on UUID
+		
 		Filter cqlFilter = CQL.toFilter(filter);
 		
+		System.out.println("Filter is:"+filter);
 		
 		Query query = new Query(simpleFeatureTypeName, cqlFilter);
 		
@@ -431,7 +439,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 
 	}//end function
 
-	JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+	JsonArray Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max,
 			long timestamp_min, long timestamp_max) {
 		try {
 
@@ -443,7 +451,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			// query a few Features from this table
 			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
 			//the point_loc and date should be part of the config
-			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(uuid, dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
 
 			return result;
 		} catch (Exception e) {
@@ -500,11 +508,11 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		
 	}//end function
 
-	public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+	public void Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max,
 			long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
 		JsonArray result=new JsonArray();
 		try{
-			result=Query_Box_Lat_Lng_Time_Range( lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
+			result=Query_Box_Lat_Lng_Time_Range( uuid, lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
 			resultHandler.handle(Future.succeededFuture(result));
 		}
 		catch(Exception e){

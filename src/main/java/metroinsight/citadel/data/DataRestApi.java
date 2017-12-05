@@ -57,6 +57,9 @@ public class DataRestApi {
     		
     	if(policy.equals("true")) { //true is default policy with no-space time constraints
     		JsonObject q = body.getJsonObject("query");
+    		
+    		q.put("uuid", uuid);//uuid on which we want to query, extend it to the set of uuids
+    		
             System.out.println("Query is:"+q);
             dataService.queryData(q, ar -> {
             	if (ar.failed()) {
@@ -106,9 +109,20 @@ public class DataRestApi {
     
     	String token=body.getString("userToken");
     	String uuid=body.getString("uuid");
-    	String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
     	
-    	if(token_owner.equals(token)) {
+    	if(token.equals("")||uuid.equals(""))
+    	{
+    		System.out.println("Parameters are missing");
+    		return;
+    	}
+    	
+    	//for the token extract the userId
+    	String userId=Auth_meta_data.get_userID(token);
+    	
+    	//extract the DS ownerID for uuid
+    	String ownerId=Auth_meta_data.get_ds_owner_id(uuid);
+    	
+    	if(userId.equals(ownerId)) {
     		
 		    	JsonArray q = body.getJsonArray("data");
 		   	   //JsonObject body = (JsonObject) rc.getBodyAsJson().getValue("query");

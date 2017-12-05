@@ -94,9 +94,13 @@ public class GeomesaService implements DataService {
       long timestamp_min = query.getLong("timestamp_min");
       long timestamp_max = query.getLong("timestamp_max");
       
+      String uuid="";
+      if(query.containsKey("uuid"))
+      uuid=query.getString("uuid");
+      
       //String boxAndRangeQuery=lat_min+lat_max+lng_min+lng_max+timestamp_min+timestamp_max;
         //query is box and range both, other cases need to be implemented too
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(uuid, lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
          

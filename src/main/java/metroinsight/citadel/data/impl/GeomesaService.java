@@ -108,10 +108,13 @@ public class GeomesaService implements DataService {
           resultHandler.handle(Future.succeededFuture(resultJson));
           } else {
             res.cause().printStackTrace();
+            Exception e=new Exception("Internal error Encountered in query, please contact developers with your query");
+            resultHandler.handle(Future.failedFuture(e));
             }
         });
       }//end if
       catch(Exception e){
+    	resultHandler.handle(Future.failedFuture(e));
         e.printStackTrace();
       }
     }

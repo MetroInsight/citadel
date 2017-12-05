@@ -280,7 +280,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 	}//end function
 	
 	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String uuid, DataStore dataStore2, String geomField, String dateField, Double lat_min,
-			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) {
+			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) throws Exception {
 		JsonArray ja = new JsonArray();
 
 		
@@ -342,6 +342,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			}
 			catch(Exception e){
 				e.printStackTrace();
+				
 			}
 			
 		}
@@ -351,7 +352,9 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		
 		}//end try
 		catch(Exception e){
+			System.out.println("Exception Encountered--in queryFeatures_Box_Lat_Lng_Time_Range(String uuid, DataStore dataStore2, String geomField, String dateField, Double lat_min, Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) ");
 			e.printStackTrace();
+			throw e;
 		}//end catch
 		return ja;
 	}//end function
@@ -440,7 +443,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 	}//end function
 
 	JsonArray Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-			long timestamp_min, long timestamp_max) {
+			long timestamp_min, long timestamp_max) throws Exception {
 		try {
 
 			if (dataStore == null) {
@@ -455,9 +458,10 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 
 			return result;
 		} catch (Exception e) {
+			System.out.println("Exception Encountered--Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max, long timestamp_min, long timestamp_max)");
 			e.printStackTrace();
+			throw e;
 		}
-		return null;
 	}//end function
 	
 	JsonArray Query_Box_Lat_Lng_Time_Range2(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
@@ -516,7 +520,9 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			resultHandler.handle(Future.succeededFuture(result));
 		}
 		catch(Exception e){
-			resultHandler.handle(Future.succeededFuture(result));//in this case the result is empty jsonarray
+			//resultHandler.handle(Future.succeededFuture(result));//in this case the result is empty jsonarray
+			resultHandler.handle(Future.failedFuture(e));// in this case the result is empty jsonarray
+			System.out.println("Exception Encountered--Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max, long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler)");
 			e.printStackTrace();
 		}
 		

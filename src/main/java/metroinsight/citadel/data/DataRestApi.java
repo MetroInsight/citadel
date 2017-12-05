@@ -1,13 +1,16 @@
 package metroinsight.citadel.data;
 
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.authorization.Authorization_MetaData;
+import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.impl.GeomesaService;
+import metroinsight.citadel.model.BaseContent;
 
 
-public class DataRestApi {
+public class DataRestApi extends RestApiTemplate {
 
 	private DataService dataService;
 	Authorization_MetaData Auth_meta_data;
@@ -22,6 +25,8 @@ public class DataRestApi {
 	System.out.println("In queryData DataRestApi.java");  
 	JsonObject body = rc.getBodyAsJson();
 	
+	HttpServerResponse resp = getDefaultResponse(rc);
+	BaseContent content = new BaseContent();
 	/*
      * verify the user Token is valid and used has authority to query Data on provided uuid into the System
      */
@@ -62,9 +67,18 @@ public class DataRestApi {
     		
             System.out.println("Query is:"+q);
             dataService.queryData(q, ar -> {
+            	String cStr;
+                String cLen;
+                
             	if (ar.failed()) {
               	System.out.println(ar.cause().getMessage());
+              	content.setReason(ar.cause().getMessage());
+                cStr = content.toString();
+                cLen = Integer.toString(cStr.length());
+                resp.setStatusCode(400);
+                
             	} else {
+            		/*
             		System.out.println("Suceeded in DataRestAPI Query Data");
             		String resultStr = ar.result().toString();
             		//System.out.println("Query Results are:"+resultStr);
@@ -74,8 +88,21 @@ public class DataRestApi {
             		.putHeader("content-length",  length)
               	.setStatusCode(200)
               	.write(resultStr);
-            	}
+             */	
+            		content.setSucceess(true);
+                    content.setResults(ar.result());
+                    cStr = content.toString();
+                    cLen = Integer.toString(cStr.length());
+                    resp
+                    .setStatusCode(200);
+            		
+            }	
+            	resp
+                .putHeader("content-length", cLen)
+                .write(cStr);
+            	
             	});
+            	
         	
     	}//end if(policy.equals("true")) 
     	else
@@ -88,6 +115,7 @@ public class DataRestApi {
     else
     {
     	System.out.println("In DataRestApi: Query parameters are missing");
+    	sendErrorResponse(resp, 400, "Query parameters are missing");	
     }
 	
     

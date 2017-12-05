@@ -127,13 +127,17 @@ public class DataRestApi extends RestApiTemplate {
     
   }//end queryData(RoutingContext rc)
   
-  
+  /*
+   * only owner can insert data
+   */
   public void insertData(RoutingContext rc) {
 	 
 	System.out.println("In insertData DataRestApi.java");
     JsonObject body = rc.getBodyAsJson();
     // Get the query as JSON.
-    
+    HttpServerResponse resp = getDefaultResponse(rc);
+	BaseContent content = new BaseContent();
+	
     /*
      * verify the user Token is valid and he as authority to insert Data into the System
      */
@@ -146,8 +150,10 @@ public class DataRestApi extends RestApiTemplate {
     	
     	if(token.equals("")||uuid.equals(""))
     	{
-    		System.out.println("Parameters are missing");
-    		return;
+    		//System.out.println("Parameters are missing");
+    		//return;
+    		System.out.println("In DataRestApi: Insert data parameters are missing");
+        	sendErrorResponse(resp, 400, "Insert data parameters are missing");	
     	}
     	
     	//for the token extract the userId
@@ -168,12 +174,19 @@ public class DataRestApi extends RestApiTemplate {
 		        dataService.insertData(uuid, q, ar -> { 
 		         // ar is a result object created in metadataService.createPoint
 		         // We pass what to do with the result in this format.
-		       	if (ar.failed()) {
-		       	  // if the service is failed
-		       	  // TODO: add response here.
-		         	System.out.println(ar.cause().getMessage());
+		        	String cStr;
+	                String cLen;
+	                
+	            	if (ar.failed()) {
+	              	System.out.println(ar.cause().getMessage());
+	              	content.setReason(ar.cause().getMessage());
+	                resp.setStatusCode(400);
+	                
 		       	} else {
+		       		
 		       	  System.out.println("Suceeded in DataRestAPI insertData");
+		       	  
+		       	  /*
 		       	  JsonObject result = new JsonObject();
 		       	  result.put("result", "SUCCESS");
 		       	  String length = Integer.toString(result.toString().length());
@@ -182,19 +195,32 @@ public class DataRestApi extends RestApiTemplate {
 		       		  .putHeader("content-length",  length)
 		       		  .setStatusCode(201)
 		       		  .write(result.toString());
+		       		*/
+		       		resp.setStatusCode(201);
+		            content.setSucceess(true);    
 		       	}
+	            	cStr = content.toString();
+	                cLen = Integer.toString(cStr.length());
+	                resp
+	                  .putHeader("content-length", cLen)
+	                  .write(cStr);
+	                
 		       	});
        
     	}//if(token_owner.equals(token))
     	else{
-    		System.out.println("Token doesn't have required preveleges");	
+    		//System.out.println("Token doesn't have required preveleges");	
+    		System.out.println("In DataRestApi: Policy for user doesn't exist");
+    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
     	}
     		
     }//end  if(body.containsKey("userToken"))
     else
     {
-    	System.out.println("parameters are missing");	
-		return;
+    	//System.out.println("parameters are missing");	
+		//return;
+    	System.out.println("In DataRestApi: Insert data parameters are missing");
+    	sendErrorResponse(resp, 400, "Insert data parameters are missing");	
     }
     
     /*

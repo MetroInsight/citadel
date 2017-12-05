@@ -41,8 +41,6 @@ public class MongoService implements MetadataService {
     collName = "metadata";
     this.vertx = vertx;
     Auth_meta=new Authorization_MetaData();
-    
-    
   }
   
   @Override
@@ -83,6 +81,8 @@ public class MongoService implements MetadataService {
 			  			resultHandler.handle(Future.succeededFuture(ja));
 			  		} else {
 			      	res.cause().printStackTrace();
+			      	Exception e= new Exception(res.cause());
+			      	resultHandler.handle(Future.failedFuture(e));
 			  		}
 			  	});
 	    		}//end if(!userId.equals(""))
@@ -188,6 +188,7 @@ public class MongoService implements MetadataService {
     catch(Exception e)
     {
     	e.printStackTrace();
+    	resultHandler.handle(Future.failedFuture(e));
     }
     
     

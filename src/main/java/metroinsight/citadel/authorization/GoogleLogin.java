@@ -291,7 +291,7 @@ public class GoogleLogin {
 		 }
 		 System.out.println("LogOut Called");
 		 //again loading index page with session == null
-		 DisplayLoginJade(rc);
+		 //DisplayLoginJade(rc);
 		 
 	 }//end LogOut
 	 

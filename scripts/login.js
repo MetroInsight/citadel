@@ -44,14 +44,8 @@ function onSignIn(googleUser) {
       function signOut() {
     	  
     	   console.log('signOut in login.js');
-    	  
-    	   var auth2 = gapi.auth2.getAuthInstance();
-    	    auth2.signOut().then(function () {
-    	      console.log('User signed out.');
-    	    });
 
-    	    
-    	    var xhr = new XMLHttpRequest();
+    	   var xhr = new XMLHttpRequest();
            //xhr.open('POST', 'http://citadel.westus.cloudapp.azure.com:8080/logout');
            //xhr.open('POST', 'http://localhost:8080/logout');
             xhr.open('POST', 'https://localhost:8088/logout');
@@ -60,11 +54,31 @@ function onSignIn(googleUser) {
               console.log('Signed out called: ' + xhr.responseText);
             };
             xhr.send(); 
+            
+            
+            gapi.auth2.getAuthInstance().signOut().then(function () {
+    	      console.log('User signed out.');
+    	      window.location= "https://localhost:8088/login";
+    	    }).catch(function(error){
+    	    	console.log('Error occured in signed out.');
+    	    	console.log(error.message);
+    	    }); 
+    	    
+    	   /*
+    	    var auth2 = gapi.auth2.getAuthInstance();
+    	    auth2.signOut().then(function () {
+    	      console.log('User signed out.');
+    	      window.location= "https://localhost:8088/login";
+    	    }).catch(function(error){
+    	    	console.log('Error occured in signed out.');
+    	    	console.log(error);
+    	    }); 
+    	    */
     	    
           //redirecting to login on Citadel
            // window.location= "http://citadel.westus.cloudapp.azure.com:8080/login";
             //window.location= "http://localhost:8080/login";
-            window.location= "https://localhost:8088/login";
+            //window.location= "https://localhost:8088/login";
     	  }
 
       function onLoad() {

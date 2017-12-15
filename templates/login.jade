@@ -1,5 +1,5 @@
 doctype html
-html
+html(lang="en")
   head 
     title Citadel 
     meta(name="google-signin-scope", content="profile email")
@@ -7,5 +7,7 @@ html
     script(src="https://apis.google.com/js/platform.js?onload=onLoad",async defer)
     script(type='text/javascript',src="/scripts/login.js")
   body
-    div(class="g-signin2",data-onsuccess="onSignIn",data-theme="dark",id="Glogin")
-h1 Login #{context.name}
+    div(align="center")
+     h1 Login to Citadel
+     h1 using your Gmail Account
+     div(class="g-signin2",data-onsuccess="onSignIn",data-theme="dark",id="Glogin")

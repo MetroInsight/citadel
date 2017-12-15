@@ -20,6 +20,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;;
 
+//sudo mongod --dbpath=/home/sandeep/MetroInsight/installation/mongo-data
+//sudo mongod --dbpath=/media/sandeep/2Tb/sandeep/MetroInsight/Codes/Citadel-Sandeep/data
+
 @RunWith(VertxUnitRunner.class)
 public class ServerTest {
   

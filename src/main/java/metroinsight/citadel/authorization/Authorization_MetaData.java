@@ -26,7 +26,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.Result;
 import io.vertx.core.json.JsonObject;
 
-
 /*
  * inserts user token into the HBase and query it and retrieves it at runtime.
  * links user token to UserID.
@@ -50,7 +49,7 @@ public class Authorization_MetaData {
 	  public Authorization_MetaData()
 	  {
 		  create_connection();
-		    create_table();
+		  create_table();
 	  }
 	  
 	  void create_connection()
@@ -149,13 +148,12 @@ public class Authorization_MetaData {
 	
 	
 	
-	 String insert_token(String userID)//given a userID inserts token into the database
+	 String insert_token(String userID, String token)//given a userID inserts token into the database
 	{ //should check before by other fxns to see id userID already doesn't exist in DB,
 	  //else it will duplicate the ID
-		 String token="";
+		 
 	   try 
 	   {
-		   token=UUID.randomUUID().toString();//randomly generate a token for user
 		   
 		   //rowid is userID, family is token and value is token-value
 		   String rowid=userID;//UUID.randomUUID().toString();

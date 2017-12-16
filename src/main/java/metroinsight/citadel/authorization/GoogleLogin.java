@@ -260,7 +260,8 @@ public class GoogleLogin {
 			 
 			 UserTokenManager.initialize();
 			 
-			 String userToken=UserTokenManager.generateToken(email);
+			 String userToken=UserTokenManager.generateToken(email);/*Returns Token if it already exists or else generates a new token*/
+			 
 			 
 			 rc.put("username", email);
 			 rc.put("tokens",userToken);

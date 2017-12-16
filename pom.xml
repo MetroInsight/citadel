@@ -178,6 +178,12 @@
      <artifactId>google-api-client</artifactId>
      <version>1.22.0</version>
    </dependency>
+   <dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt</artifactId>
+    <version>0.9.0</version>
+</dependency>
+
          <!-- This is for the jade template engine -->
  <dependency>
       <groupId>io.vertx</groupId>

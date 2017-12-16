@@ -14,10 +14,14 @@ html
    button(type="button" class="btn btn-primary btn-lg" onclick="signOut()") Sign Out
   div(class="container")
    div(class="row")
+    h2 Your Api Key 
+    p #{context.tokens}
+    
+   div(class="row")
     div(class="col-sm-4")
-      h3 Your Api Key 
-      span(style='font-weight:bold') #{context.tokens} 
+     h3 Registered DataStreams  
     div(class="col-sm-4")
-      h3 Registered DataStreams
+     h3 Registered DataStreams
+     
     div(class="col-sm-4")
       

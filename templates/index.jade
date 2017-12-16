@@ -1,13 +1,23 @@
 doctype html
-html
+html 
  head
   title Citadel
   meta(name="google-signin-client_id", content="647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com")
   script(src="https://apis.google.com/js/platform.js?onload=onLoad",async defer)
   script(type='text/javascript',src="/scripts/login.js")
+  link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
+  script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")
+  script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
  body
-  div(align="center")
+  div(class="jumbotron text-center")
    h1 welcome #{context.username}
-   p. 
-    Your userToken is #{context.tokens}
-  button(onclick="signOut()") Sign Out
+   button(type="button" class="btn btn-primary btn-lg" onclick="signOut()") Sign Out
+  div(class="container")
+   div(class="row")
+    div(class="col-sm-4")
+      h3 Your Api Key 
+      span(style='font-weight:bold') #{context.tokens} 
+    div(class="col-sm-4")
+      h3 Registered DataStreams
+    div(class="col-sm-4")
+      

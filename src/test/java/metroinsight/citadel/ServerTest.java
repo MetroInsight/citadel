@@ -22,7 +22,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;;
 
 //sudo mongod --dbpath=/home/sandeep/MetroInsight/installation/mongo-data
 //sudo mongod --dbpath=/media/sandeep/2Tb/sandeep/MetroInsight/Codes/Citadel-Sandeep/data
-
+//sudo mongod --dbpath=/Users/administrator/MetroInsight/mongodb-data
 @RunWith(VertxUnitRunner.class)
 public class ServerTest {
   

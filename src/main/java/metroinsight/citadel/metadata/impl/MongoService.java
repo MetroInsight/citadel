@@ -47,6 +47,7 @@ public class MongoService implements MetadataService {
    * Not used in API:
    * The used oneis: public void queryPoint(JsonObject query, String userId, Handler<AsyncResult<JsonArray>> resultHandler)
    */
+ /*
   @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
 	  
@@ -117,7 +118,8 @@ public class MongoService implements MetadataService {
   	
   	
   }//end queryPoint
-
+*/
+  
   
  public void queryPoint(JsonObject query, String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
 	  

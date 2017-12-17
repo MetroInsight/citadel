@@ -1,13 +1,10 @@
-var ipaddress='https://citadel.westus.cloudapp.azure.com';
+//var ipaddress='https://citadel.westus.cloudapp.azure.com';
+var ipaddress='https://localhost';
 
  function SendToken(token)
     {
     	 //console.log("ID Token: " + id_token);
         var xhr = new XMLHttpRequest();
-        //xhr.open('POST', 'http://citadel.westus.cloudapp.azure.com:8080/api/token');
-        //xhr.open('POST', 'https://localhost:8088/api/token');
-        //xhr.open('POST', 'http://localhost:8080/api/token');
-        
         xhr.open('POST', ipaddress+':8088/api/token');
         
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -38,8 +35,6 @@ function onSignIn(googleUser) {
         console.log("Sending ID Token: " + id_token);
         SendToken(id_token); 
         setTimeout(function(){
-	     //window.location= "http://citadel.westus.cloudapp.azure.com:8080/index";
-	     //window.location= "http://localhost:8080/index";
 	     window.location= ipaddress+":8088/index";
         },50);
         
@@ -51,8 +46,7 @@ function onSignIn(googleUser) {
     	   console.log('signOut in login.js');
 
     	   var xhr = new XMLHttpRequest();
-           //xhr.open('POST', 'http://citadel.westus.cloudapp.azure.com:8080/logout');
-           //xhr.open('POST', 'http://localhost:8080/logout');
+           
             xhr.open('POST', ipaddress+':8088/logout');
             //xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
@@ -69,16 +63,6 @@ function onSignIn(googleUser) {
     	    	console.log(error.message);
     	    }); 
     	    
-    	   /*
-    	    var auth2 = gapi.auth2.getAuthInstance();
-    	    auth2.signOut().then(function () {
-    	      console.log('User signed out.');
-    	      window.location= "https://localhost:8088/login";
-    	    }).catch(function(error){
-    	    	console.log('Error occured in signed out.');
-    	    	console.log(error);
-    	    }); 
-    	    */
     	    
           //redirecting to login on Citadel
            // window.location= "http://citadel.westus.cloudapp.azure.com:8080/login";

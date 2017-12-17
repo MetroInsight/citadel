@@ -15,7 +15,7 @@ import metroinsight.citadel.model.Metadata;
 
 public class MongoService implements MetadataService {
   
-  private static MongoClient mongoClient ;
+  public static MongoClient mongoClient ;
   private final Vertx vertx;
   String collName;
   
@@ -132,7 +132,7 @@ public class MongoService implements MetadataService {
 		  
 		  
 		  query.put("userId", userId);//restrict by the userId
-		  System.out.println("in queryPoint MongoService Query is:"+query);
+		  //System.out.println("in queryPoint MongoService Query is:"+query);
 		  
 		   mongoClient.find(collName, query, res -> {
 			  		if (res.succeeded()) {

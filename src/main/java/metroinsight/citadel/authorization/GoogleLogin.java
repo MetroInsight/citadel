@@ -1,37 +1,18 @@
 package metroinsight.citadel.authorization;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.templ.JadeTemplateEngine;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.security.cert.CertificateException;
 import java.util.Collections;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.security.cert.X509Certificate;
-
-import metroinsight.citadel.metadata.MetadataRestApi;
-import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.metadata.impl.MongoService;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -303,9 +284,15 @@ public class GoogleLogin {
 			  	   
                 
 			    try{
+			    	/*
+			    	 * Deosn't work in jar, don't know why. It works fine in the Eclipse,
+			    	 * Dependency problem of jackson.core.JsonGenerator.writeStartObject
+			    	 */
 			    	
-			    	  MetadataService metadataService=new MongoService (vertx);
-			    	  metadataService.queryPoint(new JsonObject(),email, ar -> {
+			    	
+			    	 MongoService metadataService=new MongoService (vertx);
+			    	 JsonObject query= new JsonObject();
+			    	 metadataService.queryPoint(query,email, ar -> {
 		    		    	if (ar.failed()) {
 			    		      	System.out.println(ar.cause().getMessage());
 			    		    	}
@@ -328,10 +315,24 @@ public class GoogleLogin {
 			    		    	}//end else
 			    		    	   	
 			    		    	});
+			    		    	
+			    	
 			    }//end try
 			    catch(Exception e)
 			    {
 			    	e.printStackTrace();
+			    	
+			    	/*
+			    	 * Show index page even after exception
+			    	 */
+			    	engine.render(rc, "templates/index.jade", res2 -> {
+    	  		        if (res2.succeeded()) {
+    	  		          rc.response().end(res2.result());
+    	  		        } else {
+    	  		          rc.fail(res2.cause());
+    	  		        }
+    	  		      });
+			    	
 			    }
 			 /*
 			  * End sending query to get registered sensors

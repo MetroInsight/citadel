@@ -1,4 +1,4 @@
-var ipaddress='https://localhost';
+var ipaddress='https://citadel.westus.cloudapp.azure.com';
 
  function SendToken(token)
     {

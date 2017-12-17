@@ -65,7 +65,8 @@ public class Authorization_MetaData {
 			Configuration config = HBaseConfiguration.create();
 			//String path = meta.getClass().getResource("resources/hbase-site.xml").getPath();
 			//config.addResource(new Path(path));
-			config.addResource(new Path("/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml"));
+			//config.addResource(new Path("/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml"));
+			config.addResource(new Path("/home/citadel/metroinsight/Hbase_Test/conf/hbase-site.xml"));
 			HBaseAdmin.checkHBaseAvailable(config);
 			connection = ConnectionFactory.createConnection(config);
 			

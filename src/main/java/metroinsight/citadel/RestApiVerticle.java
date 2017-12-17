@@ -38,7 +38,8 @@ public class RestApiVerticle extends AbstractVerticle {
 			  new JksOptions().
 			   // setPath("/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
 			    //setPath("/home/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
-			   setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks"). 
+			   //setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks"). 
+			   setPath("/home/citadel/metroinsight/selfsigned.jks").
 			  setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
 			);
     

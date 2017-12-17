@@ -36,17 +36,17 @@ public class PolicyRestApi extends RestApiTemplate{
 		HttpServerResponse resp = getDefaultResponse(rc);
 		BaseContent content = new BaseContent();
 		
+		boolean proceed=true;
+		
 		try
 	    {
 			
 		System.out.println("In registerPolicy PolicyRestApi.java");
 	    JsonObject body = rc.getBodyAsJson();
 	    System.out.println("Post: "+body);
-	    
-	    
 	    	
 	    	
-	    if(body.containsKey("userToken")&&body.containsKey("policy"))
+	    if(proceed&&body.containsKey("userToken")&&body.containsKey("policy"))
 	    {
 	    	
 	    	// token of the owner
@@ -60,22 +60,29 @@ public class PolicyRestApi extends RestApiTemplate{
 	    	
 	    	JsonArray users = policy.getJsonArray("users");
 	    	
-	    	if(sensors.size()==0||users.size()==0)//if no ds_id is passed
+	    	if(proceed&&(sensors.size()==0||users.size()==0))//if no ds_id is passed
 	    	{
 	    		System.out.println("In RegisterPolicy: sensors is empty, which is not allowed");
 	    		sendErrorResponse(resp, 400, "Parameters are missing");
-	    	}
+	    		proceed=false;
+	    	}//end if(sensors.size()==0||users.size()==0)
 	    	
-	    	String ownerId = Auth_meta_data_policy.get_userID(userToken);
-	    	if(ownerId.equals(""))
+	    	String ownerId="";
+	    	
+	    	if(proceed&&!userToken.equals(""))
+	    	ownerId = Auth_meta_data_policy.get_userID(userToken);
+	    	
+	    	
+	    	if(proceed&&ownerId.equals(""))
     		{
     			System.out.println("Token is not valid");
     			sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+    			proceed=false;
     		}
 	    	
 	    	boolean owner_verified=true;//it is true, if for all DSID in what construct are owner by ownerId
 	    	
-	    	for(int i=0;i<sensors.size();i++)
+	    	for(int i=0;proceed&&i<sensors.size();i++)
 	    	{
 	    		String ds_id=sensors.getString(i);//ds_id==uuid
 	    		if(ds_id.equals(""))//it is empty, can check with the size of it also later: TODO
@@ -84,26 +91,29 @@ public class PolicyRestApi extends RestApiTemplate{
 	    			owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
 	    			System.out.println("uuid cannot be empty.");
 	    			sendErrorResponse(resp, 400, "Parameters are missing");
-	    			//break;
+	    			proceed=false;
 	    		}
 	    		
+	    		
 	    		//Given the DsID fetch the ownerId
-	    		String ownerId_ds=Auth_meta_data_policy.get_ds_owner_id(ds_id);
+	    		String ownerId_ds="";
+	    		if(proceed)
+	    		ownerId_ds=Auth_meta_data_policy.get_ds_owner_id(ds_id);
 	    		
 	    		//ownerId_ds.equals("") means ds_id is not a valid ds_id 
-	    		if(ownerId_ds.equals("")||!ownerId_ds.equals(ownerId))
+	    		if(proceed && (ownerId_ds.equals("")||!ownerId_ds.equals(ownerId)))
 	    			{
 	    			 owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
 	    			 System.out.println("Either uuid:"+ds_id+", doesn't exist or you don't have privelegs to assign policy to it.");
 	    			 sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
-	    			 //break;
+	    			 proceed=false;
 	    			}
 	    		
 	    	}//end for(int i=0;i<sensors.size();i++)
 	    	
 	    	ArrayList<String> userIdList=new ArrayList<String>();//Creating arraylist of users for which we have to register policy
 	    	
-	    	if(owner_verified)
+	    	if(proceed&&owner_verified)
 	    	{
 	    		System.out.println("In registerPolicy, owner verified PolicyManagement.java");
 	    		
@@ -113,28 +123,31 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		 */
 	    	    boolean users_verified=true;
 	    	    
-	    		for(int i=0;i<users.size();i++)
+	    		for(int i=0;proceed&&i<users.size();i++)
 	    		{
 	    			String userId =users.getString(i);
 	    			if(userId.equals(""))
 	    		     {
 	    				System.out.println("userId cannot be empty");
 	    				users_verified=false; 
-	    				sendErrorResponse(resp, 400, "Parameters are missing");	
-	    				//break;
+	    				sendErrorResponse(resp, 400, "Parameters are missing, userId cannot be empty");	
+	    				proceed=false;
 	    		     }
 	    			 
+	    		
 	    			//check is userId exist in Citadel
 	    			//given a userId check if its token exist in the Citadel
-	    			String user_token=Auth_meta_data_policy.get_token(userId);
+	    			String user_token="";
 	    			
-	    			if(user_token.equals(""))
+	    			if(proceed)
+	    			 user_token=Auth_meta_data_policy.get_token(userId);
+	    			
+	    			if(proceed&&user_token.equals(""))
 	    			{
 	    				System.out.println("userID: "+userId+" doesn't exist in Citadel");
 	    				users_verified=false; 
-	    				sendErrorResponse(resp, 400, users.getString(i)+" : doesn't exist in Citadel");	
-	    				
-	    					//break;
+	    				sendErrorResponse(resp, 400, users.getString(i)+" : doesn't exist in Citadel");
+	    				proceed=false;
 	    				
 	    			}//end if(user_token.equals(""))
 	    			
@@ -145,7 +158,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		/*
 	    		 * All users were verified correctly, and exist in Citadel
 	    		 */
-	    		if(users_verified)
+	    		if(proceed&&users_verified)
 	    		{
 	    			
 	    		   System.out.println("In registerPolicy, users are verified, PolicyManagement.java");
@@ -173,7 +186,8 @@ public class PolicyRestApi extends RestApiTemplate{
 	    						       }catch(Exception e)
 	    						   {
 	    						    	 System.out.println("allowedPolygons format incorrect");
-	    							     sendErrorResponse(resp, 400, "allowedPolygons format incorrect");	   
+	    							     sendErrorResponse(resp, 400, "allowedPolygons format incorrect");	 
+	    							     proceed=false;
 	    						   }
 	    						   
 	    						   System.out.println("allowedPolygons" + allowedPolygons);
@@ -184,20 +198,26 @@ public class PolicyRestApi extends RestApiTemplate{
 	    						    * Very Important, else all future queries with this policy will not work
 	    						    */
 	    						  
-	    						   for(int p=0; p<allowedPolygons.size();p++)
+	    						   for(int p=0; proceed&&p<allowedPolygons.size();p++)
 	    						   {
 	    							   JsonArray polygon = allowedPolygons.getJsonArray(p);
 	    						       boolean verify = false;
 	    						      
-	    						       verify = VerifyPolygonsStructure(polygon);
+	    						       try{
+	    						       verify = VerifyPolygonsStructure(polygon);}
+	    						       catch(Exception e)
+	    						       {
+	    						    	   System.out.println("Exception shouldn't occur here"); 
+	    						    	  e.printStackTrace(); 
+	    						       }
 	    
 	    								
-	    						       if(verify==false)//polygon is not in correct format
+	    						       if(proceed&&verify==false)//polygon is not in correct format
 	    						       {
 	    						    	   System.out.println("allowedPolygons format incorrect");
 	    						    	   System.out.println(polygon+", Verify is: "+verify);
 	    						    	   sendErrorResponse(resp, 400, polygon.toString()+": in allowedPolygons format incorrect");
-		    							   return;
+	    						    	   proceed=false;
 	    						       }					       
 	    						       
 	    						   }//end for(int p=0; p<allowedPolygons.size();p++)
@@ -209,13 +229,15 @@ public class PolicyRestApi extends RestApiTemplate{
 	    						   /*
 	    						    * Allowed polygons correct, attempt to insert this policy
 	    						    */
-	    						   
+	    						   Policy=policy.toString();
 	    						   
 	    					   }//end if(where.containsKey("AllowedPolygons"))
 	    					   
 	    				   }//end if(policy.containsKey("where"))
 	    				  
+	    				   
 	    				   //else---check when to do this
+	    				   if(proceed)
 	    				   Auth_meta_data_policy.insert_policy(dsId, userId, Policy);//this is default policy with no-space time constraints, with constraints we need to update this
 	    			   
 	    				   
@@ -224,47 +246,50 @@ public class PolicyRestApi extends RestApiTemplate{
 	    			   
 	    		   }//end for(int i=0;i<sensors.size();i++)
 	    		   
+	    		   if(proceed)
 	    		   System.out.println("In registerPolicy, Policies are registered, PolicyManagement.java");
 	    		   
-	    		   /*
-	 	    	   JsonObject result = new JsonObject();
-	 	     	   result.put("result", "SUCCESS");
-	 	     	   String length = Integer.toString(result.toString().length());
-	 	     		rc.response()
-	 	     		  .putHeader("content-TYPE", "application/text; charset=utf=8")
-	 	     		  .putHeader("content-length",  length)
-	 	     		  .setStatusCode(201)
-	 	     		  .write(result.toString());
-	 	     		 */
+	    		   if(proceed)
+	    		   {
 	    		   resp.setStatusCode(200);
 		    	   content.setSucceess(true);
 		    	   String cStr = content.toString();
  		    	   String cLen = Integer.toString(cStr.length());
  		    	   resp.putHeader("content-length", cLen)
- 		      	   .write(cStr); 
-	 	     		
+ 		      	   .write(cStr).end(); 
+ 		    	   
+ 		    	  proceed=false;
+	    		   }//end if(proceed)
+	    		   
 	    		}//end if(users_verified)
 	    	   
 	     		
 	    	}//if(owner_verified)
-	    	else
+	    	else if(proceed)
 	    	{
 	    		System.out.println("You don't have priveleges to assign policies to all the dataStreams in what construct");
 	    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+	    		proceed=false;
 	    	}
 	    	
 	    }//end if(body.containsKey("userToken")&&body.containsKey("what")&&body.containsKey("whom"))
-	    else
+	    else if(proceed)
 	    {
 	    	System.out.println("Policy registration parameters are missing");
 	    	sendErrorResponse(resp, 400, "Parameters are missing");
+	    	proceed=false;
 	    }
 	    
 	    }//end try
 	    catch(Exception e)
 	    {
 	    	e.printStackTrace();
-	    	sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");
+	    	
+	    	if(proceed)
+	    	{sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");
+	    	proceed=false;
+	    	}
+	    	
 	    }
      		
 		
@@ -303,7 +328,7 @@ public class PolicyRestApi extends RestApiTemplate{
 		catch(Exception e)
 		{
 			//polygon is not a valid closed polygon
-			e.printStackTrace();
+			//e.printStackTrace();
 			verify=false;
 			return verify;
 		}

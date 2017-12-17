@@ -124,9 +124,6 @@ public class MetadataRestApi extends RestApiTemplate{
 	  }
 	  
     
-    
-    
-    
   }//end queryPoint(RoutingContext rc)
   
   

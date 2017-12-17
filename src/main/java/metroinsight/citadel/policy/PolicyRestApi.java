@@ -3,15 +3,18 @@ package metroinsight.citadel.policy;
 import java.util.ArrayList;
 
 import metroinsight.citadel.authorization.Authorization_MetaData;
+import metroinsight.citadel.common.RestApiTemplate;
+import metroinsight.citadel.model.BaseContent;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-public class PolicyManagement {
+public class PolicyRestApi extends RestApiTemplate{
 
 	Authorization_MetaData Auth_meta_data_policy; //Authorization_MetaData class contains functions of authorization and access control
 	
-	public PolicyManagement()
+	public PolicyRestApi()
 	{
 		Auth_meta_data_policy=new Authorization_MetaData();
 	}
@@ -22,9 +25,15 @@ public class PolicyManagement {
 	 */
 	public void registerPolicy(RoutingContext rc) {
 		
-		System.out.println("In registerPolicy PolicyManagement.java");
+		HttpServerResponse resp = getDefaultResponse(rc);
+		BaseContent content = new BaseContent();
+		
+		System.out.println("In registerPolicy PolicyRestApi.java");
 	    JsonObject body = rc.getBodyAsJson();
 	    System.out.println("Post: "+body);
+	    
+	    try
+	    {
 	    
 	    if(body.containsKey("userToken")&&body.containsKey("what")&&body.containsKey("whom"))
 	    {
@@ -39,14 +48,14 @@ public class PolicyManagement {
 	    	if(what.size()==0||whom.size()==0)//if no ds_id is passed owner is not verified
 	    	{
 	    		System.out.println("In RegisterPolicy: What or Whom is empty, which is not allowed");
-	    		return;
+	    		sendErrorResponse(resp, 400, "Parameters are missing");
 	    	}
 	    	
 	    	String ownerId = Auth_meta_data_policy.get_userID(userToken);
 	    	if(ownerId.equals(""))
     		{
     			System.out.println("Token is not valid");
-    			return;
+    			sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
     		}
 	    	
 	    	boolean owner_verified=true;//it is true, if for all DSID in what construct are owner by ownerId
@@ -59,7 +68,7 @@ public class PolicyManagement {
 	    			System.out.println("dsId cannot be empty");
 	    			owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
 	    			System.out.println("uuid cannot be empty.");
-	    			return;
+	    			sendErrorResponse(resp, 400, "Parameters are missing");
 	    			//break;
 	    		}
 	    		
@@ -70,7 +79,7 @@ public class PolicyManagement {
 	    			{
 	    			 owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
 	    			 System.out.println("Either uuid:"+ds_id+", doesn't exist or you don't have privelegs to assign policy to it.");
-	    			 return;
+	    			 sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
 	    			 //break;
 	    			}
 	    		
@@ -95,7 +104,7 @@ public class PolicyManagement {
 	    		     {
 	    				System.out.println("userId cannot be empty");
 	    				users_verified=false; 
-	    				return;
+	    				sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
 	    				//break;
 	    		     }
 	    			 
@@ -107,7 +116,7 @@ public class PolicyManagement {
 	    			{
 	    				System.out.println("userID: "+userId+" doesn't exist in Citadel");
 	    				users_verified=false; 
-	    				return;
+	    				sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
 	    				//break;
 	    				
 	    			}//end if(user_token.equals(""))
@@ -155,17 +164,22 @@ public class PolicyManagement {
 	    	else
 	    	{
 	    		System.out.println("You don't have priveleges to assign policies to all the dataStreams in what construct");
-	    		return;
+	    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
 	    	}
 	    	
 	    }//end if(body.containsKey("userToken")&&body.containsKey("what")&&body.containsKey("whom"))
 	    else
 	    {
 	    	System.out.println("Policy registration parameters are missing");
-	    	return;
+	    	sendErrorResponse(resp, 400, "Parameters are missing");
 	    }
 	    
-	    
+	    }//end try
+	    catch(Exception e)
+	    {
+	    	e.printStackTrace();
+	    	sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");
+	    }
      		
 		
 	}//end registerPolicy

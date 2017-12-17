@@ -14,13 +14,13 @@ import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 
 public class PolicyVerticle extends AbstractVerticle {
 	protected ServiceDiscovery discovery;
-	PolicyManagement pm;
+	PolicyRestApi pm;
 	@Override
 	  public void start(Future<Void> fut){
 	    // Init service discovery. Future purpose
 	    discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
 	    
-	    pm=new PolicyManagement();
+	    pm=new PolicyRestApi();
 	    
 	    Router router = Router.router(vertx);
 	    

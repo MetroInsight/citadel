@@ -229,6 +229,13 @@ public class GeomesaService_direct_Call implements DataService {
 	  
   }
 
+@Override
+public void queryData(JsonObject query, String policy,
+		Handler<AsyncResult<JsonArray>> resultHandler) {
+	// TODO Auto-generated method stub
+	
+}
+
 
 
 }

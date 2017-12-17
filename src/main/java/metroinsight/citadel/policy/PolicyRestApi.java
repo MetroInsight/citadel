@@ -134,7 +134,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				proceed=false;
 	    		     }
 	    			 
-	    		
+	    			
 	    			//check is userId exist in Citadel
 	    			//given a userId check if its token exist in the Citadel
 	    			String user_token="";
@@ -151,6 +151,17 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				
 	    			}//end if(user_token.equals(""))
 	    			
+	    			//check if userId equals ownerId, this is not allowed???, policy cannot be defined for owner
+	    			if(proceed && userId.equals(ownerId))
+	    			{
+	    				System.out.println("userID: "+userId+" equals ownerID");
+	    				users_verified=false; 
+	    				sendErrorResponse(resp, 400, users.getString(i)+" : and owner are the same");
+	    				proceed=false;
+	    				
+	    			}//end if(proceed && userId.equals(ownerId))
+	    			
+	    			if(proceed)
 	    			userIdList.add(user_token);//storing these tokens for later use
 	    			
 	    		}//end for(int i=0;i<whom.size();i++)
@@ -238,8 +249,11 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				   
 	    				   //else---check when to do this
 	    				   if(proceed)
-	    				   Auth_meta_data_policy.insert_policy(dsId, userId, Policy);//this is default policy with no-space time constraints, with constraints we need to update this
-	    			   
+	    				   { 
+	    					   //everything is correct, let us insert this policy
+	    					   Auth_meta_data_policy.insert_policy(dsId, userId, Policy);//this is default policy with no-space time constraints, with constraints we need to update this
+	    				   }//end if(proceed)
+	    				   
 	    				   
 	    				   
 	    			   }//end for(int j=0;j<users.size();j++)
@@ -321,8 +335,8 @@ public class PolicyRestApi extends RestApiTemplate{
 			  
 			  
 			  LinearRing ring = geometryFactory.createLinearRing( coords );
-			  //LinearRing holes[] = null; // use LinearRing[] to represent holes
-			  //Polygon pol = geometryFactory.createPolygon(ring, holes );
+			  LinearRing holes[] = null; // use LinearRing[] to represent holes
+			  Polygon pol = geometryFactory.createPolygon(ring, holes );
 		  
 		   }//end try
 		catch(Exception e)

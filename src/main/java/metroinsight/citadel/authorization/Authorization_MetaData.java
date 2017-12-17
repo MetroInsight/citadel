@@ -217,7 +217,7 @@ public class Authorization_MetaData {
 	 {   
 		 try
 		 {
-			  //rowid is dsId, family is ds, qualifier is ownerToken and value is owner-token-value
+			  //rowid is dsId, family is ds, qualifier(userId-value), (Policy-Value)
 			   String rowid=dsId;
 			   byte[] row_id = Bytes.toBytes(rowid);
 			   Put p = new Put(row_id);

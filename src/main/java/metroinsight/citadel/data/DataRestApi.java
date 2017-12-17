@@ -23,10 +23,14 @@ public class DataRestApi extends RestApiTemplate {
   public void queryData(RoutingContext rc) {
 	  
 	System.out.println("In queryData DataRestApi.java");  
-	JsonObject body = rc.getBodyAsJson();
-	
 	HttpServerResponse resp = getDefaultResponse(rc);
 	BaseContent content = new BaseContent();
+	
+	boolean proceed=true;
+	
+	try {
+	JsonObject body = rc.getBodyAsJson();
+	
 	/*
      * verify the user Token is valid and used has authority to query Data on provided uuid into the System
      */
@@ -37,35 +41,50 @@ public class DataRestApi extends RestApiTemplate {
     	String uuid=body.getString("uuid");//uuid is the ds_id
     	JsonObject query=body.getJsonObject("query");
     	
-    	if(token.equals("")||uuid.equals(""))//TODO: also check that query is not empty here!!
+    	if(proceed&&(token.equals("")||uuid.equals("")))//TODO: also check that query is not empty here!!
     	{
     		//System.out.println("The parameters are missing");
     		//return;
     		System.out.println("In DataRestApi: Query parameters are missing");
         	sendErrorResponse(resp, 400, "Query parameters are missing");
-    		
+        	proceed=false;
     	}
     	
     	//from token extract the userId.
-    	String userId=Auth_meta_data.get_userID(token);
+    	String userId="";
+    	if(proceed)
+    	userId=Auth_meta_data.get_userID(token);
     	
-    	if(userId.equals(""))
+    	if(proceed&&userId.equals(""))
     	{
     		//System.out.println("The Token is invalid or you don't have required priveleges");
     		//return;
     		System.out.println("In DataRestApi: Policy for user doesn't exist");
     		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+    		proceed=false;
     	}
     	
+    	String policy="";
     	//for this userId extract the policy
-    	String policy = Auth_meta_data.get_policy(uuid, userId);
+    	if(proceed)
+    	 policy = Auth_meta_data.get_policy(uuid, userId);
     	
+    	if(proceed&&policy.equals(""))
+    	{//no policy for this user is defined for sensor with uuid
+    		
+    		System.out.println("In DataRestApi: Policy for user doesn't exist");
+    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+    		proceed=false;
+    		
+    	}
     	/*
     	 * old model updated considering HBase consistency constraint
     	 */
     	//String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
     		
-    	if(policy.equals("true")) { //true is default policy with no-space time constraints
+    	if(proceed&&policy.equals("true")) 
+    	   { //true is default policy with no-space time constraints
+    		
     		JsonObject q = body.getJsonObject("query");
     		
     		q.put("uuid", uuid);//uuid on which we want to query, extend it to the set of uuids
@@ -104,26 +123,77 @@ public class DataRestApi extends RestApiTemplate {
             }	
             	resp
                 .putHeader("content-length", cLen)
-                .write(cStr);
+                .write(cStr).end();
             	
             	});
             	
+            proceed=false;
         	
     	}//end if(policy.equals("true")) 
-    	else
+    	
+    	else if(proceed)//there exist some policy which is not empty
     	{
-    		System.out.println("In DataRestApi: Policy for user doesn't exist");
-    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
-    	}
+    		
+    		System.out.println("In DataRestApi: Policy for user exist");
+    		
+            JsonObject q = body.getJsonObject("query");
+    		
+    		q.put("uuid", uuid);//uuid on which we want to query, extend it to the set of uuids
+    		
+            System.out.println("Query is:"+q);
+            dataService.queryData(q, policy, ar -> {
+            	String cStr;
+                String cLen;
+                
+            	if (ar.failed()) {
+              	System.out.println(ar.cause().getMessage());
+              	content.setReason(ar.cause().getMessage());
+                cStr = content.toString();
+                cLen = Integer.toString(cStr.length());
+                resp.setStatusCode(400);
+                
+            	} else {
+            		
+            		content.setSucceess(true);
+                    content.setResults(ar.result());
+                    cStr = content.toString();
+                    cLen = Integer.toString(cStr.length());
+                    resp
+                    .setStatusCode(200);
+            		
+            }	
+            	resp
+                .putHeader("content-length", cLen)
+                .write(cStr).end();
+            	
+            	});
+            	
+            proceed=false;
+    		
+    		
+    	}//end if(proceed)//there exist some policy which is not empty
+    	
+    	
     	
     	
     }//end  if(body.containsKey("userToken")&&body.containsKey("uuid"))
-    else
+    else if(proceed)
     {
     	System.out.println("In DataRestApi: Query parameters are missing");
     	sendErrorResponse(resp, 400, "Query parameters are missing");	
+    	proceed=false;
     }
 	
+	}//end try
+	catch(Exception e)
+	{
+		e.printStackTrace();
+		if(proceed)
+    	{sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");
+    	proceed=false;
+    	}
+		
+	}
     
   }//end queryData(RoutingContext rc)
   

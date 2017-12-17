@@ -528,8 +528,201 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		
 	}
 
+	//also have policy as input
+	public void Query_Box_Lat_Lng_Time_Range(String uuid, String policy,
+			Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max,  Handler<AsyncResult<JsonArray>> resultHandler) {
+		
+		
+		JsonArray result=new JsonArray();
+		try{
+			result=Query_Box_Lat_Lng_Time_Range( uuid, policy, lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
+			resultHandler.handle(Future.succeededFuture(result));
+		}
+		catch(Exception e){
+			//resultHandler.handle(Future.succeededFuture(result));//in this case the result is empty jsonarray
+			resultHandler.handle(Future.failedFuture(e));// in this case the result is empty jsonarray
+			System.out.println("Exception Encountered--Query_Box_Lat_Lng_Time_Range(String uuid,String policy, Double lat_min, Double lat_max, Double lng_min, Double lng_max, long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler)");
+			e.printStackTrace();
+		}
+		
+	}//end public void Query_Box_Lat_Lng_Time_Range(String uuid, String policy,
 
+	
+	//has policy in it
+	JsonArray Query_Box_Lat_Lng_Time_Range(String uuid, String policy, Double lat_min, Double lat_max, Double lng_min, Double lng_max,
+			long timestamp_min, long timestamp_max) throws Exception {
+		try {
 
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+		
+
+			// query a few Features from this table
+			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
+			//the point_loc and date should be part of the config
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(uuid,policy, dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
+
+			return result;
+		} catch (Exception e) {
+			System.out.println("Exception Encountered--Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max, long timestamp_min, long timestamp_max)");
+			e.printStackTrace();
+			throw e;
+		}
+	}//end function
+
+	
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String uuid, String policy, DataStore dataStore2, String geomField, String dateField, Double lat_min,
+			Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) throws Exception {
+		JsonArray ja = new JsonArray();
+
+		
+		try{
+			
+			/*
+			 * Policy Operation begin
+			 */
+			
+			/*
+			 * Allowed Space begins
+			 */
+			String policy_allow_space="";
+			
+			JsonObject Policy=new JsonObject(policy);
+			if(Policy.containsKey("where"))
+			{
+				JsonObject where = Policy.getJsonObject("where");
+				if(where.containsKey("allowedPolygons"))
+				{
+				
+					JsonArray allowedPolygons = where.getJsonArray("allowedPolygons");
+					for(int i=0;i<allowedPolygons.size();i++)
+					  {
+						policy_allow_space = policy_allow_space + " INTERSECTS ( "+geomField+" , POLYGON ((";
+						
+						//we already verified during insertion that this polygon is correct and allowed
+						JsonArray polygon=allowedPolygons.getJsonArray(i); 
+						
+						for(int j=0;j<polygon.size();j++)
+						  {
+							  JsonObject pos=polygon.getJsonObject(j);
+							  double lat=pos.getDouble("lat");
+							  double lng=pos.getDouble("lng");  
+							  policy_allow_space=policy_allow_space+lat+" "+lng;
+							  
+							  if(j<polygon.size()-1)
+								  policy_allow_space=policy_allow_space+",";
+							  
+						  }//end for(int j=0;j<polygon.size();j++)
+						
+						 policy_allow_space=policy_allow_space+")))";
+						
+						 //multiple allowed polygons are OR with each other
+						 if(i<allowedPolygons.size()-1)
+							  policy_allow_space=policy_allow_space + " OR ";
+						 
+					  }//end for(int i=0;i<allowedPolygons.size();i++)
+					
+					System.out.println("\n \n Space Policy Translation:"+policy_allow_space);
+					
+				}//end if(where.containsKey("allowedPolygons"))
+				
+			}//end if(Policy.containsKey("where"))
+			/*
+			 * Allowed space ends
+			 */
+			
+			/*
+			 * Policy operations end
+			 */
+		// construct a (E)CQL filter from the search parameters,
+		// and use that as the basis for the query
+		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		Date datemin=new Date(Long.valueOf(timestamp_min));
+		Date datemax=new Date(Long.valueOf(timestamp_max));
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		//format.setTimeZone(TimeZone.getTimeZone("PDT"));
+		String date1=format.format(datemin);
+		String date2=format.format(datemax);
+		//Date date3=format.parse(date1);
+		//System.out.println("Date range is:"+date1.toString()+" : "+date2.toString());
+		
+		
+		String filter=cqlGeometry;
+		
+		if(policy_allow_space.length()>0)
+		{
+			filter =" ( "+ filter+ " AND "+ " ( "+policy_allow_space+" )"+" )";
+			
+		}//end if(policy_allow_space.length()>0)
+		
+		if(!uuid.equals(""))
+		{
+			String uuid_filter=" "+"uuid ='" + uuid +"'"+" ";
+			filter=filter + " AND "+" ( "+ uuid_filter+" )";
+			
+		}//adding constrains on UUID
+		
+		
+		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+		filter=filter + " AND "+cqlDates;
+		
+		System.out.println("Filter is: \n"+filter);
+		
+		
+		Filter cqlFilter = CQL.toFilter(filter);
+		
+		
+		
+		Query query = new Query(simpleFeatureTypeName, cqlFilter);
+		
+		/*This line force the geomesa to evaluate the bounding box very accurately*/
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
+		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
+		
+		// submit the query, and get back an iterator over matching features
+		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+		
+		// loop through all results
+		int n = 0;
+		while (featureItr.hasNext()) {
+			Feature feature = featureItr.next();
+			//System.out.println("Next:"+n++);
+			try{
+			JsonObject Data = new JsonObject();
+			Data.put("uuid", feature.getProperty("uuid").getValue());
+			Date date=(Date) feature.getProperty("date").getValue();
+			Data.put("timestamp", date.getTime());
+			Point point =(Point) feature.getProperty("point_loc").getValue();
+			Coordinate cd=point.getCoordinates()[0];//since it a single point
+			Data.put("lat", cd.x);
+			Data.put("lng", cd.y);
+			Data.put("value", feature.getProperty("value").getValue());
+			ja.add(Data);	
+			}
+			catch(Exception e){
+				e.printStackTrace();
+				
+			}
+			
+		}
+		featureItr.close();
+		//System.out.println("Next:"+n++);
+		
+		
+		}//end try
+		catch(Exception e){
+			System.out.println("Exception Encountered--in queryFeatures_Box_Lat_Lng_Time_Range(String uuid, DataStore dataStore2, String geomField, String dateField, Double lat_min, Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) ");
+			e.printStackTrace();
+			throw e;
+		}//end catch
+		return ja;
+	}//end function
+	
 	
 	
 	

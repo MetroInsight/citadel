@@ -117,7 +117,52 @@ public class GeomesaService implements DataService {
     	resultHandler.handle(Future.failedFuture(e));
         e.printStackTrace();
       }
-    }
+    
+    }//end queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler)
+  
+  
+  
+  @Override
+  public void queryData(JsonObject query, String policy, Handler<AsyncResult<JsonArray>> resultHandler) {
+  	
+	  try{
+	    	System.out.println("in queryData with policy GeomesaService");
+	      Double lat_max = query.getDouble("lat_max");
+	      Double lat_min = query.getDouble("lat_min");
+	      Double lng_min = query.getDouble("lng_min");
+	      Double lng_max = query.getDouble("lng_max");
+	      long timestamp_min = query.getLong("timestamp_min");
+	      long timestamp_max = query.getLong("timestamp_max");
+	      
+	      String uuid="";
+	      if(query.containsKey("uuid"))
+	      uuid=query.getString("uuid");
+	      
+	      //String boxAndRangeQuery=lat_min+lat_max+lng_min+lng_max+timestamp_min+timestamp_max;
+	        //query is box and range both, other cases need to be implemented too
+	      gmh.Query_Box_Lat_Lng_Time_Range(uuid, policy, lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, res -> {
+	        if (res.succeeded()) {
+	          JsonArray resultJson = res.result();
+	         
+			System.out.println("Result in queryData GeomesaService size is: "+resultJson.size());
+	          resultHandler.handle(Future.succeededFuture(resultJson));
+	          } else {
+	            res.cause().printStackTrace();
+	            Exception e=new Exception("Internal error Encountered in query, please contact developers with your query");
+	            resultHandler.handle(Future.failedFuture(e));
+	            }
+	        });
+	      }//end if
+	      catch(Exception e){
+	    	resultHandler.handle(Future.failedFuture(e));
+	        e.printStackTrace();
+	      }
+	  
+	  
+  }//end queryData(JsonObject query, String policy, Handler<AsyncResult<JsonArray>> resultHandler)
+
+  
+  
   
   /*
    * Geomesa query performs well when the time range is restricted to the range

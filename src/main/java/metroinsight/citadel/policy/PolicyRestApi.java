@@ -2,6 +2,13 @@ package metroinsight.citadel.policy;
 
 import java.util.ArrayList;
 
+import org.geotools.geometry.jts.JTSFactoryFinder;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
+
 import metroinsight.citadel.authorization.Authorization_MetaData;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.model.BaseContent;
@@ -25,15 +32,18 @@ public class PolicyRestApi extends RestApiTemplate{
 	 */
 	public void registerPolicy(RoutingContext rc) {
 		
+		
 		HttpServerResponse resp = getDefaultResponse(rc);
 		BaseContent content = new BaseContent();
 		
+		try
+	    {
+			
 		System.out.println("In registerPolicy PolicyRestApi.java");
 	    JsonObject body = rc.getBodyAsJson();
 	    System.out.println("Post: "+body);
 	    
-	    try
-	    {
+	    
 	    	
 	    	
 	    if(body.containsKey("userToken")&&body.containsKey("policy"))
@@ -50,9 +60,9 @@ public class PolicyRestApi extends RestApiTemplate{
 	    	
 	    	JsonArray users = policy.getJsonArray("users");
 	    	
-	    	if(sensors.size()==0||users.size()==0)//if no ds_id is passed owner is not verified
+	    	if(sensors.size()==0||users.size()==0)//if no ds_id is passed
 	    	{
-	    		System.out.println("In RegisterPolicy: What or Whom is empty, which is not allowed");
+	    		System.out.println("In RegisterPolicy: sensors is empty, which is not allowed");
 	    		sendErrorResponse(resp, 400, "Parameters are missing");
 	    	}
 	    	
@@ -80,6 +90,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		//Given the DsID fetch the ownerId
 	    		String ownerId_ds=Auth_meta_data_policy.get_ds_owner_id(ds_id);
 	    		
+	    		//ownerId_ds.equals("") means ds_id is not a valid ds_id 
 	    		if(ownerId_ds.equals("")||!ownerId_ds.equals(ownerId))
 	    			{
 	    			 owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
@@ -88,7 +99,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    			 //break;
 	    			}
 	    		
-	    	}//end for(int i=0;i<what.size();i++)
+	    	}//end for(int i=0;i<sensors.size();i++)
 	    	
 	    	ArrayList<String> userIdList=new ArrayList<String>();//Creating arraylist of users for which we have to register policy
 	    	
@@ -147,10 +158,71 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				   String dsId=sensors.getString(i);
 	    				   String userId=users.getString(j);
 	    				   
-	    				   Auth_meta_data_policy.insert_policy(dsId, userId, "true");//this is default policy with no-space time constraints, with constraints we need to update this
-	    			   }
+	    				   String Policy="true";
+	    				   if(policy.containsKey("where"))
+	    				   {
+	    					   JsonObject where = policy.getJsonObject("where");
+	    					   System.out.println("Where is:"+where);
+	    					   
+	    					   if(where.containsKey("allowedPolygons"))
+	    					   {
+	    						
+	    						   JsonArray allowedPolygons = new JsonArray();
+	    						   try{  /*Allowed Polygons can be a mess*/
+	    							   allowedPolygons=where.getJsonArray("allowedPolygons");
+	    						       }catch(Exception e)
+	    						   {
+	    						    	 System.out.println("allowedPolygons format incorrect");
+	    							     sendErrorResponse(resp, 400, "allowedPolygons format incorrect");	   
+	    						   }
+	    						   
+	    						   System.out.println("allowedPolygons" + allowedPolygons);
+	    						   
+	    						   /*
+	    						    * 
+	    						    * Verify that all allowed polygon actually form a continuous polygons
+	    						    * Very Important, else all future queries with this policy will not work
+	    						    */
+	    						  
+	    						   for(int p=0; p<allowedPolygons.size();p++)
+	    						   {
+	    							   JsonArray polygon = allowedPolygons.getJsonArray(p);
+	    						       boolean verify = false;
+	    						      
+	    						       verify = VerifyPolygonsStructure(polygon);
+	    
+	    								
+	    						       if(verify==false)//polygon is not in correct format
+	    						       {
+	    						    	   System.out.println("allowedPolygons format incorrect");
+	    						    	   System.out.println(polygon+", Verify is: "+verify);
+	    						    	   sendErrorResponse(resp, 400, polygon.toString()+": in allowedPolygons format incorrect");
+		    							   return;
+	    						       }					       
+	    						       
+	    						   }//end for(int p=0; p<allowedPolygons.size();p++)
+	    						   
+	    						   /*
+	    						    * end  Verify that allowed polygon actually form a continuous polygons
+	    						    */
+	    						  
+	    						   /*
+	    						    * Allowed polygons correct, attempt to insert this policy
+	    						    */
+	    						   
+	    						   
+	    					   }//end if(where.containsKey("AllowedPolygons"))
+	    					   
+	    				   }//end if(policy.containsKey("where"))
+	    				  
+	    				   //else---check when to do this
+	    				   Auth_meta_data_policy.insert_policy(dsId, userId, Policy);//this is default policy with no-space time constraints, with constraints we need to update this
 	    			   
-	    		   }//end for
+	    				   
+	    				   
+	    			   }//end for(int j=0;j<users.size();j++)
+	    			   
+	    		   }//end for(int i=0;i<sensors.size();i++)
 	    		   
 	    		   System.out.println("In registerPolicy, Policies are registered, PolicyManagement.java");
 	    		   
@@ -197,5 +269,47 @@ public class PolicyRestApi extends RestApiTemplate{
      		
 		
 	}//end registerPolicy
+	
+	
+	//Verify that input polygon actually form a continuous polygons
+	boolean VerifyPolygonsStructure(JsonArray polygon)
+	{
+		if(polygon.size()==0)
+			return false;
+		
+		boolean verify=true;
+		
+		try
+		{
+		GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+		Coordinate[] coords  = new Coordinate[polygon.size()];
+		
+		//System.out.println("Space polygon allowed:"+polygon);
+		
+			  for(int j=0;j<polygon.size();j++)
+			  {
+				  JsonObject pos=polygon.getJsonObject(j);
+				  double lat=pos.getDouble("lat");
+				  double lng=pos.getDouble("lng");    
+				  coords[j]=new Coordinate(lat, lng);	 
+			  }//end for(int j=0;j<polygon.size();j++)
+			  
+			  
+			  LinearRing ring = geometryFactory.createLinearRing( coords );
+			  //LinearRing holes[] = null; // use LinearRing[] to represent holes
+			  //Polygon pol = geometryFactory.createPolygon(ring, holes );
+		  
+		   }//end try
+		catch(Exception e)
+		{
+			//polygon is not a valid closed polygon
+			e.printStackTrace();
+			verify=false;
+			return verify;
+		}
+		
+		return verify;
+		
+	}//end VerifyPolygonsStructure()
 	
 }//end PolicyManagement

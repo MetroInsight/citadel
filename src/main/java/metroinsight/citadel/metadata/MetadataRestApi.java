@@ -27,56 +27,50 @@ public class MetadataRestApi extends RestApiTemplate{
     
   }
   
+ 
+  
   public void queryPoint(RoutingContext rc) {
 	HttpServerResponse resp = getDefaultResponse(rc);
 	BaseContent content = new BaseContent();
-	    
-    JsonObject query = (JsonObject) rc.getBodyAsJson().getValue("query");
+	JsonObject body =(JsonObject) rc.getBodyAsJson();
     
     try{
 		  
-		  if(query.containsKey("userToken")&&query.containsKey("uuid"))
+		  if(body.containsKey("userToken")&&body.containsKey("query"))
 	       {
-			  String userToken = query.getString("userToken");
-			  String uuid=query.getString("uuid");
-			  if(userToken.equals("")||uuid.equals(""))//TODO: also check that query is not empty here!!
+			  JsonObject query =  body.getJsonObject("query");
+			  String userToken = body.getString("userToken");
+			  
+			  if(userToken.equals(""))//TODO: also check that query is not empty here!!
 		    	{
 		    		//System.out.println("The parameters are missing");
 		    		//return;
 		    		System.out.println("In MetadataRestApi: Query parameters are missing");
-		        	sendErrorResponse(resp, 400, "Query parameters are missing");
+		        	sendErrorResponse(resp, 400, "Parameters are missing");
 		    		
 		    	}
 			  
 	    	 //check if this token exists in the HBase, and if it exists, what is the userID
 	    	  String userId=Auth_meta.get_userID(userToken);
 	    	  
-	    	  //next check if this userID matches the user who created this Sensor
+	    	  //In MongoDb check if this userID matches the user who created this Sensor
 	    	  //we store the userID in the Sensor Metadata, fetch sensor metadata, and confirm, it and then return it   	  
 	    	  if(!userId.equals(""))
 	    		{
-		    	  //next check if for this userID the policy exists
+		    	//next check if for this userID the policy exists
 	    		//for this userId extract the policy
-	    	    String policy = Auth_meta.get_policy(uuid, userId);
+	    	    //String policy = Auth_meta.get_policy(uuid, userId);
 	    	    
-	    	    if(policy.equals("true"))
-	    	    {
-	    		  metadataService.queryPoint(query, ar -> {
+	    	   // if(policy.equals("true")){
+	    		  
+	    	    	//return the metadata for the given query and userId
+	    		  metadataService.queryPoint(query,userId, ar -> {
 	    		    	if (ar.failed()) {
 	    		      	System.out.println(ar.cause().getMessage());
 	    		      	content.setReason(ar.cause().getMessage());
 	    				resp.setStatusCode(400);
 	    		    	} else {
-	    		    		/*
-	    		    		String resultStr = ar.result().toString();
-	    		    		String length = Integer.toString(resultStr.length());
-	    		    		rc.response()
-	    		    		.putHeader("content-TYPE", "application/json; charset=utf=8")
-	    		    		.putHeader("content-length",  length)
-	    		      	.setStatusCode(200)
-	    		      	.write(resultStr)
-	    		    		.end();
-	    		    		*/
+	    		    		
 	    		    		  JsonArray pointResult = ar.result();
 	    		    		  resp.setStatusCode(200);
 	    		    		  content.setSucceess(true);
@@ -90,14 +84,16 @@ public class MetadataRestApi extends RestApiTemplate{
 	    		    	
 	    		    	});
 	    		  
-	    	    }//if(policy.equals("true"))
+	    	   // }//if(policy.equals("true"))
 	    	    
-	    	    else
+	    	   /*
+	    		else
 	        	{
 	        		System.out.println("In MetadataRestApi: Policy for user doesn't exist");
 	        		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
 	        	}
-	    	    
+	    	    */
+	    		  
 	    		}//end if(!userId.equals(""))
 	    	  else
 	    		{	
@@ -113,8 +109,8 @@ public class MetadataRestApi extends RestApiTemplate{
 			{	
 			System.out.println("Token is missing or uuid is missing");	
 			//return;
-			System.out.println("In MetadataRestApi: Query parameters are missing");
-        	sendErrorResponse(resp, 400, "Query parameters are missing");
+			System.out.println("In MetadataRestApi: Parameters are missing");
+        	sendErrorResponse(resp, 400, "Parameters are missing");
         	
 			}//end else
 		  
@@ -124,7 +120,7 @@ public class MetadataRestApi extends RestApiTemplate{
 	  catch(Exception e)
 	  {
 		  e.printStackTrace();
-		  return;
+		  sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");	
 	  }
 	  
     
@@ -133,26 +129,102 @@ public class MetadataRestApi extends RestApiTemplate{
     
   }//end queryPoint(RoutingContext rc)
   
-  /*
-   * this is not used, check if we can disable it.
-   */
+  
   public void getPoint(RoutingContext rc) {
-  	String uuid = rc.request().getParam("uuid");
-  	if (uuid == null) {
-  		rc.response().setStatusCode(400).end();
-  	} else {
-  		metadataService.getPoint(uuid, ar -> {
-  		if (ar.failed()) {
-  			System.out.println(ar.cause().getMessage());
-  		} else {
-  			rc.response()
-  			.putHeader("content-TYPE", "application/json; charset=utf=8")
-  			.setStatusCode(200)
-  			.end(ar.result().toString());
-  		}
-  		});
-  	}
-  }
+	
+	  HttpServerResponse resp = getDefaultResponse(rc);
+		BaseContent content = new BaseContent();
+		    
+	    JsonObject body = (JsonObject) rc.getBodyAsJson();
+	    
+	    try{
+			  
+			  if(body.containsKey(Auth_meta.userToken)&&body.containsKey("uuid"))
+		       {
+				  String userToken = body.getString(Auth_meta.userToken);
+				  String uuid=body.getString("uuid");
+				  if(userToken.equals("")||uuid.equals(""))//TODO: also check that query is not empty here!!
+			    	{
+			    		//System.out.println("The parameters are missing");
+			    		//return;
+			    		System.out.println("In MetadataRestApi: Query parameters are missing");
+			        	sendErrorResponse(resp, 400, "Parameters are missing");
+			    		
+			    	}
+				  
+		    	 //check if this token exists in the HBase, and if it exists, what is the userID
+		    	  String userId=Auth_meta.get_userID(userToken);
+		    	  
+		    	  //next check if this userID matches the user who created this Sensor
+		    	  //we store the userID in the Sensor Metadata, fetch sensor metadata, and confirm, it and then return it   	  
+		    	  if(!userId.equals(""))
+		    		{
+			    	//next check if for this userID the policy exists
+		    		//for this userId extract the policy
+		    	    String policy = Auth_meta.get_policy(uuid, userId);
+		    	    
+		    	    if(policy.equals("true"))
+		    	    {
+		    	    	//return the metadata for the given query and userId
+		    		  metadataService.getPoint(uuid, ar -> {
+		    		    	if (ar.failed()) {
+		    		      	System.out.println(ar.cause().getMessage());
+		    		      	content.setReason(ar.cause().getMessage());
+		    				resp.setStatusCode(400);
+		    		    	} else {
+		    		    		
+		    		    		  JsonArray pointResult = ar.result();
+		    		    		  resp.setStatusCode(200);
+		    		    		  content.setSucceess(true);
+		    		    		  content.setResults(pointResult);
+		    		    	}
+		    		    	
+		    		    	  String cStr = content.toString();
+		    		    	  String cLen = Integer.toString(cStr.length());
+		    		    	  resp.putHeader("content-length", cLen)
+		    		      	  .write(cStr);
+		    		    	
+		    		    	});
+		    		  
+		    	    }//if(policy.equals("true"))
+		    	    
+		    	    else
+		        	{
+		        		System.out.println("In MetadataRestApi: Policy for user doesn't exist");
+		        		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+		        	}
+		    	    
+		    		}//end if(!userId.equals(""))
+		    	  else
+		    		{	
+		    		System.out.println("Token is not Valid");	
+		    		//return;
+		    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+		    
+		    		}
+		    	  
+		    	  
+		    	}//end if(query.containsKey("userToken"))
+			  else
+				{	
+				System.out.println("Token is missing or uuid is missing");	
+				//return;
+				System.out.println("In MetadataRestApi: Query parameters are missing");
+	        	sendErrorResponse(resp, 400, "Query parameters are missing");
+	        	
+				}//end else
+			  
+			  
+			  
+		  }//end try
+		  catch(Exception e)
+		  {
+			  e.printStackTrace();
+			  sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");	
+		  }
+		 
+  }//end fxn
+  
   
   public void createPoint(RoutingContext rc) {
 	
@@ -163,20 +235,17 @@ public class MetadataRestApi extends RestApiTemplate{
 	
     try 
     {
-    	if(!body.containsKey("query"))
+    	//check token and sensor is present
+    	if(!body.containsKey(Auth_meta.userToken)&&!body.containsKey("sensor"))
     	{
     		System.out.println("In MetadataRestApi: Insert data parameters are missing");
         	sendErrorResponse(resp, 400, "Query parameters are missing");	
     	}
     	// Get the query as JSON.
-        JsonObject jsonMetadata = (JsonObject)(body.getValue("query"));
+        JsonObject jsonMetadata = (JsonObject)(body.getValue("sensor"));
         System.out.println("Sensor is:"+jsonMetadata);
         
-   	//check token is present in the jsonMetadata
-   	if(jsonMetadata.containsKey("userToken"))
-   	{
-   		
-   		String userToken = jsonMetadata.getString("userToken");
+   		String userToken = body.getString(Auth_meta.userToken);
    		
    		//check if this token exists in the HBase, and if it exists, what is the userID
    		String userId=Auth_meta.get_userID(userToken);
@@ -191,12 +260,11 @@ public class MetadataRestApi extends RestApiTemplate{
    			 Auth_meta.insert_ds_owner(uuid,userToken,userId);
    		
    			 //insert the policy for Owner to default "true", no-space-time constraints
-   			 Auth_meta.insert_policy(uuid, userId, "true");
-   			 
+   			 Auth_meta.insert_policy(uuid, userId, "true"); 
 	    		 jsonMetadata.put("uuid", uuid);
 	    		 jsonMetadata.put("userId", userId);
-	    		//Metadata metadata =new Metadata(jsonMetadata);
-	    		// Call createPoint in metadataService asynchronously.
+	    		 //Metadata metadata =new Metadata(jsonMetadata);
+	    		 //Call createPoint in metadataService asynchronously.
 	    		    metadataService.createPoint(jsonMetadata, ar -> { 
 	    		      // ar is a result object created in metadataService.createPoint
 	    		      // We pass what to do with the result in this format.
@@ -225,14 +293,6 @@ public class MetadataRestApi extends RestApiTemplate{
    		sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
    		}
    		
-   	}//end if(jsonMetadata.containsKey("userToken"))
-   	else
-		{	
-		System.out.println("Token is missing");	
-		//return;
-    	sendErrorResponse(resp, 400, "Query parameters are missing");	
-		}
-    
     }//end try
    catch(Exception e)
    {

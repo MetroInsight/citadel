@@ -3,6 +3,8 @@ package metroinsight.citadel.authorization;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.net.JksOptions;
@@ -21,7 +23,9 @@ public class AuthorizationVerticle extends AbstractVerticle {
 	  public void start(Future<Void> fut) {
 		// Create a router object.
 		  Router router = Router.router(vertx);
-		  GoogleLogin googlelogin = new GoogleLogin();
+		  
+		 
+		  GoogleLogin googlelogin = new GoogleLogin(vertx);
 		  
 		  router.route().handler(CookieHandler.create());
 		  // Create a clustered session store using defaults

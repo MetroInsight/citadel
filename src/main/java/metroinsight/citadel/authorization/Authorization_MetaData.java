@@ -35,6 +35,9 @@ import io.vertx.core.json.JsonObject;
  */
 public class Authorization_MetaData {
 
+	  public String userToken="userToken";
+	  
+	  
 	  static TableName table_meta = TableName.valueOf("metadata");
 	  static String family_ds = "ds";
 	  static String family_user = "user";

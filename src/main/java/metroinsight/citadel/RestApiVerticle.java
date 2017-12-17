@@ -54,10 +54,11 @@ public class RestApiVerticle extends AbstractVerticle {
     
     // REST API routing for MetaData
     //router.route("/api/point*").handler(BodyHandler.create());
-    router.post("/api/point").handler(metadataRestApi::createPoint);
-    router.get("/api/point/:uuid").handler(metadataRestApi::getPoint);
+    router.post("/api/registerSensor").handler(metadataRestApi::createPoint);
+    //router.get("/api/point/:uuid").handler(metadataRestApi::getPoint);
+    router.post("/api/getSensor").handler(metadataRestApi::getPoint);
     //router.route("/api/query*").handler(BodyHandler.create());
-    router.post("/api/query").handler(metadataRestApi::queryPoint);
+    router.post("/api/querySensor").handler(metadataRestApi::queryPoint);
 
     // REST API routing for Data
     //router.route("/api/data*").handler(BodyHandler.create());

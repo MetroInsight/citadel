@@ -1,13 +1,38 @@
 package metroinsight.citadel.authorization;
 
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 import io.vertx.ext.web.templ.JadeTemplateEngine;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.security.cert.CertificateException;
 import java.util.Collections;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.security.cert.X509Certificate;
+
+import metroinsight.citadel.metadata.MetadataRestApi;
+import metroinsight.citadel.metadata.MetadataService;
+import metroinsight.citadel.metadata.impl.MongoService;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
@@ -22,7 +47,12 @@ public class GoogleLogin {
 
 	//String usergmail="";
 	//String username="";
+	private final Vertx vertx;
 	
+	public GoogleLogin(Vertx vertx)
+	{
+		this.vertx=vertx;
+	}
 	
 	public void DisplayToken(RoutingContext rc) {
 		 
@@ -266,15 +296,52 @@ public class GoogleLogin {
 			 rc.put("username", email);
 			 rc.put("tokens",userToken);
 			 
-			 //asking user to login in case session is null	 
-		      engine.render(rc, "templates/index.jade", res -> {
-		        if (res.succeeded()) {
-		          rc.response().end(res.result());
-		        } else {
-		          rc.fail(res.cause());
-		        }
-		      }); 
-		 }
+			 /*
+			  * Sending a query to the API to get the registered sensors for this user
+			  */
+			    
+			  	   
+                
+			    try{
+			    	
+			    	  MetadataService metadataService=new MongoService (vertx);
+			    	  metadataService.queryPoint(new JsonObject(),email, ar -> {
+		    		    	if (ar.failed()) {
+			    		      	System.out.println(ar.cause().getMessage());
+			    		    	}
+		    		    	   else {
+		    		    		   
+			    		    	JsonArray pointResult = ar.result();
+			    		    	//String pointResult2=pointResult.toString()+"<br><br>";
+			    		    	//System.out.println("User Sensors:"+pointResult2);
+			    		    	
+			    		    	rc.put("userSensors",pointResult.toString());
+			    		    	
+			    		    	engine.render(rc, "templates/index.jade", res2 -> {
+			    	  		        if (res2.succeeded()) {
+			    	  		          rc.response().end(res2.result());
+			    	  		        } else {
+			    	  		          rc.fail(res2.cause());
+			    	  		        }
+			    	  		      }); 
+			    		    	
+			    		    	}//end else
+			    		    	   	
+			    		    	});
+			    }//end try
+			    catch(Exception e)
+			    {
+			    	e.printStackTrace();
+			    }
+			 /*
+			  * End sending query to get registered sensors
+			  */
+			 
+			  //asking user to login in case session is null	 
+	  		      
+	  		      
+			 
+		 }//end if(login)
 		 
 		 
 	 }//end DisplayIndexJade
@@ -295,5 +362,7 @@ public class GoogleLogin {
 		 //DisplayLoginJade(rc);
 		 
 	 }//end LogOut
+	 
+	 
 	 
 }//end class

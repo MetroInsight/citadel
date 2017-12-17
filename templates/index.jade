@@ -13,15 +13,134 @@ html
    h1 welcome #{context.username}
    button(type="button" class="btn btn-primary btn-lg" onclick="signOut()") Sign Out
   div(class="container")
+ 
    div(class="row")
-    h2 Your Api Key 
+    h2 Your Token is 
     p #{context.tokens}
+ 
+   div(class="row")
+    //-div(class="col-sm-5")
+    h3 Available Sensors  
+     //-pre.
+      //-#{context.userSensors}
+    table(id="userSensors" class="table table-hover")
+    script.
+      var rawdata='#{context.userSensors}';
+      rawdata = rawdata.replace(/&quot;/g, '"');
+      rawdata = rawdata.replace(/(?:\r\n|\r|\n)/g, '');
+      var sensors = JSON.parse(rawdata);
+      var table = document.getElementById('userSensors')
+      var tableBody = document.createElement('TBODY')
+      table.appendChild(tableBody);
+      
+      var heading = new Array();
+           heading[0] = "owner"
+           heading[1] = "uuid"
+           heading[2] = "sensorType"
+           heading[3] = "unit"
+       if(sensors.length>0)
+       { 
+        //TABLE COLUMNS
+            var tr = document.createElement('TR');
+            tableBody.appendChild(tr);
+            for (i = 0; i < heading.length; i++) {
+                var th = document.createElement('TH')
+                th.appendChild(document.createTextNode(heading[i]));
+                tr.appendChild(th);
+            }
+            
+         }  
+         else
+         {
+         
+         //TABLE COLUMNS
+            var tr = document.createElement('TR');
+            tableBody.appendChild(tr);
+            
+                var th = document.createElement('TH')
+                th.appendChild(document.createTextNode('No Sensors'));
+                tr.appendChild(th);
+         }
+          
+      //TABLE ROWS
+      
+            
+      for (i = 0; i < sensors.length; i++) {
+           var tr = document.createElement('TR');
+           
+                var td = document.createElement('TD')
+                td.appendChild(document.createTextNode(sensors[i].owner)); 
+                tr.appendChild(td)
+                
+                var td = document.createElement('TD')
+                td.appendChild(document.createTextNode(sensors[i].uuid)); 
+                tr.appendChild(td)
+                
+                var td = document.createElement('TD')
+                td.appendChild(document.createTextNode(sensors[i].sensorType)); 
+                tr.appendChild(td)
+                
+                var td = document.createElement('TD')
+                td.appendChild(document.createTextNode(sensors[i].unit)); 
+                tr.appendChild(td)
+                
+               tableBody.appendChild(tr);
+            }
+        
+    //-div(class="col-sm-5")
+     //-h3 Registered DataStreams
+     
     
    div(class="row")
-    div(class="col-sm-4")
-     h3 Registered DataStreams  
-    div(class="col-sm-4")
-     h3 Registered DataStreams
+    h2 Citadel Api Usage
+    h3
+     mark Register Sensor Example
+    pre. 
+     import requests
+     # Modify API_ENDPOINT
+     API_ENDPOINT = "https://localhost:8080/api/registerSensor"
+     # Enter userToken
+     Sensor = '{"userToken":"enter-token","sensor":{"sensorType":"temperature","unit":"F"}}'
+     r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
+     print("Response is:%s"%r.text)
      
-    div(class="col-sm-4")
+     # Response is:{"result":"SUCCESS","uuid":"returned-uuid"}
+     
+    //-h3
+     //-mark Get Sensor Metadata 
+    //-pre. 
+      //-import requests
+      //-# Modify API_ENDPOINT
+      //-API_ENDPOINT = "https://localhost:8080/api/getSensor"
+      //-# Enter userToken and uuid
+      //-Sensor = '{"userToken":"enter-token","uuid":"enter-uuid"}';
+      //-r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
+      //-print("Response is:%s"%r.text)
       
+      //-# Response is:{"success":true,"reason":"","results":[{"sensorType":"temperature","unit":"F","owner":"owner-id"}]}
+      
+    h3
+     mark Query Sensor Metadata 
+    pre. 
+      import requests
+      # Modify API_ENDPOINT
+      API_ENDPOINT = "https://localhost:8080/api/querySensor"
+      # Enter userToken and uuid
+      Sensor = '{"userToken":"enter-token","query":{"uuid":"sensor-uuid"}}';
+      r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
+      print("Response is:%s"%r.text)
+      
+      # Response is:{"success":true,"reason":"","results":[{"sensorType":"temperature","unit":"F","uuid":"sensor-uuid","owner":"owner-id"}]}
+      
+    h3
+     mark Insert Data
+    pre. 
+      import requests
+      # Modify API_ENDPOINT
+      API_ENDPOINT = "https://localhost:8080/api/data"
+      # Enter userToken and uuid
+      data = '{"userToken":"enter-token","uuid":"sensor-uuid","data":[{"timestamp":1499813708623,"value":"val","geometryType":"point","coordinates":[[lat,lng]]}]}'
+      r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
+      print("Response is:%s"%r.text)
+      
+      # Response is:{"success":true,"reason":"","results":[]}

@@ -191,6 +191,7 @@
       <version>3.4.1</version>
       <classifier>shaded</classifier>
 </dependency>
+
          <!-- End used in Access control -->
          
 		<!-- End used in geomesa and Datapoint -->

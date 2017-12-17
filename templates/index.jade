@@ -10,10 +10,14 @@ html
   script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
  body
   div(class="jumbotron text-center")
-   h1 welcome #{context.username}
-   button(type="button" class="btn btn-primary btn-lg" onclick="signOut()") Sign Out
+   div(class="container")
+    div(class="row")
+     div(class="col-sm-9")
+      h2 welcome #{context.username}
+     div(class="col-sm-3")
+      button(type="button" class="btn btn-primary btn-md" onclick="signOut()") Sign Out
+  
   div(class="container")
- 
    div(class="row")
     h2 Your Token is 
     p #{context.tokens}
@@ -139,8 +143,21 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8080/api/data"
       # Enter userToken and uuid
-      data = '{"userToken":"enter-token","uuid":"sensor-uuid","data":[{"timestamp":1499813708623,"value":"val","geometryType":"point","coordinates":[[lat,lng]]}]}'
-      r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
+      Data = '{"userToken":"enter-token","uuid":"sensor-uuid","data":[{"timestamp":1499813708623,"value":"val","geometryType":"point","coordinates":[[lat,lng]]}]}'
+      r = requests.post(url = API_ENDPOINT, data = Data,verify=False)
       print("Response is:%s"%r.text)
       
       # Response is:{"success":true,"reason":"","results":[]}
+      
+    h3
+     mark Query Data
+    pre. 
+      import requests
+      # Modify API_ENDPOINT
+      API_ENDPOINT = "https://localhost:8080/api/querydata"
+      # Enter userToken and uuid
+      query='{"userToken":"enter-token","uuid":"sensor-uuid","query":{"lat_min":lat,"lat_max":lat,"lng_min":lng,"lng_max":lng,"timestamp_min":time,"timestamp_max":time}}'
+      r = requests.post(url = API_ENDPOINT, data = query,verify=False)
+      print("Response is:%s"%r.text)
+      
+      # Response is:{"success":true,"reason":"","results":[{"uuid":"ee548c8c-5636-452d-b0a7-57fb4b6abeef","timestamp":1499813708623,"lat":30.0,"lng":60.0,"value":"15.0"}]}

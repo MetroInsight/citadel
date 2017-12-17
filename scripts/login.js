@@ -1,10 +1,15 @@
+var ipaddress='https://localhost';
+
  function SendToken(token)
     {
     	 //console.log("ID Token: " + id_token);
         var xhr = new XMLHttpRequest();
         //xhr.open('POST', 'http://citadel.westus.cloudapp.azure.com:8080/api/token');
-        xhr.open('POST', 'https://localhost:8088/api/token');
+        //xhr.open('POST', 'https://localhost:8088/api/token');
         //xhr.open('POST', 'http://localhost:8080/api/token');
+        
+        xhr.open('POST', ipaddress+':8088/api/token');
+        
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
           console.log('Signed in as: ' + xhr.responseText);
@@ -35,7 +40,7 @@ function onSignIn(googleUser) {
         setTimeout(function(){
 	     //window.location= "http://citadel.westus.cloudapp.azure.com:8080/index";
 	     //window.location= "http://localhost:8080/index";
-	     window.location= "https://localhost:8088/index";
+	     window.location= ipaddress+":8088/index";
         },50);
         
       }
@@ -48,7 +53,7 @@ function onSignIn(googleUser) {
     	   var xhr = new XMLHttpRequest();
            //xhr.open('POST', 'http://citadel.westus.cloudapp.azure.com:8080/logout');
            //xhr.open('POST', 'http://localhost:8080/logout');
-            xhr.open('POST', 'https://localhost:8088/logout');
+            xhr.open('POST', ipaddress+':8088/logout');
             //xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
               console.log('Signed out called: ' + xhr.responseText);
@@ -58,7 +63,7 @@ function onSignIn(googleUser) {
             
             gapi.auth2.getAuthInstance().signOut().then(function () {
     	      console.log('User signed out.');
-    	      window.location= "https://localhost:8088/login";
+    	      window.location= ipaddress+":8088/login";
     	    }).catch(function(error){
     	    	console.log('Error occured in signed out.');
     	    	console.log(error.message);

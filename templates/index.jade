@@ -168,9 +168,9 @@ html
       import requests
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8089/api/registerPolicy"
-      # Enter userToken and uuid
-      Policy = '{"userToken":"enter-token","what":["bacfa2ba-df15-4d1c-9575-d32c47ed24a1"], "whom":[\"testcitadel1@gmail.com","testcitadel3@gmail.com"]}'
+      # Enter userToken and policy
+      Policy = '{"userToken":"enter-token","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"]}'
       r = requests.post(url = API_ENDPOINT, data = Policy,verify=False)
       print("Response is:%s"%r.text)
       
-      # Response is:{"success":true,"reason":"","results":[{"uuid":"ee548c8c-5636-452d-b0a7-57fb4b6abeef","timestamp":1499813708623,"lat":30.0,"lng":60.0,"value":"15.0"}]}
+      # Response is:{"success":true,"reason":"","results":[]}

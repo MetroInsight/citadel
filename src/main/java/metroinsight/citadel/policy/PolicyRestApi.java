@@ -34,18 +34,23 @@ public class PolicyRestApi extends RestApiTemplate{
 	    
 	    try
 	    {
-	    
-	    if(body.containsKey("userToken")&&body.containsKey("what")&&body.containsKey("whom"))
+	    	
+	    	
+	    if(body.containsKey("userToken")&&body.containsKey("policy"))
 	    {
 	    	
 	    	// token of the owner
 	    	String userToken = body.getString("userToken");
+	    	JsonObject policy = body.getJsonObject("policy");
+	    	
+	    	System.out.println("In registerPolicy Policy is:"+policy);
+	    	
 	    	//verify the DSIDs in the What are actually owned by the owner
-	    	JsonArray what = body.getJsonArray("what");
+	    	JsonArray sensors = policy.getJsonArray("sensors");
 	    	
-	    	JsonArray whom = body.getJsonArray("whom");
+	    	JsonArray users = policy.getJsonArray("users");
 	    	
-	    	if(what.size()==0||whom.size()==0)//if no ds_id is passed owner is not verified
+	    	if(sensors.size()==0||users.size()==0)//if no ds_id is passed owner is not verified
 	    	{
 	    		System.out.println("In RegisterPolicy: What or Whom is empty, which is not allowed");
 	    		sendErrorResponse(resp, 400, "Parameters are missing");
@@ -60,9 +65,9 @@ public class PolicyRestApi extends RestApiTemplate{
 	    	
 	    	boolean owner_verified=true;//it is true, if for all DSID in what construct are owner by ownerId
 	    	
-	    	for(int i=0;i<what.size();i++)
+	    	for(int i=0;i<sensors.size();i++)
 	    	{
-	    		String ds_id=what.getString(i);//ds_id==uuid
+	    		String ds_id=sensors.getString(i);//ds_id==uuid
 	    		if(ds_id.equals(""))//it is empty, can check with the size of it also later: TODO
 	    		{
 	    			System.out.println("dsId cannot be empty");
@@ -97,14 +102,14 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		 */
 	    	    boolean users_verified=true;
 	    	    
-	    		for(int i=0;i<whom.size();i++)
+	    		for(int i=0;i<users.size();i++)
 	    		{
-	    			String userId =whom.getString(i);
+	    			String userId =users.getString(i);
 	    			if(userId.equals(""))
 	    		     {
 	    				System.out.println("userId cannot be empty");
 	    				users_verified=false; 
-	    				sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+	    				sendErrorResponse(resp, 400, "Parameters are missing");	
 	    				//break;
 	    		     }
 	    			 
@@ -116,8 +121,9 @@ public class PolicyRestApi extends RestApiTemplate{
 	    			{
 	    				System.out.println("userID: "+userId+" doesn't exist in Citadel");
 	    				users_verified=false; 
-	    				sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
-	    				//break;
+	    				sendErrorResponse(resp, 400, users.getString(i)+" : doesn't exist in Citadel");	
+	    				
+	    					//break;
 	    				
 	    			}//end if(user_token.equals(""))
 	    			
@@ -134,12 +140,12 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		   System.out.println("In registerPolicy, users are verified, PolicyManagement.java");
 	    		   
 	    		   //for all usersIds and all DsId's insert the policy
-	    		   for(int i=0;i<what.size();i++)
+	    		   for(int i=0;i<sensors.size();i++)
 	    		   {
-	    			   for(int j=0;j<whom.size();j++)
+	    			   for(int j=0;j<users.size();j++)
 	    			   {
-	    				   String dsId=what.getString(i);
-	    				   String userId=whom.getString(j);
+	    				   String dsId=sensors.getString(i);
+	    				   String userId=users.getString(j);
 	    				   
 	    				   Auth_meta_data_policy.insert_policy(dsId, userId, "true");//this is default policy with no-space time constraints, with constraints we need to update this
 	    			   }
@@ -148,6 +154,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    		   
 	    		   System.out.println("In registerPolicy, Policies are registered, PolicyManagement.java");
 	    		   
+	    		   /*
 	 	    	   JsonObject result = new JsonObject();
 	 	     	   result.put("result", "SUCCESS");
 	 	     	   String length = Integer.toString(result.toString().length());
@@ -156,6 +163,13 @@ public class PolicyRestApi extends RestApiTemplate{
 	 	     		  .putHeader("content-length",  length)
 	 	     		  .setStatusCode(201)
 	 	     		  .write(result.toString());
+	 	     		 */
+	    		   resp.setStatusCode(200);
+		    	   content.setSucceess(true);
+		    	   String cStr = content.toString();
+ 		    	   String cLen = Integer.toString(cStr.length());
+ 		    	   resp.putHeader("content-length", cLen)
+ 		      	   .write(cStr); 
 	 	     		
 	    		}//end if(users_verified)
 	    	   

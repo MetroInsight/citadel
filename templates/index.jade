@@ -104,7 +104,7 @@ html
      # Modify API_ENDPOINT
      API_ENDPOINT = "https://localhost:8080/api/registerSensor"
      # Enter userToken
-     Sensor = '{"userToken":"#{context.tokens}","sensor":{"sensorType":"temperature","unit":"F"}}'
+     Sensor = '{"userToken":"user-token","sensor":{"sensorType":"temperature","unit":"F"}}'
      r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
      print("Response is:%s"%r.text)
      
@@ -130,7 +130,7 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8080/api/querySensor"
       # Enter userToken and uuid
-      Sensor = '{"userToken":"#{context.tokens}","query":{"uuid":"sensor-uuid"}}';
+      Sensor = '{"userToken":"user-token","query":{"uuid":"sensor-uuid"}}';
       r = requests.post(url = API_ENDPOINT, data = Sensor,verify=False)
       print("Response is:%s"%r.text)
       
@@ -143,7 +143,7 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8080/api/data"
       # Enter userToken and uuid
-      Data = '{"userToken":"#{context.tokens}","uuid":"sensor-uuid","data":[{"timestamp":1499813708623,"value":"val","geometryType":"point","coordinates":[[lat,lng]]}]}'
+      Data = '{"userToken":"user-token","uuid":"sensor-uuid","data":[{"timestamp":1499813708623,"value":"val","geometryType":"point","coordinates":[[lat,lng]]}]}'
       r = requests.post(url = API_ENDPOINT, data = Data,verify=False)
       print("Response is:%s"%r.text)
       
@@ -156,7 +156,7 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8080/api/querydata"
       # Enter userToken and uuid
-      query='{"userToken":"#{context.tokens}","uuid":"sensor-uuid","query":{"lat_min":lat,"lat_max":lat,"lng_min":lng,"lng_max":lng,"timestamp_min":time,"timestamp_max":time}}'
+      query='{"userToken":"user-token","uuid":"sensor-uuid","query":{"lat_min":lat,"lat_max":lat,"lng_min":lng,"lng_max":lng,"timestamp_min":time,"timestamp_max":time}}'
       r = requests.post(url = API_ENDPOINT, data = query,verify=False)
       print("Response is:%s"%r.text)
       
@@ -169,7 +169,7 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8089/api/registerPolicy"
       # Enter userToken and policy
-      Policy = '{"userToken":"#{context.tokens}","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"]}'
+      Policy = '{"userToken":"user-token","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"]}'
       r = requests.post(url = API_ENDPOINT, data = Policy,verify=False)
       print("Response is:%s"%r.text)
       
@@ -182,7 +182,7 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8089/api/registerPolicy"
       # Enter userToken and policy
-      Policy = '{"userToken":"#{context.tokens}","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"], "where":{"allowedPolygons":[[{"lat":lat1,"lng":lng1},{...},{"lat":lat1,"lng":lng1}]}}}}'
+      Policy = '{"userToken":"user-token","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"], "where":{"allowedPolygons":[[{"lat":lat1,"lng":lng1},{...},{"lat":lat1,"lng":lng1}]}}}}'
       # Example - "allowedPolygons":[[{"lat":30.0,"lng":60.0},{"lat":40.0,"lng":60.0},{"lat":40.0,"lng":70.0},{"lat":30.0,"lng":70.0},{"lat":30.0,"lng":60.0}]]
       r = requests.post(url = API_ENDPOINT, data = Policy,verify=False)
       print("Response is:%s"%r.text)

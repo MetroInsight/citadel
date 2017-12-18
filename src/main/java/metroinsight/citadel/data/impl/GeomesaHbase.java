@@ -906,6 +906,127 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		}//end catch
 		return ja;
 	}//end function
+
+	public JsonArray Query_Box_Lat_Lng_Time_Range(JsonArray uuids, Double lat_min,
+			Double lat_max, Double lng_min, Double lng_max, long timestamp_min,
+			long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
+		// TODO Auto-generated method stub
+		
+		try {
+
+			if (dataStore == null) {
+				geomesa_initialize();
+			}
+		
+
+			// query a few Features from this table
+			//System.out.println("Submitting query in Query_Box_Lat_Lng_Time_Range GeomesaHbase ");
+			//the point_loc and date should be part of the config
+			JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range(uuids, dataStore, "point_loc","date", lat_min, lng_min, lat_max, lng_max,timestamp_min,timestamp_max);
+
+			return result;
+		} catch (Exception e) {
+			System.out.println("Exception Encountered--Query_Box_Lat_Lng_Time_Range(String uuid, Double lat_min, Double lat_max, Double lng_min, Double lng_max, long timestamp_min, long timestamp_max)");
+			e.printStackTrace();
+			throw e;
+		}
+		
+	}//end function
+
+	private JsonArray queryFeatures_Box_Lat_Lng_Time_Range(JsonArray uuids,
+			DataStore dataStore2, String geomField, String dateField,
+			Double lat_min, Double lng_min, Double lat_max, Double lng_max,
+			long timestamp_min, long timestamp_max) {
+		// TODO Auto-generated method stub
+      
+		 JsonArray ja = new JsonArray();
+
+		
+		try{
+		// construct a (E)CQL filter from the search parameters,
+		// and use that as the basis for the query
+		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		Date datemin=new Date(Long.valueOf(timestamp_min));
+		Date datemax=new Date(Long.valueOf(timestamp_max));
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		//format.setTimeZone(TimeZone.getTimeZone("PDT"));
+		String date1=format.format(datemin);
+		String date2=format.format(datemax);
+		//Date date3=format.parse(date1);
+		//System.out.println("Date range is:"+date1.toString()+" : "+date2.toString());
+		
+		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+		String filter=cqlGeometry+" AND "+cqlDates;
+		
+		if(uuids.size()>0)
+		{
+			String uuid_filter="";
+			for(int i=0;i<uuids.size();i++)
+			{
+				uuid_filter=" "+"uuid ='" + uuids.getString(i) +"'"+" ";
+				
+			}
+			
+			//filter=filter + " AND "+ uuid_filter;
+			
+		}//end if(uuids.size()>0)
+			
+		
+		System.out.println("Filter is:"+filter);
+		
+		Filter cqlFilter = CQL.toFilter(filter);
+		
+		
+		
+		Query query = new Query(simpleFeatureTypeName, cqlFilter);
+		
+		/*This line force the geomesa to evaluate the bounding box very accurately*/
+		query.getHints().put(QueryHints.LOOSE_BBOX(), Boolean.FALSE);
+		
+		//System.out.println("Query in queryFeatures_Box_Lat_Lng_Time_Range is:"+query.toString());
+		
+		// submit the query, and get back an iterator over matching features
+		FeatureSource featureSource = dataStore.getFeatureSource(simpleFeatureTypeName);
+		FeatureIterator featureItr = featureSource.getFeatures(query).features();
+		
+		// loop through all results
+		int n = 0;
+		while (featureItr.hasNext()) {
+			Feature feature = featureItr.next();
+			//System.out.println("Next:"+n++);
+			try{
+			JsonObject Data = new JsonObject();
+			Data.put("uuid", feature.getProperty("uuid").getValue());
+			Date date=(Date) feature.getProperty("date").getValue();
+			Data.put("timestamp", date.getTime());
+			Point point =(Point) feature.getProperty("point_loc").getValue();
+			Coordinate cd=point.getCoordinates()[0];//since it a single point
+			Data.put("lat", cd.x);
+			Data.put("lng", cd.y);
+			Data.put("value", feature.getProperty("value").getValue());
+			ja.add(Data);	
+			}
+			catch(Exception e){
+				e.printStackTrace();
+				
+			}
+			
+		}
+		featureItr.close();
+		//System.out.println("Next:"+n++);
+		
+		
+		}//end try
+		catch(Exception e){
+			System.out.println("Exception Encountered--in queryFeatures_Box_Lat_Lng_Time_Range(String uuid, DataStore dataStore2, String geomField, String dateField, Double lat_min, Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max) ");
+			e.printStackTrace();
+			//throw e;
+		}//end catch
+		return ja;
+		
+		
+	}//end function
 	
 	
 	

@@ -236,6 +236,13 @@ public void queryData(JsonObject query, String policy,
 	
 }
 
+@Override
+public void queryDataUUIDs(JsonObject query,
+		Handler<AsyncResult<JsonArray>> resultHandler) {
+	// TODO Auto-generated method stub
+	
+}
+
 
 
 }

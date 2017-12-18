@@ -21,6 +21,8 @@ public interface DataService {
   void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
   //query on the data described by the JsonObject query
   
+  void queryDataUUIDs(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  
   void queryData(JsonObject query, String policy, Handler<AsyncResult<JsonArray>> resultHandler);
   //query on the data along with policy
   

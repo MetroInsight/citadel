@@ -39,6 +39,8 @@ public class DataRestApi extends RestApiTemplate {
     {
     	String token=body.getString("userToken");
     	String uuid=body.getString("uuid");//uuid is the ds_id
+    	
+    	
     	JsonObject query=body.getJsonObject("query");
     	
     	if(proceed&&(token.equals("")||uuid.equals("")))//TODO: also check that query is not empty here!!
@@ -196,6 +198,217 @@ public class DataRestApi extends RestApiTemplate {
 	}
     
   }//end queryData(RoutingContext rc)
+  
+  
+  
+  /*
+   * QueryData, where uuid array is passed, and each may have multiple policies
+   */
+  
+  public void queryDataMultipleUUIDs(RoutingContext rc) {
+	  
+		System.out.println("In queryData DataRestApi.java");  
+		HttpServerResponse resp = getDefaultResponse(rc);
+		BaseContent content = new BaseContent();
+		
+		boolean proceed=true;
+		
+		try {
+		JsonObject body = rc.getBodyAsJson();
+		
+		/*
+	     * verify the user Token is valid and used has authority to query Data on provided uuid into the System
+	     */
+	    //get_ds_owner_token(String dsId), we also need to check query parameters
+	    if(body.containsKey("userToken")&&body.containsKey("uuids")&&body.containsKey("query"))
+	    {
+	    	String token=body.getString("userToken");
+	    	JsonArray uuids=body.getJsonArray("uuids");//uuid is the ds_id
+	    	
+	    	
+	    	JsonObject query=body.getJsonObject("query");
+	    	
+	    	if(proceed&&(token.equals("")||uuids.size()==0))//TODO: also check that query is not empty here!!
+	    	{
+	    		//System.out.println("The parameters are missing");
+	    		//return;
+	    		System.out.println("In DataRestApi: Query parameters are missing");
+	        	sendErrorResponse(resp, 400, "Query parameters are missing");
+	        	proceed=false;
+	    	}
+	    	
+	    	//from token extract the userId.
+	    	String userId="";
+	    	if(proceed)
+	    	userId=Auth_meta_data.get_userID(token);
+	    	
+	    	if(proceed&&userId.equals(""))
+	    	{
+	    		//System.out.println("The Token is invalid or you don't have required priveleges");
+	    		//return;
+	    		System.out.println("In DataRestApi: user token doesn't exist");
+	    		sendErrorResponse(resp, 400, "Token doesn't exist or it doesn't have required priveleges");	
+	    		proceed=false;
+	    	}
+	    	
+	    	JsonArray policies=new JsonArray();
+	    	
+	    	boolean alltrue=true;//special case when owner is querying the dataStreams or only public dataStreams are queried
+	    	
+	    	//extract policies for each uuid
+	    	for(int i=0;proceed&&i<uuids.size();i++)
+	    	{
+	    		String uuid=uuids.getString(i);
+	    		
+	    		if(uuid.equals(""))
+	    		{
+	    			System.out.println("In DataRestApi: Query parameters are missing");
+		        	sendErrorResponse(resp, 400, "Query parameters are missing");
+		        	proceed=false;
+	    		}
+	    			
+	    		String policy="";
+	    		
+	    		//for this datastream uuid, and userId extract the policy
+	    		if(proceed)
+	    		 policy=Auth_meta_data.get_policy(uuid, userId);
+	    		
+		    	if(proceed&&policy.equals(""))
+		    	{
+		    		System.out.println("In DataRestApi: user token doesn't exist");
+		    		sendErrorResponse(resp, 400, "Token doesn't have required priveleges");	
+		    		proceed=false;	
+		    	}
+		    	else
+		    	{
+		    		JsonObject pol=new JsonObject();
+		    		pol.put("uuid", uuid);
+		    		pol.put("policy", policy);
+		    		policies.add(pol);
+		    		
+		    		if(policy.equals("true"))
+		    			alltrue=alltrue&&true;
+		    		else
+		    			alltrue=false;
+		    	}
+		    	
+	    	}//end for(int i=0;i<uuid.size();i++)
+	    	
+	    
+	    	/*
+	    	 * old model updated considering HBase consistency constraint
+	    	 */
+	    	//String token_owner=Auth_meta_data.get_ds_owner_token(uuid);//this means uuid exists and token also exists
+	    		
+	    	if(proceed&&alltrue) 
+	    	   { //true is default policy with no-space time constraints
+	    		
+	    		JsonObject q = body.getJsonObject("query");
+	    		
+	    		q.put("uuids", uuids);//uuid on which we want to query, extend it to the set of uuids
+	    		
+	            System.out.println("Query is:"+q);
+	            dataService.queryDataUUIDs(q, ar -> {
+	            	String cStr;
+	                String cLen;
+	                
+	            	if (ar.failed()) {
+	              	System.out.println(ar.cause().getMessage());
+	              	content.setReason(ar.cause().getMessage());
+	                cStr = content.toString();
+	                cLen = Integer.toString(cStr.length());
+	                resp.setStatusCode(400);
+	                
+	            	} else {
+	            		
+	            		content.setSucceess(true);
+	                    content.setResults(ar.result());
+	                    cStr = content.toString();
+	                    cLen = Integer.toString(cStr.length());
+	                    resp
+	                    .setStatusCode(200);
+	            		
+	            }	
+	            	resp
+	                .putHeader("content-length", cLen)
+	                .write(cStr).end();
+	            	
+	            	});
+	            	
+	            proceed=false;
+	        	
+	    	}//end if(policy.equals("true")) 
+	    	
+	    	else if(proceed)//there exist some policy which is not empty
+	    	{
+	    		/*
+	    		System.out.println("In DataRestApi: Policy for user exist");
+	    		
+	            JsonObject q = body.getJsonObject("query");
+	    		
+	    		q.put("uuid", uuid);//uuid on which we want to query, extend it to the set of uuids
+	    		
+	            System.out.println("Query is:"+q);
+	            dataService.queryData(q, policy, ar -> {
+	            	String cStr;
+	                String cLen;
+	                
+	            	if (ar.failed()) {
+	              	System.out.println(ar.cause().getMessage());
+	              	content.setReason(ar.cause().getMessage());
+	                cStr = content.toString();
+	                cLen = Integer.toString(cStr.length());
+	                resp.setStatusCode(400);
+	                
+	            	} else {
+	            		
+	            		content.setSucceess(true);
+	                    content.setResults(ar.result());
+	                    cStr = content.toString();
+	                    cLen = Integer.toString(cStr.length());
+	                    resp
+	                    .setStatusCode(200);
+	            		
+	            }	
+	            	resp
+	                .putHeader("content-length", cLen)
+	                .write(cStr).end();
+	            	
+	            	});
+	            
+	            */
+	            
+	            proceed=false;
+	    		
+	    		
+	    	}//end if(proceed)//there exist some policy which is not empty
+	    	
+	    	
+	    	
+	    	
+	    }//end  if(body.containsKey("userToken")&&body.containsKey("uuid"))
+	    else if(proceed)
+	    {
+	    	System.out.println("In DataRestApi: Query parameters are missing");
+	    	sendErrorResponse(resp, 400, "Query parameters are missing");	
+	    	proceed=false;
+	    }
+		
+		}//end try
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			if(proceed)
+	    	{sendErrorResponse(resp, 400, "Internal server error occured, please contact developers.");
+	    	proceed=false;
+	    	}
+			
+		}
+	    
+	  }//end queryData(RoutingContext rc)
+	  
+	  
+  
   
   /*
    * only owner can insert data

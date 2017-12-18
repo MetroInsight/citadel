@@ -356,8 +356,8 @@ public class GeomesaService implements DataService {
   public static void main(String[] args) {	
 	  
 	  
-	  //Test_insert_data(1000,1000, "67913068-4557-45cd-bed2-4d50d714d7aa");
-	  Test_query_data("67913068-4557-45cd-bed2-4d50d714d7aa");
+	  Test_insert_data(1000,1000, "302ce0e0-80d4-4b0e-8c3e-c76fb756d4be");
+	  Test_query_data("302ce0e0-80d4-4b0e-8c3e-c76fb756d4be");
 	  
 	  //testing the fucntionality of Geomesa service:
       //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");

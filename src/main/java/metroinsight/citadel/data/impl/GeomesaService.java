@@ -202,6 +202,150 @@ public class GeomesaService implements DataService {
 
   
   
+  /*
+   * Tests the insert function of GeomesaService
+   */
+  static void Test_insert_data(int count, int every, String uuid)
+  {
+	  GeomesaService GS=new GeomesaService();
+	  
+	  double value_min=10.0;
+	  double value_max=20.0;
+	  double lat_min=30.0;
+	  double lng_min=60.0;
+	  double diff_loc=5.0;
+	  
+	  String geometryType = "point";
+	  Random random=new Random();
+	  
+	  DateTime MIN_DATE = new DateTime(2016, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
+	  Long SECONDS_PER_YEAR = 365L * 24L * 60L * 60L;
+	  Long SECONDS_PER_WEEK = 7L * 24L * 60L * 60L;
+	  
+	  for(int i=0;i<count;i++){	
+		    JsonArray data = new JsonArray();
+		  
+		    for(int j=0;j<every;j++)//in every iteration, how many to insert
+		    {
+			double value = value_min+random.nextDouble()*(value_max-value_min);
+			//long millis = System.currentTimeMillis();
+			DateTime dateTime = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
+			
+			long timestamp = dateTime.getMillis();//millis;//note time is used in millisec in the System
+			double lat=lat_min+random.nextDouble()*diff_loc;
+			double lng=lng_min+random.nextDouble()*diff_loc;	
+			
+			JsonObject datum = new JsonObject();	
+			//datum.put("uuid", uuid);
+			datum.put("timestamp", timestamp);
+			datum.put("value", value);
+			ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
+			ArrayList<Double> coordinate = new ArrayList<Double>();
+			coordinate.add(lat);
+			coordinate.add(lng);
+			coordinates.add(coordinate);
+			
+			datum.put("geometryType", geometryType);
+			datum.put("coordinates", coordinates);
+			
+			data.add(datum);
+		    
+		    }//end j
+		    
+		    System.out.println(i+": Size of data is:"+data.size());
+			//System.out.println(i+ ": Data Point to Insert is:" + data.toString());
+			GS.insertData(uuid,data, ar -> {
+			   	if (ar.failed()) {
+			         	System.out.println(ar.cause().getMessage());
+			       	} else {
+			       		System.out.println("Insertion done in Main");
+			       	}
+			       	});
+			 
+		 }//end for
+	  
+	  
+	  
+	  
+  }//end Test_insert_data
+  
+  /*
+   * Testing the query of GeomesaService
+   */
+  static void Test_query_data(String uuid)
+  {
+	  GeomesaService GS=new GeomesaService();
+	  
+	  Random random=new Random();
+	  double lat_min=30.0;
+	  double lng_min=60.0;
+	  double diff_loc=5.0;
+	  
+	  double lat_minq=lat_min+random.nextDouble()*diff_loc;
+	  double lat_maxq=lat_minq+0.1;
+	  double lng_minq=lng_min+random.nextDouble()*diff_loc;
+	  double lng_maxq=lng_minq+0.1;
+	  
+	  
+	 /* 
+	  double lat_minq=30;
+	  double lat_maxq=35;
+	  double lng_minq=60;
+	  double lng_maxq=65;
+	  */
+	  
+	  Long SECONDS_PER_YEAR = 365L * 24L * 60L * 60L;
+	  Long SECONDS_PER_WEEK = 7L * 24L * 60L * 60L;
+	  DateTime MIN_DATE = new DateTime(2016, 1, 1, 0, 0, 0, DateTimeZone.forID("UTC"));
+	  
+	  //System.out.println("Seconds per Year: "+SECONDS_PER_YEAR);
+	  
+	  DateTime dateTime1 = MIN_DATE.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
+	  DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_WEEK)));
+	  long timestamp_min=dateTime1.getMillis();
+	  long timestamp_max=dateTime2.getMillis();
+		
+	  //System.out.println(timestamp_min);
+	  //System.out.println(timestamp_max);
+	  
+		 JsonObject query = new JsonObject();
+		 query.put("lat_min", lat_minq);
+		 query.put("lat_max", lat_maxq);
+		 query.put("lng_min", lng_minq);
+		 query.put("lng_max", lng_maxq);
+		 query.put("timestamp_min", timestamp_min);
+		 query.put("timestamp_max", timestamp_max);
+		 query.put("uuid", uuid);
+		 
+		 System.out.println("query is:"+query);
+		 
+		 long millistart;long milliend;
+	  
+		 millistart = System.currentTimeMillis();
+		 GS.queryData(query, ar -> {
+		    	if (ar.failed()) {
+		          	System.out.println(ar.cause().getMessage());
+		        	} else {
+		        		
+		        		String result=ar.result().toString();
+		        		
+		    			
+		        		System.out.println("Query 2 Results are:"+result);
+		        		JsonArray datarec=new JsonArray(result);
+		    			System.out.println("Result size is: "+datarec.size());
+		    			
+		        		
+		        	}
+		       });
+		 milliend = System.currentTimeMillis();
+		
+		 
+	     System.out.println("Time taken is:"+(milliend-millistart));
+	     System.out.println();
+	     
+		 
+  }//end Test_query_data()
+  
   
   /*
    * Geomesa query performs well when the time range is restricted to the range
@@ -210,6 +354,10 @@ public class GeomesaService implements DataService {
    */
   
   public static void main(String[] args) {	
+	  
+	  
+	  //Test_insert_data(1000,1000, "67913068-4557-45cd-bed2-4d50d714d7aa");
+	  Test_query_data("67913068-4557-45cd-bed2-4d50d714d7aa");
 	  
 	  //testing the fucntionality of Geomesa service:
       //System.setProperty("hadoop.home.dir", "/home/sandeep/metroinsight/installations/hadoop/hadoop-2.8.0");
@@ -220,7 +368,8 @@ public class GeomesaService implements DataService {
 	   home = System.getProperty("hadoop.home.dir");
 	   System.out.println("Sandeep Home is:"+home);
 	   */
-	   
+	  
+	  /*
 	  GeomesaService GS=new GeomesaService();
 	  
 	   
@@ -270,6 +419,9 @@ public class GeomesaService implements DataService {
 			 
 		 }//end for
 		 
+		 */
+		
+	  /*
 		 for(int k=0;k<2;k++)
 		 {
 		 //query the points just inserted:
@@ -279,17 +431,17 @@ public class GeomesaService implements DataService {
 		 double lng_minq=60.0;
 		 double lng_maxq=62.0;
 		 
-		 /*	 
+		 	 
 		 double lat_minq=lat_min+random.nextDouble()*diff_loc;
 		 double lat_maxq=lat_minq+0.1;
 		 double lng_minq=lng_min+random.nextDouble()*diff_loc;
 		 double lng_maxq=lng_minq+0.1;
-		 */
+		 
 		 
 		 //long timestamp_min=1388534400000L,timestamp_max=1389312000000L;//1504059232123L;//1389312000000L;
 		                  //1388534400000 
 		DateTime dateTime1 = MIN_DATE;//.plusSeconds((int) Math.round(random.nextDouble() * SECONDS_PER_YEAR));
-		 DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR)));
+		DateTime dateTime2 = dateTime1.plusSeconds((int) Math.round( (SECONDS_PER_YEAR)));
 		 long timestamp_min=dateTime1.getMillis();
 		 long timestamp_max=dateTime2.getMillis();//1420070400000L;//
 		 
@@ -324,6 +476,7 @@ public class GeomesaService implements DataService {
 	     System.out.println("Time taken is:"+(milliend-millistart));
 	     
 	     */
+	  /*
 		 System.out.println(k+" : Query is:"+query);
 	     millistart = System.currentTimeMillis();
 		 GS.queryData(query, ar -> {
@@ -348,6 +501,8 @@ public class GeomesaService implements DataService {
 	     System.out.println();
 	     
 		 }//end for loop on query
+		 */
+	  
 	  
   }
 

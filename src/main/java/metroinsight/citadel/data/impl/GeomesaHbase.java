@@ -151,7 +151,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		if(featureBuilder==null)
 		  featureBuilder = new SimpleFeatureBuilder(simpleFeatureType);
 		
-		SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
+		
 		
 		try {
 		  /*
@@ -163,13 +163,16 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		  String geometryType = geometryJson.getString("type").toLowerCase();
 		  */
 		  for (int i = 0; i < data.size(); i++) {
+			  
+			  SimpleFeature simpleFeature=featureBuilder.buildFeature(null);
+			  
 		    JsonObject datum = data.getJsonObject(i);
 		    Datapoint dp = datum.mapTo(Datapoint.class); 
 		    String geometryType = dp.getGeometryType();
 		    List<List<Double>> coordinates = dp.getCoordinates();
 		    if (geometryType.equals("point")) {
-		      Double lng = coordinates.get(0).get(0);
-		      Double lat = coordinates.get(0).get(1);
+		      Double lat = coordinates.get(0).get(0);
+		      Double lng = coordinates.get(0).get(1);
 		      Geometry geometry = WKTUtils$.MODULE$.read("POINT(" + lng.toString() + " " + lat.toString() + ")");
 		      simpleFeature.setAttribute("point_loc", geometry);
 		      }
@@ -178,9 +181,9 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		      }
         //simpleFeature.setAttribute("uuid", dp.getUuid());//made uuid change to the static
 		    simpleFeature.setAttribute("uuid", uuid);
-        simpleFeature.setAttribute("value", dp.getValue());
-        simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
-        featureCollection.add(simpleFeature);
+            simpleFeature.setAttribute("value", dp.getValue());
+            simpleFeature.setAttribute("date", new Date(dp.getTimestamp()));
+            featureCollection.add(simpleFeature);
 		  }
 
 			// accumulate this new feature in the collection
@@ -188,6 +191,8 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			e.printStackTrace();
 		}
 
+		System.out.println("Size of Feature Collection is:"+featureCollection.size());
+		
 		return featureCollection;
 	}
 	
@@ -287,7 +292,8 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		try{
 		// construct a (E)CQL filter from the search parameters,
 		// and use that as the basis for the query
-		String cqlGeometry = "BBOX(" + geomField + ", " + lat_min + ", " + lng_min + ", " + lat_max + ", " + lng_max + ")";
+		String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max + ")";
+		System.out.println("cqlGeometry is: "+cqlGeometry);
 		Date datemin=new Date(Long.valueOf(timestamp_min));
 		Date datemax=new Date(Long.valueOf(timestamp_max));
 		
@@ -516,6 +522,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			long timestamp_min, long timestamp_max, Handler<AsyncResult<JsonArray>> resultHandler) {
 		JsonArray result=new JsonArray();
 		try{
+			System.out.println("Parameters in Query_Box_Lat_Lng_Time_Range: "+lat_min+" "+lat_max+" "+lng_min+" "+lng_max);
 			result=Query_Box_Lat_Lng_Time_Range( uuid, lat_min,  lat_max,  lng_min,  lng_max, timestamp_min , timestamp_max);
 			resultHandler.handle(Future.succeededFuture(result));
 		}

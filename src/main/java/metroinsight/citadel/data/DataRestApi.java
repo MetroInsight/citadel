@@ -421,6 +421,8 @@ public class DataRestApi extends RestApiTemplate {
     HttpServerResponse resp = getDefaultResponse(rc);
 	BaseContent content = new BaseContent();
 	
+	System.out.println("body is:"+body);
+	
     /*
      * verify the user Token is valid and he as authority to insert Data into the System
      */
@@ -502,7 +504,7 @@ public class DataRestApi extends RestApiTemplate {
     {
     	//System.out.println("parameters are missing");	
 		//return;
-    	System.out.println("In DataRestApi: Insert data parameters are missing");
+    	System.out.println("In DataRestApi: Insert data parameters are missing--");
     	sendErrorResponse(resp, 400, "Insert data parameters are missing");	
     }
     

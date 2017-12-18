@@ -69,6 +69,8 @@ public class PolicyRestApi extends RestApiTemplate{
 	    	
 	    	String ownerId="";
 	    	
+	    	System.out.println("userToken is:"+userToken);
+	    	
 	    	if(proceed&&!userToken.equals(""))
 	    	ownerId = Auth_meta_data_policy.get_userID(userToken);
 	    	

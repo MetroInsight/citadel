@@ -182,10 +182,14 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				   String dsId=sensors.getString(i);
 	    				   String userId=users.getString(j);
 	    				   
-	    				   String Policy="true";
+	    				   String PolicyString="true";
+	    				   
+	    				   JsonArray allowedPolygons=new JsonArray();
+	    				   JsonArray denyPolygons = new JsonArray();
+	    				   
 	    				   if(policy.containsKey("where"))
 	    				   {
-	    					   JsonArray allowedPolygons=new JsonArray();
+	    					   
 	    					   
 	    					   JsonObject where = policy.getJsonObject("where");
 	    					   System.out.println("Where is:"+where);
@@ -193,7 +197,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    					   if(proceed&&where.containsKey("allowedPolygons"))
 	    					   {
 	    						
-	    						    allowedPolygons = new JsonArray();
+	    						    
 	    						   try{  /*Allowed Polygons can be a mess*/
 	    							   allowedPolygons=where.getJsonArray("allowedPolygons");
 	    						       }catch(Exception e)
@@ -246,12 +250,12 @@ public class PolicyRestApi extends RestApiTemplate{
 	    						   
 	    					   }//end if(where.containsKey("allowedPolygons"))
 	    					   
-	    					   JsonArray denyPolygons = new JsonArray();
+	    					   
 	    					   
 	    					   if(proceed&&where.containsKey("denyPolygons"))
 	    					   {
 	    						
-	    						   denyPolygons = new JsonArray();
+	    						   
 	    						   try{  /*Allowed Polygons can be a mess*/
 	    							   denyPolygons=where.getJsonArray("denyPolygons");
 	    						       }catch(Exception e)
@@ -308,17 +312,124 @@ public class PolicyRestApi extends RestApiTemplate{
 	    					   /*
 	    					    * In Where something meaningful should exist
 	    					    */
-	    					   if(proceed&&(allowedPolygons.size()>0||denyPolygons.size()>0))
-	    						   Policy=policy.toString();
 	    					   
 	    				   }//end if(policy.containsKey("where"))
 	    				  
+	    				   /*
+	    				    * Begin processing of when
+	    				    */
 	    				   
-	    				   //else---check when to do this
+	    				   JsonArray allowTimes=new JsonArray();
+	    				   JsonArray denyTimes=new JsonArray();
+	    				   
+	    				   if(proceed&&policy.containsKey("when"))
+	    				   {
+	    					   /*
+	    					    * Processing the allowTimes
+	    					    */
+	    					   JsonObject when=policy.getJsonObject("when");
+	    					   
+	    					   System.out.println("when is:"+when);
+	    					   
+	    					   if(proceed&&when.containsKey("allowTimes"))
+	    					   {
+	    					   try{  /*Allowed Polygons can be a mess*/
+	    						   allowTimes=when.getJsonArray("allowTimes");
+    						       }catch(Exception e)
+    						   {
+    						    	 System.out.println("allowTimes format incorrect");
+    							     sendErrorResponse(resp, 400, "allowTimes format incorrect");	 
+    							     proceed=false;
+    						   }
+    						   
+    						   System.out.println("allowTimes" + allowTimes);
+    						   
+    						   for(int t=0;proceed&&t<allowTimes.size();t++)
+    						   {
+    							   JsonObject time = allowTimes.getJsonObject(t);
+    							   
+    							   boolean verifytime=verifyTimeStructure(time);
+    							   
+    							   if(proceed&&verifytime==false)
+    							   {
+    								System.out.println(time+", allowTimes format incorrect");
+      							     sendErrorResponse(resp, 400, time+" in, allowTimes format is incorrect");	 
+      							     proceed=false;   
+    							   }
+    							   
+    							   System.out.println(time+", Verifytime is :"+verifytime);
+    							   
+    							   
+    						   }//end for(int t=0;proceed&&t<allowTimes.size();t++)
+    						   
+	    					   }//end  if(when.containsKey("allowTimes"))
+	    					   
+    						   
+	    					   /*
+	    					    *end Processing the allowTimes 
+	    					    */
+	    					   
+	    					   
+	    					   
+	    					   /*
+	    					    * begin processing of denyTimes
+	    					    */
+	    					   
+	    					   if(proceed&&when.containsKey("denyTimes"))
+	    					   {
+	    					   try{  /*Allowed Polygons can be a mess*/
+	    						   denyTimes=when.getJsonArray("denyTimes");
+    						       }catch(Exception e)
+    						   {
+    						    	 System.out.println("denyTimes format incorrect");
+    							     sendErrorResponse(resp, 400, "denyTimes format incorrect");	 
+    							     proceed=false;
+    						   }
+    						   
+    						   System.out.println("denyTimes" + denyTimes);
+    						   
+    						   for(int t=0;proceed&&t<denyTimes.size();t++)
+    						   {
+    							   JsonObject time = denyTimes.getJsonObject(t);
+    							   
+    							   boolean verifytime=verifyTimeStructure(time);
+    							   
+    							   if(proceed&&verifytime==false)
+    							   {
+    								System.out.println(time+", denyTimes format incorrect");
+      							     sendErrorResponse(resp, 400, time+" in, denyTimes format is incorrect");	 
+      							     proceed=false;   
+    							   }
+    							   
+    							   System.out.println(time+", Verifytime is :"+verifytime);
+    							   
+    							   
+    						   }//end for(int t=0;proceed&&t<allowTimes.size();t++)
+    						   
+	    					   }//end  if(when.containsKey("allowTimes"))
+	    					   
+	    					   
+	    					   /*
+	    					    * end processing of allowTimes
+	    					    */
+	    					   
+	    				   }//end if(policy.containsKey("when"))
+	    				   
+	    				   /*
+	    				    * End processing of when
+	    				    */
+	    				   
+	    				   if(proceed&&(allowedPolygons.size()>0||denyPolygons.size()>0||allowTimes.size()>0||denyTimes.size()>0))
+	    					 {
+	    					   PolicyString=policy.toString();
+	    					   System.out.println("PolicyString is:"+PolicyString);
+	    					 }//end if(proceed&&(allowedPolygons.size()>0||denyPolygons.size()>0||allowTimes.size()>0))
+	    				   
+	    				   //Inserting the policy below, policy string should be updated to mentioned the correct policy
 	    				   if(proceed)
 	    				   { 
 	    					   //everything is correct, let us insert this policy
-	    					   Auth_meta_data_policy.insert_policy(dsId, userId, Policy);//this is default policy with no-space time constraints, with constraints we need to update this
+	    					   Auth_meta_data_policy.insert_policy(dsId, userId, PolicyString);//this is default policy with no-space time constraints, with constraints we need to update this
 	    				   }//end if(proceed)
 	    				   
 	    				   
@@ -376,7 +487,31 @@ public class PolicyRestApi extends RestApiTemplate{
 		
 	}//end registerPolicy
 	
-	
+	/*
+	 * verify that time in when policy construct is proper
+	 */
+	private boolean verifyTimeStructure(JsonObject time) {
+		// TODO Auto-generated method stub
+		try
+		{
+		if(!time.containsKey("start")&&!time.containsKey("end"))
+		return false;
+		
+		long start=time.getLong("start");
+		long end = time.getLong("end");
+		
+		if(start>0 && end>0 && end >start)
+		return true;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return false;
+		}
+		return false;
+		
+	}//end private boolean verifyTimeStructure(JsonObject time)
+
 	//Verify that input polygon actually form a continuous polygons
 	boolean VerifyPolygonsStructure(JsonArray polygon)
 	{

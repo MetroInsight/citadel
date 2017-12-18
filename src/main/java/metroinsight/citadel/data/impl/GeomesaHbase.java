@@ -677,13 +677,116 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 					
 					System.out.println("\n \n Deny Space Policy Translation:"+policy_deny_space);
 					
-				}//end if(where.containsKey("allowedPolygons"))
+				}//end if(where.containsKey("denyPolygons"))
 				
 			}//end if(Policy.containsKey("where"))
 			/*
 			 * deny space ends
 			 */
 		
+			SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+			
+			/*
+			 * allowTimes begin
+			 */
+			JsonObject when=new JsonObject();
+			String policy_allow_dates="";
+			if(Policy.containsKey("when"))
+			{
+				when = Policy.getJsonObject("when");
+				
+				if(when.containsKey("allowTimes"))
+				{
+					JsonArray allowTimes = when.getJsonArray("allowTimes");
+					
+				    for(int i=0;i<allowTimes.size();i++)
+				    {
+				    	JsonObject time = allowTimes.getJsonObject(i);
+				    	long start = time.getLong("start");
+				    	long end = time.getLong("end");
+				    	
+				    	Date datemin=new Date(start);
+						Date datemax=new Date(end);
+						String date1=format.format(datemin);
+						String date2=format.format(datemax);
+						
+						String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+						
+						if(i==0)//first time
+						policy_allow_dates= "( "+cqlDates;
+				    	
+						else if(i<allowTimes.size()-1)
+							policy_allow_dates= policy_allow_dates+" OR "+cqlDates;
+						else
+							policy_allow_dates= policy_allow_dates+" OR "+cqlDates +" )";
+						
+				    }//end for(int i=0;i<allowTimes.size();i++)
+					
+				}//end if(when.containsKey("allowTimes"))
+				
+				
+				
+			}//end if(Policy.containsKey("when"))
+			
+			System.out.println("allow_dates_policy translation:"+policy_allow_dates);
+			
+			/*
+			 * allowTimes end
+			 */
+			
+			
+			/*
+			 * denyTimes begin
+			 */
+			
+			String policy_deny_dates="";
+			if(Policy.containsKey("when"))
+			{
+				//using earlier when
+				//when = Policy.getJsonObject("when");
+				
+				if(when.containsKey("denyTimes"))
+				{
+					JsonArray denyTimes = when.getJsonArray("denyTimes");
+					
+				    for(int i=0;i<denyTimes.size();i++)
+				    {
+				    	JsonObject time = denyTimes.getJsonObject(i);
+				    	long start = time.getLong("start");
+				    	long end = time.getLong("end");
+				    	
+				    	Date datemin=new Date(start);
+						Date datemax=new Date(end);
+						String date1=format.format(datemin);
+						String date2=format.format(datemax);
+						
+						String cqlDates = " NOT (" + dateField + " during " + date1+"/" + date2+" )";
+						
+						if(i==0&&denyTimes.size()==1)//first time and one Item
+							policy_deny_dates= " ( "+cqlDates +" ) ";
+						
+						else
+							if(i==0)//first time and more item
+								policy_deny_dates= " ( "+cqlDates;
+						
+						else if(i<denyTimes.size()-1)
+							policy_deny_dates= policy_deny_dates+" AND "+cqlDates;
+						else
+							policy_deny_dates= policy_deny_dates+" AND "+cqlDates +" ) ";
+						
+				    }//end for(int i=0;i<denyTimes.size();i++)
+					
+				}//end if(when.containsKey("denyTimes"))
+				
+				
+				
+			}//end if(Policy.containsKey("when"))
+			
+			System.out.println("policy_deny_dates translation:"+policy_deny_dates);
+			
+			/*
+			 *denyTimes end 
+			 */
 			
 			/*
 			 * Policy operations end
@@ -694,7 +797,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		Date datemin=new Date(Long.valueOf(timestamp_min));
 		Date datemax=new Date(Long.valueOf(timestamp_max));
 		
-		SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		
 		//format.setTimeZone(TimeZone.getTimeZone("PDT"));
 		String date1=format.format(datemin);
 		String date2=format.format(datemax);
@@ -714,7 +817,32 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		{
 			filter =" ( "+ filter+ " AND "+ " ( "+policy_deny_space+" )"+" )";
 		}
+		
+		
+		//user_Time_query_filter
+		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
+		
+		if(policy_allow_dates.length()>0 && policy_deny_dates.length()>0)
+		{
+			filter=filter + " AND "+" ("+cqlDates +" AND "+ policy_allow_dates +" AND "+ policy_deny_dates+ " ) ";
 			
+		}
+		
+		else if(policy_allow_dates.length()>0 )
+		 {
+			filter=filter + " AND "+" ("+cqlDates +" AND "+ policy_allow_dates+ " ) ";
+				
+		 }
+		else if(policy_deny_dates.length()>0)
+		{
+			filter=filter + " AND "+" ("+cqlDates +" AND "+ policy_deny_dates+ " ) ";
+		}
+		
+		else//not time policy
+		{
+			filter=filter + " AND "+cqlDates;
+		}
+		
 		if(!uuid.equals(""))
 		{
 			String uuid_filter=" "+"uuid ='" + uuid +"'"+" ";
@@ -723,8 +851,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		}//adding constrains on UUID
 		
 		
-		String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
-		filter=filter + " AND "+cqlDates;
+		
 		
 		System.out.println("Filter is: \n"+filter);
 		

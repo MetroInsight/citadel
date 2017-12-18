@@ -24,6 +24,7 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.Result;
+
 import io.vertx.core.json.JsonObject;
 
 /*
@@ -35,9 +36,10 @@ import io.vertx.core.json.JsonObject;
  */
 public class Authorization_MetaData {
 
+	//String path="/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml";
+    String path="/home/citadel/metroinsight/Hbase_Test/conf/hbase-site.xml";
+	
 	  public String userToken="userToken";
-	  
-	  
 	  static TableName table_meta = TableName.valueOf("metadata");
 	  static String family_ds = "ds";
 	  static String family_user = "user";
@@ -65,8 +67,9 @@ public class Authorization_MetaData {
 			Configuration config = HBaseConfiguration.create();
 			//String path = meta.getClass().getResource("resources/hbase-site.xml").getPath();
 			//config.addResource(new Path(path));
-			config.addResource(new Path("/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml"));
+			//config.addResource(new Path("/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml"));
 			//config.addResource(new Path("/home/citadel/metroinsight/Hbase_Test/conf/hbase-site.xml"));
+			config.addResource(new Path(path));
 			HBaseAdmin.checkHBaseAvailable(config);
 			connection = ConnectionFactory.createConnection(config);
 			

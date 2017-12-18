@@ -17,6 +17,9 @@ import metroinsight.citadel.metadata.MetadataRestApi;
 
 public class RestApiVerticle extends AbstractVerticle {
 
+	//String path="/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks";
+    String path="/home/citadel/metroinsight/selfsigned.jks";
+    
   protected ServiceDiscovery discovery;
   MetadataRestApi metadataRestApi ;
   DataRestApi dataRestApi;
@@ -32,14 +35,17 @@ public class RestApiVerticle extends AbstractVerticle {
     
     Router router = Router.router(vertx);
     
+    
+    
     HttpServerOptions options = new HttpServerOptions()
 			  .setSsl(true)
 			  .setKeyStoreOptions(
 			  new JksOptions().
 			   // setPath("/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
 			    //setPath("/home/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
-			   setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks"). 
+			   //setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks"). 
 			   //setPath("/home/citadel/metroinsight/selfsigned.jks").
+			  setPath(path).
 			  setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
 			);
     

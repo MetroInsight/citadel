@@ -19,6 +19,9 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
 
 public class AuthorizationVerticle extends AbstractVerticle {
 
+	//String path="/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks";
+    String path="/home/citadel/metroinsight/selfsigned.jks";
+	
 	  @Override
 	  public void start(Future<Void> fut) {
 		// Create a router object.
@@ -34,6 +37,8 @@ public class AuthorizationVerticle extends AbstractVerticle {
 		  // Make sure all requests are routed through the session handler too
 		  router.route().handler(sessionHandler);
 		  
+		  
+		  
 		  HttpServerOptions options = new HttpServerOptions()
 				  .setSsl(true)
 				  .setKeyStoreOptions(
@@ -41,7 +46,8 @@ public class AuthorizationVerticle extends AbstractVerticle {
 				    //setPath("/home/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
 				    // setPath("/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks").
 				    //setPath("/home/citadel/metroinsight/selfsigned.jks").
-				    setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks").
+				    //setPath("/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks").
+				    setPath(path).
 				    setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
 				);
 		  //NetServer server = vertx.createNetServer(options);

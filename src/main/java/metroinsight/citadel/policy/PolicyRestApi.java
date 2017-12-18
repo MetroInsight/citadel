@@ -185,13 +185,15 @@ public class PolicyRestApi extends RestApiTemplate{
 	    				   String Policy="true";
 	    				   if(policy.containsKey("where"))
 	    				   {
+	    					   JsonArray allowedPolygons=new JsonArray();
+	    					   
 	    					   JsonObject where = policy.getJsonObject("where");
 	    					   System.out.println("Where is:"+where);
 	    					   
-	    					   if(where.containsKey("allowedPolygons"))
+	    					   if(proceed&&where.containsKey("allowedPolygons"))
 	    					   {
 	    						
-	    						   JsonArray allowedPolygons = new JsonArray();
+	    						    allowedPolygons = new JsonArray();
 	    						   try{  /*Allowed Polygons can be a mess*/
 	    							   allowedPolygons=where.getJsonArray("allowedPolygons");
 	    						       }catch(Exception e)
@@ -238,11 +240,76 @@ public class PolicyRestApi extends RestApiTemplate{
 	    						    */
 	    						  
 	    						   /*
-	    						    * Allowed polygons correct, attempt to insert this policy
+	    						    * Allowed polygons correct, Now check for denypolygons
 	    						    */
-	    						   Policy=policy.toString();
+	    						  
 	    						   
-	    					   }//end if(where.containsKey("AllowedPolygons"))
+	    					   }//end if(where.containsKey("allowedPolygons"))
+	    					   
+	    					   JsonArray denyPolygons = new JsonArray();
+	    					   
+	    					   if(proceed&&where.containsKey("denyPolygons"))
+	    					   {
+	    						
+	    						   denyPolygons = new JsonArray();
+	    						   try{  /*Allowed Polygons can be a mess*/
+	    							   denyPolygons=where.getJsonArray("denyPolygons");
+	    						       }catch(Exception e)
+	    						   {
+	    						    	 System.out.println("denyPolygons format incorrect");
+	    							     sendErrorResponse(resp, 400, "denyPolygons format incorrect");	 
+	    							     proceed=false;
+	    						   }
+	    						   
+	    						   System.out.println("denyPolygons" + denyPolygons);
+	    						   
+	    						   /*
+	    						    * 
+	    						    * Verify that all deny polygon actually form a continuous polygons
+	    						    * Very Important, else all future queries with this policy will not work
+	    						    */
+	    						  
+	    						   for(int p=0; proceed&&p<denyPolygons.size();p++)
+	    						   {
+	    							   JsonArray polygon = denyPolygons.getJsonArray(p);
+	    						       boolean verify = false;
+	    						      
+	    						       try{
+	    						       verify = VerifyPolygonsStructure(polygon);}
+	    						       catch(Exception e)
+	    						       {
+	    						    	   System.out.println("Exception shouldn't occur here"); 
+	    						    	  e.printStackTrace(); 
+	    						       }
+	    
+	    								
+	    						       if(proceed&&verify==false)//polygon is not in correct format
+	    						       {
+	    						    	   System.out.println("denyPolygons format incorrect");
+	    						    	   System.out.println(polygon+", Verify is: "+verify);
+	    						    	   sendErrorResponse(resp, 400, polygon.toString()+": in denyPolygons format incorrect");
+	    						    	   proceed=false;
+	    						       }					       
+	    						       
+	    						   }//end for(int p=0; p<denyPolygons.size();p++)
+	    						   
+	    						   /*
+	    						    * end  Verify that denyPolygons polygon actually form a continuous polygons
+	    						    */
+	    						  
+	    						   
+	    						   /*
+	    						    *  denyPolygons Done, now attempt to insert this policy
+	    						    */
+	    						   //Policy=policy.toString();
+	    						   
+	    					   }//end if(where.containsKey("denyPolygons"))
+	    					   
+	    					   /*
+	    					    * In Where something meaningful should exist
+	    					    */
+	    					   if(proceed&&(allowedPolygons.size()>0||denyPolygons.size()>0))
+	    						   Policy=policy.toString();
 	    					   
 	    				   }//end if(policy.containsKey("where"))
 	    				  

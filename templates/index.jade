@@ -182,9 +182,17 @@ html
       # Modify API_ENDPOINT
       API_ENDPOINT = "https://localhost:8089/api/registerPolicy"
       # Enter userToken and policy
-      Policy = '{"userToken":"#{context.tokens}","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"], "where":{"allowedPolygons":[{lat1,lng1},{...},{lat1,lng1}]}}}'
-      # Example - "allowedPolygons":[{"lat":30.0,"lng":60.0},{"lat":40.0,"lng":60.0},{"lat":40.0,"lng":70.0},{"lat":30.0,"lng":70.0},{"lat":30.0,"lng":60.0}]
+      Policy = '{"userToken":"#{context.tokens}","policy":{"sensors":["sensor-uuid"], "users":["testcitadel1@gmail.com"], "where":{"allowedPolygons":[[{"lat":lat1,"lng":lng1},{...},{"lat":lat1,"lng":lng1}]}}}}'
+      # Example - "allowedPolygons":[[{"lat":30.0,"lng":60.0},{"lat":40.0,"lng":60.0},{"lat":40.0,"lng":70.0},{"lat":30.0,"lng":70.0},{"lat":30.0,"lng":60.0}]]
       r = requests.post(url = API_ENDPOINT, data = Policy,verify=False)
       print("Response is:%s"%r.text)
       
       # Response is:{"success":true,"reason":"","results":[]}
+      
+    h3
+     mark Different Spatio-Temporal  Access Control Policy
+    pre. 
+      "where":{"allowedPolygons":[[{"lat":lat1,"lng":lng1},{...},{"lat":lat1,"lng":lng1}] , [{"lat":lat2,"lng":lng2},{...},{"lat":lat2,"lng":lng2}]]}, "denyPolygons":[{"lat":lat3,"lng":lng3},{...},{"lat":lat3,"lng":lng3}]}}
+      "where":{"allowedPolygons":[[{"lat":30.0,"lng":60.0},{"lat":40.0,"lng":60.0},{"lat":40.0,"lng":70.0},{"lat":30.0,"lng":70.0},{"lat":30.0,"lng":60.0}],[{"lat":5.0,"lng":5.0},{"lat":50.0,"lng":5.0},{"lat":50.0,"lng":70.0},{"lat":5.0,"lng":70.0},{"lat":5.0,"lng":5.0}]], "denyPolygons":[[{"lat":5.0,"lng":5.0},{"lat":10.0,"lng":5.0},{"lat":10.0,"lng":10.0},{"lat":5.0,"lng":10.0},{"lat":5.0,"lng":5.0}]]}
+      
+      "when":{"allowTime":[{"start":time1,"end":time2}],"denyTime":[{"start":time3,"end":time4}]}

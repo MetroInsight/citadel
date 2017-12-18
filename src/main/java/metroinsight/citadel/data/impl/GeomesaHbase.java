@@ -589,10 +589,11 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			 */
 			String policy_allow_space="";
 			
+			JsonObject where=new JsonObject();
 			JsonObject Policy=new JsonObject(policy);
 			if(Policy.containsKey("where"))
 			{
-				JsonObject where = Policy.getJsonObject("where");
+				 where = Policy.getJsonObject("where");
 				if(where.containsKey("allowedPolygons"))
 				{
 				
@@ -624,7 +625,7 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 						 
 					  }//end for(int i=0;i<allowedPolygons.size();i++)
 					
-					System.out.println("\n \n Space Policy Translation:"+policy_allow_space);
+					System.out.println("\n \n Allow Space Policy Translation:"+policy_allow_space);
 					
 				}//end if(where.containsKey("allowedPolygons"))
 				
@@ -632,6 +633,57 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 			/*
 			 * Allowed space ends
 			 */
+		
+			
+			/*
+			 * deny Space begins
+			 */
+			String policy_deny_space="";
+			
+			
+			if(Policy.containsKey("where"))
+			{
+				//JsonObject where = Policy.getJsonObject("where");//using previous where
+				if(where.containsKey("denyPolygons"))
+				{
+				
+					JsonArray denyPolygons = where.getJsonArray("denyPolygons");
+					for(int i=0;i<denyPolygons.size();i++)
+					  {
+						policy_deny_space = policy_deny_space + " NOT INTERSECTS ( "+geomField+" , POLYGON ((";
+						
+						//we already verified during insertion that this polygon is correct and allowed
+						JsonArray polygon=denyPolygons.getJsonArray(i); 
+						
+						for(int j=0;j<polygon.size();j++)
+						  {
+							  JsonObject pos=polygon.getJsonObject(j);
+							  double lat=pos.getDouble("lat");
+							  double lng=pos.getDouble("lng");  
+							  policy_deny_space=policy_deny_space+lat+" "+lng;
+							  
+							  if(j<polygon.size()-1)
+								  policy_deny_space=policy_deny_space+",";
+							  
+						  }//end for(int j=0;j<polygon.size();j++)
+						
+						policy_deny_space=policy_deny_space+")))";
+						
+						 //multiple deny polygons are AND with each other
+						 if(i<denyPolygons.size()-1)
+							 policy_deny_space=policy_deny_space + " AND ";
+						 
+					  }//end for(int i=0;i<allowedPolygons.size();i++)
+					
+					System.out.println("\n \n Deny Space Policy Translation:"+policy_deny_space);
+					
+				}//end if(where.containsKey("allowedPolygons"))
+				
+			}//end if(Policy.containsKey("where"))
+			/*
+			 * deny space ends
+			 */
+		
 			
 			/*
 			 * Policy operations end
@@ -654,10 +706,15 @@ static FeatureCollection createNewFeatures(SimpleFeatureType simpleFeatureType, 
 		
 		if(policy_allow_space.length()>0)
 		{
-			filter =" ( "+ filter+ " AND "+ " ( "+policy_allow_space+" )"+" )";
+			filter = filter+ " AND "+ " ( "+policy_allow_space+" )";
 			
 		}//end if(policy_allow_space.length()>0)
 		
+		if(policy_deny_space.length()>0)
+		{
+			filter =" ( "+ filter+ " AND "+ " ( "+policy_deny_space+" )"+" )";
+		}
+			
 		if(!uuid.equals(""))
 		{
 			String uuid_filter=" "+"uuid ='" + uuid +"'"+" ";

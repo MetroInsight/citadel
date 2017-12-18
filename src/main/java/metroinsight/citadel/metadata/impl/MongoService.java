@@ -169,7 +169,82 @@ public class MongoService implements MetadataService {
   	
   }//end queryPoint
 
-  
+ 
+ public void queryPoint2(JsonObject query, String userId, Handler<AsyncResult<JsonArray>> resultHandler) {
+	  
+	  try{
+	    	  //next check if this userID matches the user who created this Sensor
+	    	  //we store the userID in the Sensor Metadata, fetch sensor metadata, and confirm, it and then return it
+		  //query.remove("_id");
+		  //query.remove("userId");
+		  
+		  
+		  
+		  //query.put("userId", userId);//restrict by the userId
+		  //System.out.println("in queryPoint MongoService Query is:"+query);
+		  query=new JsonObject();
+		  
+		   mongoClient.find(collName, query, res -> {
+			  		if (res.succeeded()) {
+			  			JsonArray ja = new JsonArray();
+			  			for (JsonObject json: res.result()) {
+			  			
+			  				System.out.println("In query2 mongoservice:"+json);
+			  				
+			  				boolean add=false;
+			  				
+			  				String uuid="";
+			  				if(json.containsKey("uuid"))
+			  				{
+			  				uuid=json.getString("uuid");
+			  				System.out.println("uuid is:"+uuid);
+			  				String policy=Auth_meta.get_policy(uuid, userId);
+			  				if(policy.length()>0)
+			  					add=true;
+			  				else
+			  				{
+			  				 String ownerid=Auth_meta.get_ds_owner_id(uuid);
+			  				 System.out.println("OwnerID is:"+ownerid);
+			  				 if(ownerid.equals(userId))
+			  					 add=true;
+			  				}
+			  				
+			  				}
+			  				
+			  				if(add)
+			  				{
+			  				    String owner=json.getString("userId");
+			  				    json.remove("_id");
+				  			    json.remove("userId");
+				  			    json.remove("userToken");
+				  			    //json.remove("uuid");
+				  			    
+				  			   json.put("owner", owner);//adding the owner details
+			  				   ja.add(json);    
+			  				}
+			  				
+			  			}//end for
+			  			resultHandler.handle(Future.succeededFuture(ja));
+			  		} else {
+			      	res.cause().printStackTrace();
+			      	Exception e= new Exception(res.cause());
+			      	resultHandler.handle(Future.failedFuture(e));
+			  		}
+			  	});
+	    		  
+	  }//end try
+	  catch(Exception e)
+	  {
+		  e.printStackTrace();
+		  resultHandler.handle(Future.failedFuture(e));
+	  }
+	  
+ 	
+ 	
+ }//end queryPoint
+
+ 
+ 
   @Override
   public void getPoint(String uuid, Handler<AsyncResult<JsonArray>> resultHandler){
     JsonObject query = new JsonObject();

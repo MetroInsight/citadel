@@ -292,7 +292,7 @@ public class GoogleLogin {
 			    	
 			    	 MongoService metadataService=new MongoService (vertx);
 			    	 JsonObject query= new JsonObject();
-			    	 metadataService.queryPoint(query,email, ar -> {
+			    	 metadataService.queryPoint2(query,email, ar -> {
 		    		    	if (ar.failed()) {
 			    		      	System.out.println(ar.cause().getMessage());
 			    		    	}
@@ -300,7 +300,7 @@ public class GoogleLogin {
 		    		    		   
 			    		    	JsonArray pointResult = ar.result();
 			    		    	//String pointResult2=pointResult.toString()+"<br><br>";
-			    		    	//System.out.println("User Sensors:"+pointResult2);
+			    		    	System.out.println("User Sensors:"+pointResult);
 			    		    	
 			    		    	rc.put("userSensors",pointResult.toString());
 			    		    	

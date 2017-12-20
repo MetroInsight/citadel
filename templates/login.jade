@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head 
+    title Citadel 
+    meta(name="google-signin-scope", content="profile email")
+    meta(name="google-signin-client_id", content="647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com")
+    script(src="https://apis.google.com/js/platform.js?onload=onLoad",async defer)
+    script(type='text/javascript',src="/scripts/login.js")
+  body
+    div(align="center")
+     h1 Login to Citadel
+     h1 using your Gmail Account
+     div(class="g-signin2",data-onsuccess="onSignIn",data-theme="dark",id="Glogin")

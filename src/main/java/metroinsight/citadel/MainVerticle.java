@@ -1,5 +1,7 @@
 package metroinsight.citadel;
 
+import java.io.File;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import metroinsight.citadel.authorization.AuthorizationVerticle;
@@ -22,14 +24,13 @@ public class MainVerticle extends AbstractVerticle {
     DeploymentOptions opts = new DeploymentOptions()
         .setWorker(true);
     //System.setProperty("hadoop.home.dir", "/");
-    //System.setProperty("log4j.configuration",  new File("resources", "log4j.properties").toURI().toURL().toString());
+    System.setProperty("log4j.configuration",  new File("resources", "log4j.properties").toURI().toURL().toString());
     opts.setConfig(config());
-    /*
+    
     vertx.deployVerticle(RestApiVerticle.class.getName(), opts, ar -> {
       if (ar.failed()) {
         ar.cause().printStackTrace();
         }
     });
-    //*/
  }
 }

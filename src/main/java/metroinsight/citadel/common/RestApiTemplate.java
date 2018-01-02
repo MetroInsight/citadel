@@ -19,7 +19,7 @@ public class RestApiTemplate {
       resp
         .setStatusCode(statusCode)
         .putHeader("content-length", cLen)
-        .write(cStr);
+        .write(cStr).end();
   }
 
 }

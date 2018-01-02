@@ -25,6 +25,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.client.Result;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /*
@@ -241,6 +242,46 @@ public class Authorization_MetaData {
 	 /*
 	  * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value), (Policy-Value)
 	  */
+	 public JsonArray get_policy_uuids(String userId)
+	 {
+		 JsonArray res=new JsonArray();
+		 try {
+			 Scan scan = new Scan();
+			 // Scanning the required columns
+		     scan.addColumn(Bytes.toBytes(family_policy), Bytes.toBytes(userId));
+		     // Getting the scan result
+		      ResultScanner scanner =table.getScanner(scan);
+
+		      // Reading values from scan result
+		      for (Result result = scanner.next(); result != null; result = scanner.next())
+		      {
+		    	 String DsId=Bytes.toString(result.getRow());
+		    	 String policy=Bytes.toString(result.getValue(Bytes.toBytes(family_policy), Bytes.toBytes(userId)));
+		         
+		    	 System.out.println("DsId :"+DsId+" : "+policy);
+		        // System.out.println(policy);
+		         //System.out.println("Found row : " + result);
+		      
+		    	 JsonObject p=new JsonObject();
+		    	 p.put("uuid", DsId);
+		    	 p.put("policy", policy);
+		    	 res.add(p);
+		      }
+		      
+		      //closing the scanner
+		      scanner.close();
+		      
+		 }//end try
+		 catch(Exception e) {
+			 e.printStackTrace();
+			 return res;
+		 }
+		 return res;
+	 }//end public JsonArray get_policy_uuids()
+	 
+	 /*
+	  * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value), (Policy-Value)
+	  */
 	 public String get_policy(String dsId, String userId)
 	 {
 		 String policy="";
@@ -398,12 +439,16 @@ public class Authorization_MetaData {
 		
 		Authorization_MetaData met = new Authorization_MetaData();
 		
-		String token="";
+		//String token="";
 		//token=met.insert_token("sand.iitr@gmail.com");
 		//System.out.println("Token Inserted is:"+token);
-		 token=met.get_token("sand.iitr@gmail.com");
-		System.out.println("Token Queried is:"+token);
-		
+		 //token=met.get_token("sand.iitr@gmail.com");
+		//System.out.println("Token Queried is:"+token);
+	      /*
+	       * Printing the uuids for a particular user
+	       */
+	      System.out.println(met.get_policy_uuids("citadel.ucla@gmail.com"));
+	      
 	}//end main
 	
 }//end class Authorization_MetaData

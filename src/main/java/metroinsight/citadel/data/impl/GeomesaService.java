@@ -137,7 +137,16 @@ public class GeomesaService implements DataService {
         }
       }
       
+      /*
+       * Adding the policy with the query
+       */
+      JsonArray policy=new JsonArray();
+      if(query.containsKey("policy")) {
+    	  policy=query.getJsonArray("policy");
+      }
+      
       //query is box and range both, other cases need to be implemented too
+     /*
       gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, res -> {
         if (res.succeeded()) {
           JsonArray resultJson = res.result();
@@ -146,6 +155,16 @@ public class GeomesaService implements DataService {
             res.cause().printStackTrace();
             }
         });
+      */
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policy, res -> {
+          if (res.succeeded()) {
+            JsonArray resultJson = res.result();
+            resultHandler.handle(Future.succeededFuture(resultJson));
+            } else {
+              res.cause().printStackTrace();
+              }
+          });
+      
       }//end if
       catch(Exception e){
         resultHandler.handle(Future.failedFuture(e));

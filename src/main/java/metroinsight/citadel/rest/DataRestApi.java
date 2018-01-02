@@ -74,30 +74,83 @@ public class DataRestApi extends RestApiTemplate{
   }
   
   public void queryData(RoutingContext rc) {
-    JsonObject q = rc.getBodyAsJson().getJsonObject("query");
-    HttpServerResponse resp = getDefaultResponse(rc);
-    BaseContent content = new BaseContent();
-    dataService.queryData(q, ar -> {
-      String cStr;
-      String cLen;
-      if (ar.failed()) {
-        content.setReason(ar.cause().getMessage());
-        cStr = content.toString();
-        cLen = Integer.toString(cStr.length());
-        resp.setStatusCode(400);
-      } else {
-        content.setSucceess(true);
-        content.setResults(ar.result());
-        cStr = content.toString();
-        cLen = Integer.toString(cStr.length());
-        resp
-        .setStatusCode(200);
-      }
-      resp
-        .putHeader("content-length", cLen)
-        .write(cStr);
-      });
-  }
+	JsonObject body = new JsonObject();
+	HttpServerResponse resp = getDefaultResponse(rc);
+	
+	try {
+		body = rc.getBodyAsJson();
+	}
+	catch (Exception e)
+	{
+		e.printStackTrace();
+	}
+	
+	try {//try main code to query data
+	if(body.containsKey("query")&&body.containsKey("userToken")) {
+	
+		String token=body.getString("userToken");
+		String userId=Auth_meta_data.get_userID(token);	//extracting userId for this token
+		
+		if(!userId.equals(""))//this is a valid token for registered user
+		{
+			 /*
+			  * Getting the uuids and policies defined for this user
+			  */
+			 JsonArray policy=Auth_meta_data.get_policy_uuids(userId);
+			 
+			 if(policy.size()>0) {//proceed only if there is atleast uuid available for this user
+				 
+		     JsonObject q = body.getJsonObject("query");
+		     q.put("policy", policy);//will be later used in GeoMesa to restrict the user query
+		     
+		    // HttpServerResponse resp = getDefaultResponse(rc);
+		     BaseContent content = new BaseContent();
+		     dataService.queryData(q, ar -> {
+		      String cStr;
+		      String cLen;
+		      if (ar.failed()) {
+		        content.setReason(ar.cause().getMessage());
+		        cStr = content.toString();
+		        cLen = Integer.toString(cStr.length());
+		        resp.setStatusCode(400);
+		      } else {
+		        content.setSucceess(true);
+		        content.setResults(ar.result());
+		        cStr = content.toString();
+		        cLen = Integer.toString(cStr.length());
+		        resp
+		        .setStatusCode(200);
+		      }
+		      resp
+		        .putHeader("content-length", cLen)
+		        .write(cStr);
+		      });
+			 }//end if(policy.size()>0) //proceed only if there is atleast uuid available for this user
+			 else {
+				 System.out.println("In DataRestApi: Query data user have no uuids available");
+		    	    sendErrorResponse(resp, 400, "You don't have access to any data");	
+			 }
+			 
+		}//end if(!userId.equals(""))//this is a valid token for registered user
+		else
+		{
+			System.out.println("In DataRestApi: Query data user Token is not Valid");
+    	    sendErrorResponse(resp, 400, "Token is not Valid");	
+			
+		}
+	}//end if(body.containsKey("query")&&body.containsKey("userToken"))
+	else {
+		System.out.println("In DataRestApi: Query data parameters are missing");
+    	sendErrorResponse(resp, 400, "Parameters are missing");	
+	}
+	
+	}//end try main code to query data
+	catch(Exception e) {
+		e.printStackTrace();
+    	sendErrorResponse(resp, 400, "Internal server error occured");	
+	}
+	
+  }//end queryData(RoutingContext rc)
   
   public void getData(RoutingContext rc) {
     

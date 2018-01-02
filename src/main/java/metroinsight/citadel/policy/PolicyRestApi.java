@@ -107,7 +107,7 @@ public class PolicyRestApi extends RestApiTemplate{
 	    			{
 	    			 owner_verified=false; //if one of the datastream is not owner's datastream we don't proceed ahead, May be change this behavior in future
 	    			 System.out.println("Either uuid:"+ds_id+", doesn't exist or you don't have privelegs to assign policy to it.");
-	    			 sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");	
+	    			 sendErrorResponse(resp, 400, "Api-Token doesn't have required priveleges");	
 	    			 proceed=false;
 	    			}
 	    		

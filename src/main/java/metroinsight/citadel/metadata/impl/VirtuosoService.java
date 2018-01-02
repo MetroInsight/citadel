@@ -232,7 +232,7 @@ public class VirtuosoService implements MetadataService  {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
         // Create the point
-        String uuid = UUID.randomUUID().toString();
+        String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
         Node point = NodeFactory.createURI(EX + uuid);
         Node pointType = NodeFactory.createURI(CITADEL + jsonMetadata.getString("pointType"));
         graph.add(new Triple(point, a, pointType));

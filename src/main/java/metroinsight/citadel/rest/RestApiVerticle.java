@@ -1,7 +1,9 @@
 package metroinsight.citadel.rest;
 
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -15,9 +17,19 @@ public class RestApiVerticle extends MicroServiceVerticle {
   VirtualSensorRestApi vsRestApi;
   DataCacheRestApi dataCacheRestApi;
   
+  String path="/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks";
+  
   @Override
   public void start(Future<Void> fut){
     
+	  HttpServerOptions options = new HttpServerOptions()
+			  .setSsl(true)
+			  .setKeyStoreOptions(
+			  new JksOptions().
+			    setPath(path).
+			    setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
+			);
+	  
     // Init service discovery. Future purpose
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
     // Init Metadata Service
@@ -63,7 +75,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
     Integer port = config().getInteger("http.port", 8080);
 
     vertx
-      .createHttpServer()
+      .createHttpServer(options)
       .requestHandler(router::accept)
       .listen(
           port,

@@ -148,6 +148,10 @@ public class MetadataRestApi extends RestApiTemplate {
        		    	} else {
        		    		
        		    		//we succeeded
+       		    		
+	       		    	//inserts the owner token, userId and ds_ID into the hbase metadata table
+	       	   			 Auth_meta.insert_ds_owner(uuid,userToken,userId);
+       	   			 
        		    	     //insert the policy for Owner to default "true", no-space-time constraints
               			 Auth_meta.insert_policy(uuid, userId, "true"); 
               			 
@@ -180,7 +184,7 @@ public class MetadataRestApi extends RestApiTemplate {
     	else
     	{
     		System.out.println("In MetadataRestApi: Insert data parameters are missing");
-        	sendErrorResponse(resp, 400, "Query parameters are missing");	
+        	sendErrorResponse(resp, 400, "Parameters are missing");	
     	}
     	
     	

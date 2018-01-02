@@ -16,8 +16,8 @@ public class MainVerticle extends AbstractVerticle {
     vertx.deployVerticle(MetadataVerticle.class.getName());
     vertx.deployVerticle(VirtualSensorVerticle.class.getName());
 	
-    //vertx.deployVerticle(PolicyVerticle.class.getName());
-	//vertx.deployVerticle(AuthorizationVerticle.class.getName());
+    vertx.deployVerticle(PolicyVerticle.class.getName());
+	vertx.deployVerticle(AuthorizationVerticle.class.getName());
 	
     DeploymentOptions opts = new DeploymentOptions()
         .setWorker(true);
@@ -30,6 +30,6 @@ public class MainVerticle extends AbstractVerticle {
         ar.cause().printStackTrace();
         }
     });
-    */
+    //*/
  }
 }

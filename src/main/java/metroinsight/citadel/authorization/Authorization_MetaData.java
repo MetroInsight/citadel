@@ -38,7 +38,7 @@ public class Authorization_MetaData {
 
 	//String path="/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml";
     //String path="/home/citadel/metroinsight/Hbase_Test/conf/hbase-site.xml";
-	String path="/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml";
+	String path="/home/jbkoh/repo/citadel/conf/hbase-site.xml";
 	
 	  public String userToken="userToken";
 	  static TableName table_meta = TableName.valueOf("metadata");

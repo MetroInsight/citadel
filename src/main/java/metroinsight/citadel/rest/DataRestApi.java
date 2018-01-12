@@ -187,7 +187,7 @@ public class DataRestApi extends RestApiTemplate{
     //Check userToken is Valid or Not
     String token=body.getString("userToken");
     
-    if(data.size()>0&&!token.equals("")) {
+    if (data.size() > 0 && !token.equals("")) {
     	
     	 //for the token extract the userId, this verifies that token is of valid user
     	String userId=Auth_meta_data.get_userID(token);

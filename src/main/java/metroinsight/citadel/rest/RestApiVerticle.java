@@ -1,6 +1,7 @@
 package metroinsight.citadel.rest;
 
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.net.JksOptions;
@@ -17,18 +18,20 @@ public class RestApiVerticle extends MicroServiceVerticle {
   VirtualSensorRestApi vsRestApi;
   DataCacheRestApi dataCacheRestApi;
   
-  String path="/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks";
+  //String path="/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks";
+  String path="/home/jbkoh/.certs/javakeystore/citadel.jks";
   
   @Override
   public void start(Future<Void> fut){
     
 	  HttpServerOptions options = new HttpServerOptions()
-			  .setSsl(true)
-			  .setKeyStoreOptions(
-			  new JksOptions().
-			    setPath(path).
-			    setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
-			);
+	                                .setSsl(true)
+	                                .setKeyStoreOptions(
+	                                    new JksOptions().
+	                                    setPath(path).
+	                                    setPassword("CitadelTesting")//very IMP: Change this password on the Production Version
+	                                    )
+	                                .setPort(8080);
 	  
     // Init service discovery. Future purpose
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
@@ -53,7 +56,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
     });
     
     router.route("/*").handler(BodyHandler.create());
-    
+    /*
     // Redirection to API Doc (TODO: Swagger should be tightly integrated.) 
     router.get("/doc/api").handler(rc -> {
       HttpServerResponse response = rc.response();
@@ -61,6 +64,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
       response.setStatusCode(302);
       response.end();
     });
+    */
     
     // REST API routing for MetaData
     router.post("/api/point").blockingHandler(metadataRestApi::createPoint);
@@ -74,11 +78,10 @@ public class RestApiVerticle extends MicroServiceVerticle {
     
     Integer port = config().getInteger("http.port", 8080);
 
-    vertx
-      .createHttpServer(options)
-      .requestHandler(router::accept)
-      .listen(
-          port,
+    HttpServer server = vertx.createHttpServer(options);
+    server = server.requestHandler(router::accept);
+    server.listen(
+          //port,
           result -> {
             if (result.succeeded()) {
               fut.complete();

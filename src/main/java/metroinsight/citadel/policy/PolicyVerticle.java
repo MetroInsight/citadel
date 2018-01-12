@@ -14,7 +14,8 @@ public class PolicyVerticle extends AbstractVerticle {
 	
 	//String path="/Users/administrator/MetroInsight/self-signed-certificate/selfsigned.jks";
     //String path="/home/citadel/metroinsight/selfsigned.jks";
-    String path="/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks";
+    //String path="/media/sandeep/2Tb/sandeep/MetroInsight/citadel_certificate/selfsigned.jks";
+    String path="/home/jbkoh/.certs/javakeystore/citadel.jks";
     
 	protected ServiceDiscovery discovery;
 	PolicyRestApi pm;

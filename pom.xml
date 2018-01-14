@@ -281,7 +281,7 @@
 	<build>
 		<resources>
 			<resource>
-        <directory>${basedir}/src/main/resource/conf</directory>
+        <directory>${basedir}/src/main/resources/conf</directory>
 				<filtering>false</filtering>
 				<includes>
 					<include>hbase-site.xml</include>

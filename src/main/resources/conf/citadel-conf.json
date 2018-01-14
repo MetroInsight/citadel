@@ -1,3 +1,11 @@
 {
-    "http.port" : 8082
+    "rest.http.port": 8080,
+    "rest.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
+    "rest.password": "CitadelTesting",
+    "policy.http.port": 8089,
+    "policy.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
+    "policy.password": "CitadelTesting",
+    "auth.http.port": 8088,
+    "auth.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
+    "auth.password": "CitadelTesting"
 }

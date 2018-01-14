@@ -1,8 +1,3 @@
-
-/*
- * hardcoded path of /home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml
- */
-
 package metroinsight.citadel.authorization;
 
 import java.util.UUID;
@@ -38,7 +33,7 @@ import io.vertx.core.json.JsonObject;
 public class Authorization_MetaData {
 
   // String
-  String path = "/home/jbkoh/repo/citadel/conf/hbase-site.xml";
+  String hbaseSitePath;
 
   public String userToken = "userToken";
   static TableName table_meta = TableName.valueOf("metadata");
@@ -54,7 +49,8 @@ public class Authorization_MetaData {
   Connection connection = null;
   Table table = null;
 
-  public Authorization_MetaData() {
+  public Authorization_MetaData(String hbaseSitePath) {
+    this.hbaseSitePath = hbaseSitePath;
     create_connection();
     create_table();
   }
@@ -65,14 +61,7 @@ public class Authorization_MetaData {
       // System.out.println("Create_connection called");
 
       Configuration config = HBaseConfiguration.create();
-      // String path =
-      // meta.getClass().getResource("resources/hbase-site.xml").getPath();
-      // config.addResource(new Path(path));
-      // config.addResource(new
-      // Path("/home/sandeep/MetroInsight/Codes/Citadel-Sandeep/citadel/src/main/resources/hbase-site.xml"));
-      // config.addResource(new
-      // Path("/home/citadel/metroinsight/Hbase_Test/conf/hbase-site.xml"));
-      config.addResource(new Path(path));
+      config.addResource(new Path(hbaseSitePath));
       HBaseAdmin.checkHBaseAvailable(config);
       connection = ConnectionFactory.createConnection(config);
 
@@ -400,7 +389,8 @@ public class Authorization_MetaData {
      * creates the tables, should be run first.
      */
 
-    Authorization_MetaData met = new Authorization_MetaData();
+    String hbaseSitePath = "/home/jbkoh/repo/citadel/conf/hbase-site.xml";
+    Authorization_MetaData met = new Authorization_MetaData(hbaseSitePath);
 
     // String token="";
     // token=met.insert_token("sand.iitr@gmail.com");

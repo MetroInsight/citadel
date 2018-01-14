@@ -22,7 +22,7 @@ public class PolicyVerticle extends AbstractVerticle {
     JsonObject configs = config();
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
 
-    pm = new PolicyRestApi();
+    pm = new PolicyRestApi(configs);
 
     Router router = Router.router(vertx);
 

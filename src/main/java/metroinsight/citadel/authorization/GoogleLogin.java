@@ -29,10 +29,11 @@ public class GoogleLogin {
 	//String usergmail="";
 	//String username="";
 	private final Vertx vertx;
+	private JsonObject configs;
 	
-	public GoogleLogin(Vertx vertx)
-	{
+	public GoogleLogin(Vertx vertx, JsonObject configs)	{
 		this.vertx=vertx;
+		this.configs = configs;
 	}
 	
 	public void DisplayToken(RoutingContext rc) {
@@ -269,7 +270,7 @@ public class GoogleLogin {
 			 
 			 System.out.println("User is logged in DisplayIndexJade");
 			 
-			 UserTokenManager.initialize();
+			 UserTokenManager.initialize(configs);
 			 
 			 String userToken=UserTokenManager.generateToken(email);/*Returns Token if it already exists or else generates a new token*/
 			 

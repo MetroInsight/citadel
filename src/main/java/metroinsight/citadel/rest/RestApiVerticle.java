@@ -35,8 +35,11 @@ public class RestApiVerticle extends MicroServiceVerticle {
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
 
     // REST API modules
-    metadataRestApi = new MetadataRestApi(vertx);
-    dataRestApi = new DataRestApi(vertx);
+    // Jason Note: Propagating configs to all the modules is not a good practice in microservices design.
+    //             However, as Authoriazation_Metadata is not a microservice but a library, 
+    //             all the dependent modules need to know the configs.
+    metadataRestApi = new MetadataRestApi(vertx, configs);
+    dataRestApi = new DataRestApi(vertx, configs);
     vsRestApi = new VirtualSensorRestApi(vertx);
     dataCacheRestApi = new DataCacheRestApi(vertx);
 

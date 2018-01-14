@@ -7,5 +7,7 @@
     "policy.password": "CitadelTesting",
     "auth.http.port": 8088,
     "auth.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
-    "auth.password": "CitadelTesting"
+    "auth.password": "CitadelTesting",
+    "auth.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml",
+    "data.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml"
 }

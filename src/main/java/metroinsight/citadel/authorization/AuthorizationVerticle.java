@@ -17,13 +17,12 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
 
 public class AuthorizationVerticle extends AbstractVerticle {
 
-  // String path = "/home/jbkoh/.certs/javakeystore/citadel.jks";
-
   @Override
   public void start(Future<Void> fut) {
     // Create a router object.
+    JsonObject configs = config();
     Router router = Router.router(vertx);
-    GoogleLogin googlelogin = new GoogleLogin(vertx);
+    GoogleLogin googlelogin = new GoogleLogin(vertx, configs);
     router.route().handler(CookieHandler.create());
     // Create a clustered session store using defaults
     SessionStore store = LocalSessionStore.create(vertx);
@@ -31,7 +30,6 @@ public class AuthorizationVerticle extends AbstractVerticle {
     // Make sure all requests are routed through the session handler too
     router.route().handler(sessionHandler);
 
-    JsonObject configs = config();
 
     HttpServerOptions options = new HttpServerOptions()
         .setSsl(true)

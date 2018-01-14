@@ -24,14 +24,15 @@ public class MetadataRestApi extends RestApiTemplate {
    */
   Authorization_MetaData Auth_meta;
 
-  public MetadataRestApi(Vertx vertx) {
+  public MetadataRestApi(Vertx vertx, JsonObject configs) {
+    this.configs = configs;
     metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
     this.vertx = vertx;
 
     /*
      * Initializing Auth Metadata
      */
-    Auth_meta = new Authorization_MetaData();
+    Auth_meta = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
 
   }
 

@@ -1,10 +1,13 @@
 package metroinsight.citadel.common;
 
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import metroinsight.citadel.model.BaseContent;
 
 public class RestApiTemplate {
+  
+  protected JsonObject configs = null;
   
   public HttpServerResponse getDefaultResponse(RoutingContext rc) {
     return rc.response().putHeader("content-TYPE", "application/json; charset=utf=8");

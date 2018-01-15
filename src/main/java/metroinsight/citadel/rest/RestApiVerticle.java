@@ -70,8 +70,6 @@ public class RestApiVerticle extends MicroServiceVerticle {
     router.post("/api/querydata").blockingHandler(dataRestApi::queryData);
     router.post("/api/querydata/simplebbox").blockingHandler(dataCacheRestApi::querySimpleBbox);
 
-    Integer port = config().getInteger("http.port", 8080);
-
     HttpServer server = vertx.createHttpServer(httpOptions);
     server = server.requestHandler(router::accept);
     server.listen(
@@ -79,7 +77,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
         result -> {
           if (result.succeeded()) {
             fut.complete();
-            System.out.println("REST_API_VERTICLE STARTED at " + port.toString());
+            System.out.println("REST_API_VERTICLE STARTED on " + Integer.toString(result.result().actualPort()));
           } else {
             fut.fail(result.cause());
           }

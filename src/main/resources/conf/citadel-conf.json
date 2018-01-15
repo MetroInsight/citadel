@@ -1,13 +1,14 @@
 {
     "rest.http.port": 8080,
-    "rest.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
-    "rest.password": "CitadelTesting",
     "policy.http.port": 8089,
-    "policy.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
-    "policy.password": "CitadelTesting",
     "auth.http.port": 8088,
-    "auth.jkspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
-    "auth.password": "CitadelTesting",
+    "ssl.jks.fspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
+    "ssl.jks.password": "CitadelTesting",
     "auth.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml",
-    "data.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml"
+    "data.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml",
+    "ssl.type": "jks",
+    "ssl.type_cand1": "jks",
+    "ssl.type_cand2": "pemfile",
+    "ssl.pem.certfile": "xxxxxxxxxxxxx",
+    "ssl.pem.keyfile": "xxxxxxxxxxxxxxx"
 }

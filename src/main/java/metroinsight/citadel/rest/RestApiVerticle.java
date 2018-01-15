@@ -6,6 +6,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -21,23 +22,20 @@ public class RestApiVerticle extends MicroServiceVerticle {
 
   @Override
   public void start(Future<Void> fut) {
-    
+
     JsonObject configs = config();
 
-    HttpServerOptions options = new HttpServerOptions()
-        .setSsl(true)
-        .setKeyStoreOptions(new JksOptions()
-            .setPath(configs.getString("rest.jkspath"))
-            .setPassword("CitadelTesting"))// very IMP: Change this
-        .setPort(config().getInteger("rest.http.port", 8080));
+    HttpServerOptions httpOptions = getBaseHttpOptions();
+    httpOptions.setPort(config().getInteger("rest.http.port", 8080));
 
     // Init service discovery. Future purpose
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
 
     // REST API modules
-    // Jason Note: Propagating configs to all the modules is not a good practice in microservices design.
-    //             However, as Authoriazation_Metadata is not a microservice but a library, 
-    //             all the dependent modules need to know the configs.
+    // Jason Note: Propagating configs to all the modules is not a good practice in
+    // microservices design.
+    // However, as Authoriazation_Metadata is not a microservice but a library,
+    // all the dependent modules need to know the configs.
     metadataRestApi = new MetadataRestApi(vertx, configs);
     dataRestApi = new DataRestApi(vertx, configs);
     vsRestApi = new VirtualSensorRestApi(vertx);
@@ -74,7 +72,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
 
     Integer port = config().getInteger("http.port", 8080);
 
-    HttpServer server = vertx.createHttpServer(options);
+    HttpServer server = vertx.createHttpServer(httpOptions);
     server = server.requestHandler(router::accept);
     server.listen(
         // port,

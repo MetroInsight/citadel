@@ -1,17 +1,16 @@
 package metroinsight.citadel.policy;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
+import metroinsight.citadel.common.MicroServiceVerticle;
 
-public class PolicyVerticle extends AbstractVerticle {
+public class PolicyVerticle extends MicroServiceVerticle {
 
   protected ServiceDiscovery discovery;
   PolicyRestApi pm;
@@ -25,13 +24,8 @@ public class PolicyVerticle extends AbstractVerticle {
     pm = new PolicyRestApi(configs);
 
     Router router = Router.router(vertx);
-
-    HttpServerOptions options = new HttpServerOptions()
-        .setSsl(true)
-        .setKeyStoreOptions(new JksOptions()
-            .setPath(configs.getString("policy.jkspath"))
-            .setPassword(configs.getString("policy.password")));
-            // very IMP: Change this password on the Production Version
+    HttpServerOptions httpOptions = getBaseHttpOptions();
+    httpOptions.setPort(configs.getInteger("policy.http.port", 8089));
 
     // Main page. TODO
     router.route("/").handler(rc -> {
@@ -43,7 +37,7 @@ public class PolicyVerticle extends AbstractVerticle {
 
     router.post("/api/registerPolicy").handler(pm::registerPolicy);
 
-    vertx.createHttpServer(options).requestHandler(router::accept).listen(configs.getInteger("policy.http.port", 8089),
+    vertx.createHttpServer(httpOptions).requestHandler(router::accept).listen(
         result -> {
           if (result.succeeded()) {
             fut.complete();

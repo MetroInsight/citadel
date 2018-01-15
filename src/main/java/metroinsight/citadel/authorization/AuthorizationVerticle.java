@@ -1,11 +1,9 @@
 package metroinsight.citadel.authorization;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CookieHandler;
@@ -14,8 +12,9 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.ext.web.templ.JadeTemplateEngine;
+import metroinsight.citadel.common.MicroServiceVerticle;
 
-public class AuthorizationVerticle extends AbstractVerticle {
+public class AuthorizationVerticle extends MicroServiceVerticle {
 
   @Override
   public void start(Future<Void> fut) {
@@ -30,13 +29,8 @@ public class AuthorizationVerticle extends AbstractVerticle {
     // Make sure all requests are routed through the session handler too
     router.route().handler(sessionHandler);
 
-
-    HttpServerOptions options = new HttpServerOptions()
-        .setSsl(true)
-        .setKeyStoreOptions(new JksOptions()
-            .setPath(configs.getString("auth.jkspath"))
-            .setPassword(configs.getString("auth.password")));
-    options.setPort(configs.getInteger("auth.http.port", 8088)); // Default port 8088
+    HttpServerOptions httpOptions = getBaseHttpOptions();
+    httpOptions.setPort(configs.getInteger("auth.http.port", 8088)); // Default port 8088
 
     // In order to use a template we first need to create an engine
     final JadeTemplateEngine engine = JadeTemplateEngine.create();
@@ -80,7 +74,7 @@ public class AuthorizationVerticle extends AbstractVerticle {
     router.post("/logout").handler(googlelogin::LogOut);
 
     // Create the HTTP server and pass the "accept" method to the request handler.
-    vertx.createHttpServer(options).requestHandler(router::accept).listen(
+    vertx.createHttpServer(httpOptions).requestHandler(router::accept).listen(
         // Retrieve the port from the configuration,
         result -> {
           if (result.succeeded()) {

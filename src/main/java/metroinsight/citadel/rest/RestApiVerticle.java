@@ -73,7 +73,6 @@ public class RestApiVerticle extends MicroServiceVerticle {
     HttpServer server = vertx.createHttpServer(httpOptions);
     server = server.requestHandler(router::accept);
     server.listen(
-        // port,
         result -> {
           if (result.succeeded()) {
             fut.complete();

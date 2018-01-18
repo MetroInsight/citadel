@@ -116,48 +116,45 @@ public class MetadataRestApi extends RestApiTemplate {
         if (!userId.equals(""))// user is present in the system
         {
           // token exists and is linked to the valid userId
-          JsonArray points = body.getJsonArray("points");
-          for (int i = 0; i < points.size(); i++) {
-            JsonObject point = points.getJsonObject(i);
-            String uuid = UUID.randomUUID().toString();
-            point.put("uuid", uuid);// This is later used by metadataService.createPoint
-            point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
-                                        // userID
+          JsonObject point = body.getJsonObject("point");
+          String uuid = UUID.randomUUID().toString();
+          point.put("uuid", uuid);// This is later used by metadataService.createPoint
+          point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
+                                      // userID
 
-            // original function to insert Point
-            // Get the query as JSON.
-            // Call createPoint in metadataService asynchronously.
-            metadataService.createPoint(point, ar -> {
-              // ar is a result object created in metadataService.createPoint
-              // We pass what to do with the result in this format.
-              String cStr;
-              String cLen;
-              if (ar.failed()) {
-                // if the service is failed
-                resp.setStatusCode(400);
-                content.setReason(ar.cause().getMessage());
-                cStr = content.toString();
-              } else {
+          // original function to insert Point
+          // Get the query as JSON.
+          // Call createPoint in metadataService asynchronously.
+          metadataService.createPoint(point, ar -> {
+            // ar is a result object created in metadataService.createPoint
+            // We pass what to do with the result in this format.
+            String cStr;
+            String cLen;
+            if (ar.failed()) {
+              // if the service is failed
+              resp.setStatusCode(400);
+              content.setReason(ar.cause().getMessage());
+              cStr = content.toString();
+            } else {
 
-                // we succeeded
+              // we succeeded
 
-                // inserts the owner token, userId and ds_ID into the hbase metadata table
-                Auth_meta.insert_ds_owner(uuid, userToken, userId);
+              // inserts the owner token, userId and ds_ID into the hbase metadata table
+              Auth_meta.insert_ds_owner(uuid, userToken, userId);
 
-                // insert the policy for Owner to default "true", no-space-time constraints
-                Auth_meta.insert_policy(uuid, userId, "true");
+              // insert the policy for Owner to default "true", no-space-time constraints
+              Auth_meta.insert_policy(uuid, userId, "true");
 
-                // Construct response object.
-                resp.setStatusCode(201);
-                JsonObject pointCreateContent = new JsonObject();
-                pointCreateContent.put("success", true);
-                pointCreateContent.put("uuid", ar.result().toString());
-                cStr = pointCreateContent.toString();
-              }
-              cLen = Integer.toString(cStr.length());
-              resp.putHeader("content-length", cLen).write(cStr);
-            });
-          }
+              // Construct response object.
+              resp.setStatusCode(201);
+              JsonObject pointCreateContent = new JsonObject();
+              pointCreateContent.put("success", true);
+              pointCreateContent.put("uuid", ar.result().toString());
+              cStr = pointCreateContent.toString();
+            }
+            cLen = Integer.toString(cStr.length());
+            resp.putHeader("content-length", cLen).write(cStr);
+          });
 
         } // end if(!userId.equals(""))
         else {

@@ -26,7 +26,7 @@ public interface MetadataService {
     return new MetadataServiceVertxEBProxy(vertx, address);
   }
   
-  void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler);
+  void getPoint(String uuid, Handler<AsyncResult<JsonObject>> resultHandler);
   // Returns all metadata corresponding to the uuid.
 
   void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler);

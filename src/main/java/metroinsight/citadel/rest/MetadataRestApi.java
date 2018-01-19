@@ -60,19 +60,23 @@ public class MetadataRestApi extends RestApiTemplate {
   
   public void upsertMetadata (RoutingContext rc) {
     HttpServerResponse resp = getDefaultResponse(rc);
-    JsonObject body = new JsonObject();
+    JsonObject body = rc.getBodyAsJson();
     String uuid = rc.request().getParam("uuid");
-    if (!body.containsKey(Auth_meta.userToken)) {
+    if (!body.containsKey("userToken")) {
       sendErrorResponse(resp, 400, ErrorMessages.EMPTY_SEC_TOKEN);
       return;
     }
     JsonObject metadata = body.getJsonObject("metadata");
-    String userToken = body.getString(Auth_meta.userToken);
+    String userToken = body.getString("userToken");
     String userId = Auth_meta.get_userID(userToken);
+    // TOOD: IMPORTANT: Check if the user has the right level of permission.
     if (metadata.containsKey("owner")) {
+      // This transfers ownership currently. TODO: Maybe just add owner?
       // TODO: Need to remove previous relevant metadata and policy.
-      Auth_meta.insert_ds_owner(uuid, userToken, userId);
-      Auth_meta.insert_policy(uuid, userId, "true");
+      String newOwnerId = metadata.getString("owner");
+      String newOwnerToken = Auth_meta.get_userID(newOwnerId);
+      Auth_meta.insert_ds_owner(uuid, newOwnerToken, newOwnerId);
+      Auth_meta.insert_policy(uuid, newOwnerId, "true");
     }
     // TODO: Evaluate if the keys/values are valid.
     metadataService.upsertMetadata(uuid, metadata, ar -> {
@@ -98,7 +102,7 @@ public class MetadataRestApi extends RestApiTemplate {
           resp.setStatusCode(400);
         } else {
           JsonArray pointResult = new JsonArray();
-          pointResult.add(ar.result().toJson());
+          pointResult.add(ar.result());
           resp.setStatusCode(200);
           content.setSucceess(true);
           content.setResults(pointResult);

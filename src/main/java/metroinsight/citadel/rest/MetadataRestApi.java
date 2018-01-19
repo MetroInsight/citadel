@@ -47,13 +47,40 @@ public class MetadataRestApi extends RestApiTemplate {
         resp.setStatusCode(400);
       } else {
         content.setSucceess(true);
-        ;
         content.setResults(ar.result());
         resp.setStatusCode(200);
       }
       String cStr = content.toString();
       String cLen = Integer.toString(cStr.length());
-      resp.putHeader("content-length", cLen).write(cStr);
+      resp.putHeader("content-length", cLen)
+        .write(cStr)
+        .end();
+    });
+  }
+  
+  public void upsertMetadata (RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    JsonObject body = new JsonObject();
+    String uuid = rc.request().getParam("uuid");
+    if (!body.containsKey(Auth_meta.userToken)) {
+      sendErrorResponse(resp, 400, ErrorMessages.EMPTY_SEC_TOKEN);
+      return;
+    }
+    JsonObject metadata = body.getJsonObject("metadata");
+    String userToken = body.getString(Auth_meta.userToken);
+    String userId = Auth_meta.get_userID(userToken);
+    if (metadata.containsKey("owner")) {
+      // TODO: Need to remove previous relevant metadata and policy.
+      Auth_meta.insert_ds_owner(uuid, userToken, userId);
+      Auth_meta.insert_policy(uuid, userId, "true");
+    }
+    // TODO: Evaluate if the keys/values are valid.
+    metadataService.upsertMetadata(uuid, metadata, ar -> {
+      if (ar.failed()) {
+        sendErrorResponse(resp, 500, ar.cause().getMessage());
+      } else {
+        sendSuccesResponse(resp, 200, new JsonArray());
+      }
     });
   }
 
@@ -62,10 +89,8 @@ public class MetadataRestApi extends RestApiTemplate {
     BaseContent content = new BaseContent();
     String uuid = rc.request().getParam("uuid");
     if (uuid == null) {
-      content.setReason(ErrorMessages.SENSOR_NOT_FOUND);
-      String cStr = content.toString();
-      String cLen = Integer.toString(cStr.length());
-      resp.setStatusCode(400).putHeader("content-length", cLen).write(cStr);
+      sendErrorResponse(resp, 400, ErrorMessages.EMPTY_UUID);
+      return ;
     } else {
       metadataService.getPoint(uuid, ar -> {
         if (ar.failed()) {

@@ -186,10 +186,32 @@ paths:
             $ref: '#/definitions/DataResult'
         '400':
           description: Various reasons.
+  /registerPolicy:
+    post:
+      tags:
+        - data
+      summary: Register policy
+      description: Registering an access control policy
+      operationId: registerPolicy
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Policy definition
+          required: true
+          schema:
+            properties:
+              userToken:
+                $ref: '#/definitions/Token'
+              policy:
+                $ref: '#/definitions/Policy'
+      responses:
+        '200':
+          description: successful registered policy
+        '400':
+          description: Various reasons.
 definitions:
-  Token:
-    type: string
-    example: YourTokenHere
   Metadata:
     type: object
     required:
@@ -301,6 +323,29 @@ definitions:
         type: boolean
       reason:
         type: string
+  Policy:
+    type: object
+    required:
+      - sensors
+      - users
+    properties:
+      sensors:
+        type: array
+        items:
+          type: string
+          example:
+            - UUID_1
+            - UUID_2
+      users:
+        type: array
+        items:
+          type: string
+          example:
+            - USERID_1
+            - USERID_2
+  Token:
+    type: string
+    example: YourTokenHere
 externalDocs:
   description: Find out more about Citadel and MetroInsight.
   url: 'https://metroinsight.io'

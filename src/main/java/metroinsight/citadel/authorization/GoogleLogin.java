@@ -13,8 +13,6 @@ import io.vertx.ext.web.templ.JadeTemplateEngine;
 
 import java.util.Collections;
 
-import metroinsight.citadel.metadata.impl.MongoService;
-
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -272,7 +270,7 @@ public class GoogleLogin {
 			 
 			 UserTokenManager.initialize(configs);
 			 
-			 String userToken=UserTokenManager.generateToken(email);/*Returns Token if it already exists or else generates a new token*/
+			 String userToken = UserTokenManager.generateToken(email);/*Returns Token if it already exists or else generates a new token*/
 			 
 			 
 			 rc.put("username", email);
@@ -291,8 +289,8 @@ public class GoogleLogin {
 			    	 */
 			    	
 			    	
-			    	 MongoService metadataService=new MongoService (vertx);
-			    	 JsonObject query= new JsonObject();
+			    	 //MongoService metadataService=new MongoService (vertx);
+			    	 //JsonObject query= new JsonObject();
 			    	 /*
 			    	 metadataService.queryPoint2(query,email, ar -> {
 		    		    	if (ar.failed()) {

@@ -74,6 +74,8 @@ paths:
           required: true
           schema:
             properties:
+              userToken:
+                $ref: '#/definitions/Token'
               point:
                 $ref: '#/definitions/Metadata'
       responses:
@@ -179,6 +181,9 @@ paths:
         '400':
           description: Various reasons.
 definitions:
+  Token:
+    type: string
+    example: YourTokenHere
   Metadata:
     type: object
     required:

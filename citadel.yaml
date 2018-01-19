@@ -73,7 +73,9 @@ paths:
             system.
           required: true
           schema:
-            $ref: '#/definitions/Metadata'
+            properties:
+              point:
+                $ref: '#/definitions/Metadata'
       responses:
         '200':
           description: successful creation
@@ -166,7 +168,9 @@ paths:
           description: ''
           required: true
           schema:
-            $ref: '#/definitions/DataQuery'
+            properties:
+              query:
+                $ref: '#/definitions/DataQuery'
       responses:
         '200':
           description: ''
@@ -289,3 +293,5 @@ definitions:
 externalDocs:
   description: Find out more about Citadel and MetroInsight.
   url: 'https://metroinsight.io'
+
+

@@ -95,8 +95,8 @@ public class VirtuosoService implements MetadataService  {
 
   }
   
-  private Node withPrefix(String prop) {
-    return propertyMap.getOrDefault(prop, NodeFactory.createURI(EX + prop));
+  private Node withPrefix(String id) {
+    return propertyMap.getOrDefault(id, NodeFactory.createURI(EX + id));
   }
   
   private ParameterizedSparqlString getDefaultPss() {
@@ -208,7 +208,6 @@ public class VirtuosoService implements MetadataService  {
     }
   }
 
-  
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
@@ -269,7 +268,6 @@ public class VirtuosoService implements MetadataService  {
       rh.handle(Future.failedFuture(e));
     }
   }
-
 
   private ResultSet sparqlQuery(String qStr) {
     Query sparql = QueryFactory.create(qStr);

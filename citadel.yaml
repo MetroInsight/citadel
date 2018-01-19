@@ -149,7 +149,11 @@ paths:
           description: List of data.
           required: true
           schema:
-            $ref: '#/definitions/Data'
+            properties:
+              userToken:
+                $ref: '#/definitions/Token'
+              data:
+                $ref: '#/definitions/Data'
       responses:
         '200':
           description: successful push

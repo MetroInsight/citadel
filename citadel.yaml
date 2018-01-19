@@ -175,6 +175,8 @@ paths:
           required: true
           schema:
             properties:
+              userToken:
+                $ref: '#/definitions/Token'
               query:
                 $ref: '#/definitions/DataQuery'
       responses:

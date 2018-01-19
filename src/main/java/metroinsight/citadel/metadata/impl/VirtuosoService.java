@@ -82,7 +82,8 @@ public class VirtuosoService implements MetadataService  {
     propertyMap.put("pointType", NodeFactory.createURI(RDF + "type"));
     propertyMap.put("subClassOf", NodeFactory.createURI(RDFS + "subClassOf"));
     propertyMap.put("unit", NodeFactory.createURI(CITADEL + "unit"));
-    propertyMap.put("name", NodeFactory.createURI(EX + "name"));
+    propertyMap.put("owner", NodeFactory.createURI(CITADEL + "owner"));
+    propertyMap.put("name", NodeFactory.createURI(CITADEL + "name"));
     
     // Init units
     // types
@@ -95,8 +96,8 @@ public class VirtuosoService implements MetadataService  {
 
   }
   
-  private Node withPrefix(String prop) {
-    return propertyMap.getOrDefault(prop, NodeFactory.createURI(EX + prop));
+  private Node withPrefix(String id) {
+    return propertyMap.getOrDefault(id, NodeFactory.createURI(EX + id));
   }
   
   private ParameterizedSparqlString getDefaultPss() {
@@ -178,7 +179,7 @@ public class VirtuosoService implements MetadataService  {
   }
 
   @Override
-  public void getPoint(String uuid, Handler<AsyncResult<Metadata>> resultHandler) {
+  public void getPoint(String uuid, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
       String qStr = "SELECT ?p ?o WHERE {?s ?p ?o}";
       ParameterizedSparqlString pss = getDefaultPss();
@@ -188,7 +189,7 @@ public class VirtuosoService implements MetadataService  {
       if (!results.hasNext()) {
         resultHandler.handle(Future.failedFuture("Not existing UUID"));
       } else {
-        JsonObject jsonMetadata = new JsonObject();
+        JsonObject metadata = new JsonObject();
         //TODO: Align this JSON to metadata.
         while (results.hasNext()) {
           QuerySolution result = results.nextSolution();
@@ -197,10 +198,9 @@ public class VirtuosoService implements MetadataService  {
           if (p.equals("type")) {
             p = "pointType";
           }
-          jsonMetadata.put(p, o);
+          metadata.put(p, o);
         }
-        jsonMetadata.put("uuid", uuid);
-        Metadata metadata = jsonMetadata.mapTo(Metadata.class); // Validation // TODO: Not working. FIX!
+        metadata.put("uuid", uuid);
         resultHandler.handle(Future.succeededFuture(metadata));
       }
     } catch (Exception e) {
@@ -208,7 +208,6 @@ public class VirtuosoService implements MetadataService  {
     }
   }
 
-  
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
@@ -249,7 +248,7 @@ public class VirtuosoService implements MetadataService  {
   @Override
   public void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
     try {
-      Node point = NodeFactory.createURI(EX + uuid);
+      Node point = withPrefix(uuid);
       Iterator<String> keys = newMetadata.fieldNames().iterator();
       while (keys.hasNext()) {
         String key = keys.next();
@@ -261,7 +260,7 @@ public class VirtuosoService implements MetadataService  {
             graph.add(new Triple(point, prop, withPrefix(valueIter.next())));
           }
         } else if (value instanceof String) {
-            graph.add(new Triple(point, prop, withPrefix((String) value)));
+          graph.add(new Triple(point, prop, withPrefix((String) value)));
         }
       }
       rh.handle(Future.succeededFuture());
@@ -269,7 +268,6 @@ public class VirtuosoService implements MetadataService  {
       rh.handle(Future.failedFuture(e));
     }
   }
-
 
   private ResultSet sparqlQuery(String qStr) {
     Query sparql = QueryFactory.create(qStr);

@@ -47,13 +47,44 @@ public class MetadataRestApi extends RestApiTemplate {
         resp.setStatusCode(400);
       } else {
         content.setSucceess(true);
-        ;
         content.setResults(ar.result());
         resp.setStatusCode(200);
       }
       String cStr = content.toString();
       String cLen = Integer.toString(cStr.length());
-      resp.putHeader("content-length", cLen).write(cStr);
+      resp.putHeader("content-length", cLen)
+        .write(cStr)
+        .end();
+    });
+  }
+  
+  public void upsertMetadata (RoutingContext rc) {
+    HttpServerResponse resp = getDefaultResponse(rc);
+    JsonObject body = rc.getBodyAsJson();
+    String uuid = rc.request().getParam("uuid");
+    if (!body.containsKey("userToken")) {
+      sendErrorResponse(resp, 400, ErrorMessages.EMPTY_SEC_TOKEN);
+      return;
+    }
+    JsonObject metadata = body.getJsonObject("metadata");
+    String userToken = body.getString("userToken");
+    String userId = Auth_meta.get_userID(userToken);
+    // TOOD: IMPORTANT: Check if the user has the right level of permission.
+    if (metadata.containsKey("owner")) {
+      // This transfers ownership currently. TODO: Maybe just add owner?
+      // TODO: Need to remove previous relevant metadata and policy.
+      String newOwnerId = metadata.getString("owner");
+      String newOwnerToken = Auth_meta.get_userID(newOwnerId);
+      Auth_meta.insert_ds_owner(uuid, newOwnerToken, newOwnerId);
+      Auth_meta.insert_policy(uuid, newOwnerId, "true");
+    }
+    // TODO: Evaluate if the keys/values are valid.
+    metadataService.upsertMetadata(uuid, metadata, ar -> {
+      if (ar.failed()) {
+        sendErrorResponse(resp, 500, ar.cause().getMessage());
+      } else {
+        sendSuccesResponse(resp, 200, new JsonArray());
+      }
     });
   }
 
@@ -62,10 +93,8 @@ public class MetadataRestApi extends RestApiTemplate {
     BaseContent content = new BaseContent();
     String uuid = rc.request().getParam("uuid");
     if (uuid == null) {
-      content.setReason(ErrorMessages.SENSOR_NOT_FOUND);
-      String cStr = content.toString();
-      String cLen = Integer.toString(cStr.length());
-      resp.setStatusCode(400).putHeader("content-length", cLen).write(cStr);
+      sendErrorResponse(resp, 400, ErrorMessages.EMPTY_UUID);
+      return ;
     } else {
       metadataService.getPoint(uuid, ar -> {
         if (ar.failed()) {
@@ -73,7 +102,7 @@ public class MetadataRestApi extends RestApiTemplate {
           resp.setStatusCode(400);
         } else {
           JsonArray pointResult = new JsonArray();
-          pointResult.add(ar.result().toJson());
+          pointResult.add(ar.result());
           resp.setStatusCode(200);
           content.setSucceess(true);
           content.setResults(pointResult);
@@ -116,48 +145,45 @@ public class MetadataRestApi extends RestApiTemplate {
         if (!userId.equals(""))// user is present in the system
         {
           // token exists and is linked to the valid userId
-          JsonArray points = body.getJsonArray("points");
-          for (int i = 0; i < points.size(); i++) {
-            JsonObject point = points.getJsonObject(i);
-            String uuid = UUID.randomUUID().toString();
-            point.put("uuid", uuid);// This is later used by metadataService.createPoint
-            point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
-                                        // userID
+          JsonObject point = body.getJsonObject("point");
+          String uuid = UUID.randomUUID().toString();
+          point.put("uuid", uuid);// This is later used by metadataService.createPoint
+          point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
+                                      // userID
 
-            // original function to insert Point
-            // Get the query as JSON.
-            // Call createPoint in metadataService asynchronously.
-            metadataService.createPoint(point, ar -> {
-              // ar is a result object created in metadataService.createPoint
-              // We pass what to do with the result in this format.
-              String cStr;
-              String cLen;
-              if (ar.failed()) {
-                // if the service is failed
-                resp.setStatusCode(400);
-                content.setReason(ar.cause().getMessage());
-                cStr = content.toString();
-              } else {
+          // original function to insert Point
+          // Get the query as JSON.
+          // Call createPoint in metadataService asynchronously.
+          metadataService.createPoint(point, ar -> {
+            // ar is a result object created in metadataService.createPoint
+            // We pass what to do with the result in this format.
+            String cStr;
+            String cLen;
+            if (ar.failed()) {
+              // if the service is failed
+              resp.setStatusCode(400);
+              content.setReason(ar.cause().getMessage());
+              cStr = content.toString();
+            } else {
 
-                // we succeeded
+              // we succeeded
 
-                // inserts the owner token, userId and ds_ID into the hbase metadata table
-                Auth_meta.insert_ds_owner(uuid, userToken, userId);
+              // inserts the owner token, userId and ds_ID into the hbase metadata table
+              Auth_meta.insert_ds_owner(uuid, userToken, userId);
 
-                // insert the policy for Owner to default "true", no-space-time constraints
-                Auth_meta.insert_policy(uuid, userId, "true");
+              // insert the policy for Owner to default "true", no-space-time constraints
+              Auth_meta.insert_policy(uuid, userId, "true");
 
-                // Construct response object.
-                resp.setStatusCode(201);
-                JsonObject pointCreateContent = new JsonObject();
-                pointCreateContent.put("success", true);
-                pointCreateContent.put("uuid", ar.result().toString());
-                cStr = pointCreateContent.toString();
-              }
-              cLen = Integer.toString(cStr.length());
-              resp.putHeader("content-length", cLen).write(cStr);
-            });
-          }
+              // Construct response object.
+              resp.setStatusCode(201);
+              JsonObject pointCreateContent = new JsonObject();
+              pointCreateContent.put("success", true);
+              pointCreateContent.put("uuid", ar.result().toString());
+              cStr = pointCreateContent.toString();
+            }
+            cLen = Integer.toString(cStr.length());
+            resp.putHeader("content-length", cLen).write(cStr);
+          });
 
         } // end if(!userId.equals(""))
         else {

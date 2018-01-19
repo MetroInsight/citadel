@@ -1,14 +1,16 @@
 package metroinsight.citadel.rest;
 
+import java.io.File;
+import java.io.IOException;
+
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 import metroinsight.citadel.common.MicroServiceVerticle;
@@ -26,7 +28,12 @@ public class RestApiVerticle extends MicroServiceVerticle {
     JsonObject configs = config();
 
     HttpServerOptions httpOptions = getBaseHttpOptions();
-    httpOptions.setPort(config().getInteger("rest.http.port", 8080));
+    int restPort = config().getInteger("rest.http.port", 8080);
+    httpOptions.setPort(restPort);
+    int authPort = config().getInteger("auth.http.port", 8088);
+    int policyPort = config().getInteger("policy.http.port", 8089);
+    int apidocPort = config().getInteger("apidoc.http.port", 9090);
+    String hostname = config().getString("hostname", "localhost");
 
     // Init service discovery. Future purpose
     discovery = ServiceDiscovery.create(vertx, new ServiceDiscoveryOptions().setBackendConfiguration(config()));
@@ -43,6 +50,13 @@ public class RestApiVerticle extends MicroServiceVerticle {
 
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
+    try {
+      System.out.println("====================");
+      System.out.println(new File("").getCanonicalPath());
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
     // Main page. TODO
     router.route("/").handler(rc -> {
@@ -52,28 +66,48 @@ public class RestApiVerticle extends MicroServiceVerticle {
     });
 
     router.route("/*").handler(BodyHandler.create());
-    /*
-     * // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
-     * router.get("/doc/api").handler(rc -> { HttpServerResponse response =
-     * rc.response(); response.putHeader("Location",
-     * "http://localhost:9090/api/ui/"); //TODO: Need to fill this everytime for
-     * now. response.setStatusCode(302); response.end(); });
-     */
+
+    // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
+    router.get("/doc/api").handler(rc -> {
+      HttpServerResponse response = rc.response();
+      response.putHeader("Location", String.format("http://%s:%d/api/ui/", hostname, apidocPort)); // TODO: Need to fill this everytime for now.
+      response.setStatusCode(303);
+      response.end();
+    });
 
     // REST API routing for MetaData
     router.post("/api/point").blockingHandler(metadataRestApi::createPoint);
     router.get("/api/point/:uuid").blockingHandler(metadataRestApi::getPoint);
+    router.post("/api/point/:uuid").blockingHandler(metadataRestApi::upsertMetadata);
     router.post("/api/query").blockingHandler(metadataRestApi::queryPoint);
 
     // REST API routing for Data
     router.post("/api/data").blockingHandler(dataRestApi::insertData);
     router.post("/api/querydata").blockingHandler(dataRestApi::queryData);
     router.post("/api/querydata/simplebbox").blockingHandler(dataCacheRestApi::querySimpleBbox);
+    
+    // TODO: Currently redirecting below APIs. They need to be integrated under this verticle.
+    //       Better use Microservice archictecture.
+
+    // REST API for auth
+    router.get("/login").handler(rc -> {
+      HttpServerResponse response = rc.response();
+      response.putHeader("Location", String.format("https://%s:%d/login/", hostname, authPort));
+      response.setStatusCode(303);
+      response.end();
+    });
+
+    // REST API for policy
+    router.post("/api/registerPolicy").handler(rc -> {
+      HttpServerResponse response = rc.response();
+      response.putHeader("Location", String.format("https://%s:%d/api/registerPolicy/", hostname, policyPort));
+      response.setStatusCode(307);
+      response.end();
+    });
 
     HttpServer server = vertx.createHttpServer(httpOptions);
     server = server.requestHandler(router::accept);
     server.listen(
-        // port,
         result -> {
           if (result.succeeded()) {
             fut.complete();

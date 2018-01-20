@@ -1,6 +1,7 @@
 package metroinsight.citadel.authorization;
 
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -14,11 +15,11 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.client.Result;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -210,6 +211,32 @@ public class Authorization_MetaData {
     System.out.println("In Authorization_MetaData insert_policy");
 
   }// end insert_policy()
+  
+  public Map<String, String> new_get_policy_uuids(String userId) {
+    try {
+      Map<String, String> policies = new HashMap<String, String>();
+      Scan scan = new Scan();
+      // Scanning the required columns
+      scan.addColumn(Bytes.toBytes(family_policy), Bytes.toBytes(userId));
+      // Getting the scan result
+      ResultScanner scanner = table.getScanner(scan);
+
+      // Reading values from scan result
+      for (Result result = scanner.next(); result != null; result = scanner.next()) {
+        String DsId = Bytes.toString(result.getRow());
+        String policy = Bytes.toString(result.getValue(Bytes.toBytes(family_policy), Bytes.toBytes(userId)));
+        System.out.println("DsId :" + DsId + " : " + policy); // TODO: Needs to be handled by a logger.
+        policies.put(DsId, policy);
+      }
+      // closing the scanner
+      scanner.close();
+      return policies;
+    } // end try
+    catch (Exception e) {
+      e.printStackTrace(); // TODO: IMPORTANT: This needs to be hanlded properly.
+      return null; 
+    }
+  }
 
   /*
    * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),

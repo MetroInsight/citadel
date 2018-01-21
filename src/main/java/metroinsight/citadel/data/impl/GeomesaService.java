@@ -1,6 +1,8 @@
 package metroinsight.citadel.data.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import org.joda.time.DateTime;
@@ -88,7 +90,7 @@ public class GeomesaService implements DataService {
   }
   
   @Override
-  public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+  public void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
       Double lat_max;
@@ -137,14 +139,6 @@ public class GeomesaService implements DataService {
         }
       }
       
-      /*
-       * Adding the policy with the query
-       */
-      JsonArray policy=new JsonArray();
-      if(query.containsKey("policy")) {
-    	  policy=query.getJsonArray("policy");
-      }
-      
       //query is box and range both, other cases need to be implemented too
      /*
       gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, res -> {
@@ -156,7 +150,7 @@ public class GeomesaService implements DataService {
             }
         });
       */
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policy, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policies, res -> {
           if (res.succeeded()) {
             JsonArray resultJson = res.result();
             resultHandler.handle(Future.succeededFuture(resultJson));
@@ -260,7 +254,8 @@ public class GeomesaService implements DataService {
 
       System.out.println(k + " : Query is:" + query);
       millistart = System.currentTimeMillis();
-      GS.queryData(query, ar -> {
+      Map<String, String> policies = new HashMap<String, String>();
+      GS.queryData(query, policies, ar -> {
         if (ar.failed()) {
           System.out.println(ar.cause().getMessage());
         } else {

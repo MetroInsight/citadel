@@ -18,9 +18,9 @@
 		<gt.version>18.0</gt.version>
 		<scala.abi.version>2.11</scala.abi.version>
 		<vertx.version>3.5.0</vertx.version>
-		<hbase.version>1.2.6</hbase.version>
+		<hbase.version>1.1.13</hbase.version>
 		<jena.version>3.0.0</jena.version>
-		<hbase.hadoop.version>2.5.2</hbase.hadoop.version>
+		<hbase.hadoop.version>2.7.3</hbase.hadoop.version>
 	</properties>
 
 	<dependencies>

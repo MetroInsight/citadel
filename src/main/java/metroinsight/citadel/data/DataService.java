@@ -1,6 +1,8 @@
 package metroinsight.citadel.data;
 
 
+import java.util.Map;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -31,7 +33,7 @@ public interface DataService {
   void queryDataBox(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
   //box query on the data described by the JsonObject query
   
-  void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> resultHandler);
   // query on the data described by the JsonObject query
 
 }

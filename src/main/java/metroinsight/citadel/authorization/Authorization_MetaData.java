@@ -212,7 +212,11 @@ public class Authorization_MetaData {
 
   }// end insert_policy()
   
-  public Map<String, String> new_get_policy_uuids(String userId) {
+  /*
+   * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),
+   * (Policy-Value)
+   */
+  public Map<String, String> get_policy_uuids(String userId) {
     try {
       Map<String, String> policies = new HashMap<String, String>();
       Scan scan = new Scan();
@@ -237,45 +241,6 @@ public class Authorization_MetaData {
       return null; 
     }
   }
-
-  /*
-   * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),
-   * (Policy-Value)
-   */
-  public JsonArray get_policy_uuids(String userId) {
-    JsonArray res = new JsonArray();
-    try {
-      Scan scan = new Scan();
-      // Scanning the required columns
-      scan.addColumn(Bytes.toBytes(family_policy), Bytes.toBytes(userId));
-      // Getting the scan result
-      ResultScanner scanner = table.getScanner(scan);
-
-      // Reading values from scan result
-      for (Result result = scanner.next(); result != null; result = scanner.next()) {
-        String DsId = Bytes.toString(result.getRow());
-        String policy = Bytes.toString(result.getValue(Bytes.toBytes(family_policy), Bytes.toBytes(userId)));
-
-        System.out.println("DsId :" + DsId + " : " + policy);
-        // System.out.println(policy);
-        // System.out.println("Found row : " + result);
-
-        JsonObject p = new JsonObject();
-        p.put("uuid", DsId);
-        p.put("policy", policy);
-        res.add(p);
-      }
-
-      // closing the scanner
-      scanner.close();
-
-    } // end try
-    catch (Exception e) {
-      e.printStackTrace();
-      return res;
-    }
-    return res;
-  }// end public JsonArray get_policy_uuids()
 
   /*
    * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),

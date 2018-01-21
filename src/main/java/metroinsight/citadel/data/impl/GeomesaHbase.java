@@ -331,9 +331,9 @@ public class GeomesaHbase {
    * With policy
    */
   public JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String geomField, String dateField, Double lat_min,
-	      Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy) throws Exception {
+	      Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policies) throws Exception {
 
-	    System.out.println("Policy is:"+policy);
+	    System.out.println("Policy is:" + policies); //TODO: Use a logger
 	    
 	    JsonArray ja = new JsonArray();
 	    try {
@@ -351,18 +351,18 @@ public class GeomesaHbase {
 	      String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
 	      String filter = cqlGeometry+" AND "+cqlDates;
 
+	      /* UUID constraint is handled inside policy together.
 	      Iterator<String> uuidIter = uuids.iterator();
-	      String uuid;
 	      String uuidQuery = "";
 	      while (uuidIter.hasNext()) {
-	        uuid = uuidIter.next();
-	        uuidQuery += "OR uuid = '" + uuid + "' ";
+	        uuidQuery += "OR uuid = '" + uuidIter.hasNext() + "' ";
 	      }
 
 	      if (!uuidQuery.isEmpty()) {
 	        uuidQuery = uuidQuery.substring(2);
 	        filter = filter + " AND (" + uuidQuery + ")";
 	      }
+	      */
 
 	      /*
 	       * Policy Constraints
@@ -372,16 +372,13 @@ public class GeomesaHbase {
 	      System.out.println("Filter is:"+filter);
 	      
 	      String pfilter="";
-	      
-	      for(int i=0;i<policy.size();i++) {
-	    	  
-	    	  JsonObject p=policy.getJsonObject(i);
-	    	  String DsId=p.getString("uuid");
-	    	  String pol=p.getString("policy");//use later for S&T policy
-	    	  pfilter += "OR uuid = '" + DsId + "' ";
-	    	    
-	      }//end for(int i=0;i<policy.size();i++)
-	      
+	      for (int i=0; i<uuids.size(); i++) {
+	        String uuid = uuids.get(i);
+	        if (policies.containsKey(uuid)) {
+	          String policy = policies.get(uuid);
+	    	  pfilter += "OR uuid = '" + uuid + "' ";
+	        }
+	      }
 	      pfilter = pfilter.substring(2);
 	      
 	      filter = filter + " AND (" + pfilter + ")";
@@ -391,7 +388,6 @@ public class GeomesaHbase {
 	      /*
 	       * End policy Contraints
 	       */
-	      
 	      
 	      Filter cqlFilter = CQL.toFilter(filter);
 	      Query query = new Query(simpleFeatureTypeName, cqlFilter);
@@ -549,7 +545,7 @@ public class GeomesaHbase {
    * With policy
    */
   private JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-	      long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy) {
+	      long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policy) {
 	    try {
 
 	      if (dataStore == null) {
@@ -562,7 +558,7 @@ public class GeomesaHbase {
 	      // the point_loc and date should be part of the config
 	      //JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range("point_loc", "date", lat_min, lng_min, lat_max,
 	      JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range("loc", "date", lat_min, lng_min, lat_max, //TODO: Just for testing. Roll back!!!
-	          lng_max, timestamp_min, timestamp_max, uuids,policy);
+	          lng_max, timestamp_min, timestamp_max, uuids, policy);
 
 	      return result;
 	    } catch (Exception e) {
@@ -617,10 +613,10 @@ public class GeomesaHbase {
    * With policy
    */
   public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-	      long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy, Handler<AsyncResult<JsonArray>> resultHandler) {
+	      long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policy, Handler<AsyncResult<JsonArray>> resultHandler) {
 	    JsonArray result = null;
 	    try {
-	      result = Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids,policy);
+	      result = Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policy);
 	      resultHandler.handle(Future.succeededFuture(result));
 	    } catch (Exception e) {
 	      resultHandler.handle(Future.failedFuture(e));// in this case the result is empty jsonarray

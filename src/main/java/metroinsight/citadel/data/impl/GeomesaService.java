@@ -1,5 +1,7 @@
 package metroinsight.citadel.data.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +14,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -25,34 +29,21 @@ public class GeomesaService implements DataService {
   static GeomesaHbase gmh;
 
   public GeomesaService(Vertx vertx) {
-    this.vertx = vertx;
-    this.discovery = null;
-    if (gmh==null) {
-      gmh = new GeomesaHbase(vertx);
-      gmh.geomesa_initialize();
-    }
+    this(vertx, null);
   }
   
   public GeomesaService(Vertx vertx, ServiceDiscovery discovery) {
     this.vertx = vertx;
     this.discovery = discovery;
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String tableName = configs.getString("data.geomesa.tablename");
     if (gmh==null) {
-      gmh = new GeomesaHbase(vertx);
+      gmh = new GeomesaHbase(vertx, tableName);
       gmh.geomesa_initialize();
     }
   }
 
-  /*
-  public GeomesaService() {
-	  //initialize the geomesa database
-    if(gmh==null) 
-    {
- 	   gmh = new GeomesaHbase();
- 	   gmh.geomesa_initialize();
-    }
-  }
-  */
-  
   @Override
   public void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler) {
 	   // Validate if it complies to the schema. No actual usage

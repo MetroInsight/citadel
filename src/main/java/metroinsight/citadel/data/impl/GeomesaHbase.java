@@ -57,14 +57,17 @@ public class GeomesaHbase {
   static String simpleFeatureTypeName = "MetroInsight";
   static SimpleFeatureBuilder featureBuilder = null;
   static GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+  String tableName = null;
   Vertx vertx = null;
   
-  public GeomesaHbase (Vertx vertx) {
+  public GeomesaHbase (Vertx vertx, String tableName) {
+    this.tableName = tableName;
     this.vertx = vertx;
     geomesa_initialize();
   }
   
-  public GeomesaHbase() {
+  public GeomesaHbase(String tableName) {
+    this.tableName = tableName;
     geomesa_initialize();
 
   }
@@ -72,7 +75,7 @@ public class GeomesaHbase {
   public void geomesa_initialize() {
       if (dataStore == null) {
         Map<String, Serializable> parameters = new HashMap<>();
-        parameters.put("bigtable.table.name", "Geomesa");
+        parameters.put("bigtable.table.name", tableName);
 
         // DataStoreFinder is from Geotools, returns an indexed datastore if one is
         // available.
@@ -89,62 +92,6 @@ public class GeomesaHbase {
 
   }
 
-  public void geomesa_initialize_backup() {
-      if (dataStore == null) {
-        Map<String, Serializable> parameters = new HashMap<>();
-        parameters.put("bigtable.table.name", "Geomesa");
-//        parameters.put("geomesa.ignore.dtg", true);
-
-        // DataStoreFinder is from Geotools, returns an indexed datastore if one is
-        // available.
-        
-        try {
-          dataStore = DataStoreFinder.getDataStore(parameters);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-
-        SimpleFeatureType simpleFeatureType = null;
-        try {
-        // establish specifics concerning the SimpleFeatureType to store
-          simpleFeatureType = createSimpleFeatureType();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-
-        // write Feature-specific metadata to the destination table in HBase
-        // (first creating the table if it does not already exist); you only
-        // need
-        // to create the FeatureType schema the *first* time you write any
-        // Features
-        // of this type to the table
-        // System.out.println("Creating feature-type (schema): " +
-        // simpleFeatureTypeName);
-        try {
-          dataStore.createSchema(simpleFeatureType);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        System.out.println("Geomesa connected");
-    } // end if
-
-  }
-
-  static SimpleFeatureType createSimpleFeatureType_dep() throws SchemaException {
-    /*
-     * We use the DataUtilities class from Geotools to create a FeatureType that
-     * will describe the data
-     * 
-     */
-    SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName,
-        "point_loc:Point:srid=4326," +// a Geometry attribute: Point type
-        "uuid:String," +// a String attribute
-        "value:String," +// a String attribute
-        "date:Date"// a date attribute for time
-    );
-    return simpleFeatureType;
-  }
-  
   static SimpleFeatureType createSimpleFeatureType() throws SchemaException {
     SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
     b.setName(simpleFeatureTypeName);

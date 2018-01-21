@@ -44,7 +44,8 @@ public class DataRestApi extends RestApiTemplate {
     dataService = new GeomesaService(vertx);
     this.vertx = vertx;
     cacheService = new RedisDataCacheService(vertx);
-    metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    //metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    metadataService = MetadataService.createProxy(vertx, MetadataService.ADDRESS);
     Auth_meta_data = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
   }
 

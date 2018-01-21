@@ -58,11 +58,11 @@ public class VirtuosoService implements MetadataService  {
   List<String> units;
   List<String> types;
   
-  public VirtuosoService(Vertx vertx, ServiceDiscovery discovery) {
+  public VirtuosoService(Vertx vertx, String virtHostname, Integer virtPort, String graphname, String username, String password, ServiceDiscovery discovery) {
     this.vertx = vertx;
     this.discovery = discovery;
     if (graph==null) {
-      graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
+      graph = new VirtGraph(graphname, String.format("jdbc:virtuoso://%s:%d", virtHostname, virtPort), username, password);
     }
     initSchema();
   }

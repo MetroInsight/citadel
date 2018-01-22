@@ -90,10 +90,12 @@ public class DataRestApi extends RestApiTemplate {
         return ;
       }
       JsonObject query = body.getJsonObject("query");
+      /* This was originally needed with refining policies, but I disabled policies check, so not necessary.
       if (!query.containsKey("uuids")) {
         sendErrorResponse(resp, 400, ErrorMessages.UUIDS_MISSING);
         return ;
       }
+      */
       String userId = Auth_meta_data.get_userID(token); // extracting userId for this token
       if (userId.equals("")) {
         sendErrorResponse(resp, 400, ErrorMessages.USER_NOT_FOUND);

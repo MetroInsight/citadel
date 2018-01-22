@@ -8,6 +8,7 @@ import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.datacache.DataCacheService;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.model.BaseContent;
+import io.vertx.core.buffer.Buffer;
 
 public class DataCacheRestApi extends RestApiTemplate{
   Vertx vertx = null;

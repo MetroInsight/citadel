@@ -238,6 +238,14 @@ public class VirtuosoService implements MetadataService  {
         Node unit = NodeFactory.createURI(CITADEL + jsonMetadata.getString("unit"));
         graph.add(new Triple(point, hasUnit, unit));
         graph.add(new Triple(point, hasName, name));
+        Iterator<String> tagIter = jsonMetadata.fieldNames().iterator();
+        while (tagIter.hasNext()) {
+          String tag = tagIter.next();
+          String value = jsonMetadata.getString(tag);
+          if (!tag.equals("unit") && !tag.equals("name") && !tag.equals("uuid") && !tag.equals("pointType")) {
+            graph.add(new Triple(point, withPrefix(tag), withPrefix(value)));
+          }
+        }
         resultHandler.handle(Future.succeededFuture(uuid));
       }
     } catch (Exception e) {

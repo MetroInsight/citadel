@@ -22,6 +22,7 @@ public class RedisDataCacheService implements DataCacheService {
   public RedisDataCacheService(Vertx vertx, String hostname) {
     RedisOptions config = new RedisOptions().
         setHost(hostname);
+    System.out.println(String.format("Redis starts at %s", hostname));
     redis = RedisClient.create(vertx, config);
   }
   

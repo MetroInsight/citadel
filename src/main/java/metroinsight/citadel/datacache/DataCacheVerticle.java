@@ -12,7 +12,8 @@ public class DataCacheVerticle extends MicroServiceVerticle {
   @Override
   public void start() {
     super.start();
-    DataCacheService service = new RedisDataCacheService(vertx);
+    String hostname = config().getString("datacache.redis.hostname");
+    DataCacheService service = new RedisDataCacheService(vertx, hostname);
     ProxyHelper.registerService(DataCacheService.class, vertx, service, ADDRESS);
     
     publishEventBusService("datacahce", ADDRESS, DataCacheService.class, ar -> {

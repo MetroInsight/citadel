@@ -19,9 +19,9 @@ import metroinsight.citadel.datacache.DataCacheService;
 public class RedisDataCacheService implements DataCacheService {
   RedisClient redis;
   
-  public RedisDataCacheService(Vertx vertx) {
+  public RedisDataCacheService(Vertx vertx, String hostname) {
     RedisOptions config = new RedisOptions().
-        setHost("127.0.0.1");
+        setHost(hostname);
     redis = RedisClient.create(vertx, config);
   }
   

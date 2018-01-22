@@ -37,7 +37,7 @@ public class Authorization_MetaData {
   String hbaseSitePath;
 
   public String userToken = "userToken";
-  static TableName table_meta = TableName.valueOf("metadata");
+  static TableName table_meta = TableName.valueOf("metadata_test3");
   static String family_ds = "ds";
   static String family_user = "user";
   static String family_policy = "policy";// this family will be storing like: userid and policy with it,

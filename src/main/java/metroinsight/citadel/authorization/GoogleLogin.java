@@ -38,12 +38,7 @@ public class GoogleLogin {
 		 
 		 System.out.println("Display Token Called");
 		 String body=rc.getBodyAsString();
-		 //System.out.println("Body is: "+body); 
-		 //verifyToken("eyJhbGciOiJSUzI1NiIsImtpZCI6IjMwM2IyODU1YTkxNDM4NTcwY2E3Mjg1MDQ5MTc0MWU5NmJkOTllZjgifQ.eyJhenAiOiI4Mjk0ODQ4NDkwNDctY29pM2VtdGJra3M5b2dsamFhaWxpMmVydTViNm03dnAuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4Mjk0ODQ4NDkwNDctY29pM2VtdGJra3M5b2dsamFhaWxpMmVydTViNm03dnAuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTUyMzkyNzIyODMxMTYzNzEwMDgiLCJlbWFpbCI6ImNpdGFkZWwudWNsYUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6IjhGT2Nlc2tOXzN2OC1qel9VYWhEMlEiLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiaWF0IjoxNTA1MTc4MzcwLCJleHAiOjE1MDUxODE5NzAsIm5hbWUiOiJTYW5kZWVwIFNhbmRoYSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vLUVzQmJVUnZmdXJZL0FBQUFBQUFBQUFJL0FBQUFBQUFBQUFBL0FQSnlwQTAzSGtrdUdQeTNJSTY3d3M3U2NEZ1ZjUndQTVEvczk2LWMvcGhvdG8uanBnIiwiZ2l2ZW5fbmFtZSI6IlNhbmRlZXAiLCJmYW1pbHlfbmFtZSI6IlNhbmRoYSIsImxvY2FsZSI6ImVuIn0.U68b1QRl_UKEzpuh00d2_reOqZNc7RmlGNCPeFfvRvwBjvpiiuoH7uknurB8BWi5t8ExUMdSXTGJcSC5fmaDBC6YKURg-_12S5Ub1UdIgW0YLj7BXSwunwpRN8ZE113Z-QkjpjCrf4MgI32CiGPwL6EccIJKcN7-B4m4X0UaL07gwptSJqHG5DgGYcYl9bHsZ4DQyrJulfdDHBb4rTQYBvDcSWBOuDylRrjnDE-WhU3tvr7i38iPHy8T3c4_9tO_25t4vd0LLFhAeCAcX49g1T_aX7Bh2gDtTFySzusb7zmoFII_DsYMKt77weYKGnBzV9aQZAcOaDu4lLvddsVQ5w");
 		 boolean verified=verifyToken(body,rc);
-		 
-		 
-		 
 	 }//end DisplayToken
 	
 	private void createSession(String email, String name,RoutingContext rc) {
@@ -72,7 +67,8 @@ public class GoogleLogin {
 		
 		 
 		GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-			    .setAudience(Collections.singletonList("647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com"))
+			    .setAudience(Collections.singletonList(configs.getString("auth.google.cid")))
+			    //.setAudience(Collections.singletonList("647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com"))
 			    // Or, if multiple clients access the backend:
 			    //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
 			    .build();

@@ -302,7 +302,7 @@ public class GeomesaHbase {
 	        Iterator<String> uuidIter = uuids.iterator();
 	        String uuidQuery = "";
 	        while (uuidIter.hasNext()) {
-	          uuidQuery += "OR uuid = '" + uuidIter.hasNext() + "' ";
+	          uuidQuery += "OR uuid = '" + uuidIter.next() + "' ";
 	        }
 	        if (!uuidQuery.isEmpty()) {
 	          uuidQuery = uuidQuery.substring(2);

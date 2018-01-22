@@ -101,14 +101,16 @@ public class DataRestApi extends RestApiTemplate {
       /*
        * Getting the uuids and policies defined for this user
        */
-      Map<String, String> policies = Auth_meta_data.get_policy_uuids(userId);
+      /*Map<String, String> policies = Auth_meta_data.get_policy_uuids(userId);
       if (policies.size() == 0) {
         sendErrorResponse(resp, 401, ErrorMessages.USER_NOT_AUTORIZED);
         return ;
         }
+      */
       // HttpServerResponse resp = getDefaultResponse(rc);
       BaseContent content = new BaseContent();
-      dataService.queryData(query, policies, ar -> {
+      //dataService.queryData(query, policies, ar -> {
+      dataService.queryData(query, ar -> {
         String cStr;
         String cLen;
         if (ar.failed()) {

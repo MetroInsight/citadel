@@ -79,9 +79,20 @@ public class GeomesaService implements DataService {
 		  e.printStackTrace();
 	  }
   }
-  
+  @Override
+  public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+    Map<String, String> emptyPolicies = null;
+    queryData(query, emptyPolicies, false, resultHandler);
+  }
+
   @Override
   public void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> resultHandler) {
+    queryData(query, policies, true, resultHandler);
+    
+  }
+  
+  //@Override
+  public void queryData(JsonObject query, Map<String, String> policies, Boolean authEnable, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
       Double lat_max;
@@ -141,7 +152,7 @@ public class GeomesaService implements DataService {
             }
         });
       */
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policies, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policies, authEnable, res -> {
           if (res.succeeded()) {
             JsonArray resultJson = res.result();
             resultHandler.handle(Future.succeededFuture(resultJson));

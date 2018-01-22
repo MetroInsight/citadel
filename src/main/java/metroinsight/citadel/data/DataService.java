@@ -36,4 +36,7 @@ public interface DataService {
   void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> resultHandler);
   // query on the data described by the JsonObject query
 
+  void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler);
+  // query on the data described by the JsonObject query
+
 }

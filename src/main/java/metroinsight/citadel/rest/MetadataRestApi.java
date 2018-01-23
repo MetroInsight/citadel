@@ -134,13 +134,17 @@ public class MetadataRestApi extends RestApiTemplate {
      */
 
     try {
+      long startTime = System.nanoTime();
       System.out.println("body is:" + body);
 
       // check token and sensor is present
       if (body.containsKey(Auth_meta.userToken)) {
         String userToken = body.getString(Auth_meta.userToken);
         // check if this token exists in the HBase, and if it exists, what is the userID
+        long authStartTime = System.nanoTime();
         String userId = Auth_meta.get_userID(userToken);
+        long authEndTime = System.nanoTime();
+        System.out.println(String.format("Auth check Time: %f", ((float)authEndTime - (float)authStartTime)/1000000));
 
         if (!userId.equals(""))// user is present in the system
         {
@@ -169,10 +173,13 @@ public class MetadataRestApi extends RestApiTemplate {
               // we succeeded
 
               // inserts the owner token, userId and ds_ID into the hbase metadata table
+              long authCreateStartTime = System.nanoTime();
               Auth_meta.insert_ds_owner(uuid, userToken, userId);
 
               // insert the policy for Owner to default "true", no-space-time constraints
               Auth_meta.insert_policy(uuid, userId, "true");
+              long authCreateEndTime = System.nanoTime();
+              System.out.println(String.format("Point auth create time: %f", ((float)authCreateEndTime - (float)authCreateStartTime)/1000000));
 
               // Construct response object.
               resp.setStatusCode(201);
@@ -182,7 +189,11 @@ public class MetadataRestApi extends RestApiTemplate {
               cStr = pointCreateContent.toString();
             }
             cLen = Integer.toString(cStr.length());
-            resp.putHeader("content-length", cLen).write(cStr);
+            resp.putHeader("content-length", cLen)
+              .write(cStr)
+              .end();
+            long endTime = System.nanoTime();
+            System.out.println(String.format("Total Creation API Time: %f", ((float)endTime - (float)startTime)/1000000));
           });
 
         } // end if(!userId.equals(""))

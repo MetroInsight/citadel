@@ -63,6 +63,7 @@ public class VirtuosoService implements MetadataService  {
     this.discovery = discovery;
     if (graph==null) {
       graph = new VirtGraph(graphname, String.format("jdbc:virtuoso://%s:%d", virtHostname, virtPort), username, password);
+      System.out.println(String.format("Generated graph name: %s", graph.getGraphName()));
     }
     initSchema();
   }
@@ -211,6 +212,7 @@ public class VirtuosoService implements MetadataService  {
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
+      long totalStartTime = System.nanoTime();
       if (jsonMetadata.getString("name").contains(" ")) {
         throw new Exception("Empty space is not allowed in name.");
       }
@@ -226,11 +228,15 @@ public class VirtuosoService implements MetadataService  {
       pss.setParam("name", name);
       ResultSet res = sparqlQuery(pss.toString());
       */
+      long startTime = System.nanoTime();
       ResultSet res = findByTagValues(Arrays.asList(Arrays.asList("name", nameStr)));
+      long endTime = System.nanoTime();
+      System.out.println(String.format("Name check time: %f", ((float)endTime - (float)startTime)/1000000));
       if (res.hasNext()) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
         // Create the point
+        startTime = System.nanoTime();
         String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
         Node point = NodeFactory.createURI(EX + uuid);
         Node pointType = NodeFactory.createURI(CITADEL + jsonMetadata.getString("pointType"));
@@ -246,6 +252,10 @@ public class VirtuosoService implements MetadataService  {
             graph.add(new Triple(point, withPrefix(tag), withPrefix(value)));
           }
         }
+        endTime = System.nanoTime();
+        System.out.println(String.format("Virtuoso creation time: %f", ((float)endTime - (float)startTime)/1000000));
+        long totalEndTime = System.nanoTime();
+        System.out.println(String.format("Virtuoso createPoint time: %f", ((float)totalEndTime - (float)totalStartTime)/1000000));
         resultHandler.handle(Future.succeededFuture(uuid));
       }
     } catch (Exception e) {

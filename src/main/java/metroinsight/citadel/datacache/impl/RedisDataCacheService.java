@@ -1,5 +1,6 @@
 package metroinsight.citadel.datacache.impl;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,8 +23,8 @@ public class RedisDataCacheService implements DataCacheService {
   public RedisDataCacheService(Vertx vertx, String hostname) {
     RedisOptions config = new RedisOptions().
         setHost(hostname);
-    System.out.println(String.format("Redis starts at %s", hostname));
     redis = RedisClient.create(vertx, config);
+    System.out.println(String.format("Redis starts at %s", hostname));
   }
   
   public void testTest(String uuid, JsonObject data, List<String> indexKeys, Handler<AsyncResult<Void>> rh) {
@@ -53,9 +54,14 @@ public class RedisDataCacheService implements DataCacheService {
 
   public void upsertData(String uuid, JsonObject data, List<String> indexKeys, Handler<AsyncResult<Void>> rh) {
     try {
-      Long currTs = data.getLong("timestamp");
       redis.hget(uuid, "timestamp", redisRh -> {
         if (redisRh.succeeded()) {
+          Long currTs = null;
+          if (data.containsKey("timestamp")) {
+            currTs = data.getLong("timestamp");
+          } else {
+            currTs = System.currentTimeMillis();
+          }
           String tempRes = redisRh.result();
           Long existingTs;
           if (tempRes == null) {
@@ -166,6 +172,10 @@ public class RedisDataCacheService implements DataCacheService {
       }
     });
     return fut;
+  }
+  
+  public void tagValQuery(String tag, String val, Handler<AsyncResult<JsonArray>> rh) {
+    // TODO: Implement this
   }
 
   public void bboxQuery(Double minLng, Double maxLng, Double minLat, Double maxLat, Handler<AsyncResult<JsonArray>> rh) {

@@ -2,8 +2,8 @@ package metroinsight.citadel;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.json.JsonObject;
 import metroinsight.citadel.authorization.AuthorizationVerticle;
+import metroinsight.citadel.datacache.impl.DataCacheVerticle;
 import metroinsight.citadel.metadata.impl.MetadataVerticle;
 import metroinsight.citadel.policy.PolicyVerticle;
 import metroinsight.citadel.rest.RestApiVerticle;
@@ -20,6 +20,7 @@ public class MainVerticle extends AbstractVerticle {
 
 
     vertx.deployVerticle(MetadataVerticle.class.getName(), options);
+    vertx.deployVerticle(DataCacheVerticle.class.getName(), options);
     vertx.deployVerticle(VirtualSensorVerticle.class.getName(), options);
 
     vertx.deployVerticle(PolicyVerticle.class.getName(), options);

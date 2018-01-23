@@ -20,7 +20,6 @@ public class MetadataVerticle extends MicroServiceVerticle {
                                                   config().getString("metadata.virt.username"),
                                                   config().getString("metadata.virt.password"),
                                                   discovery);
-    //ProxyHelper.registerService(MetadataService.class, vertx, service, ADDRESS);
     new ServiceBinder(vertx)
       .setAddress(ADDRESS)
       .register(MetadataService.class, service);

@@ -11,12 +11,14 @@ import io.vertx.serviceproxy.ProxyHelper;
 import metroinsight.citadel.authorization.Authorization_MetaData;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
+import metroinsight.citadel.datacache.DataCacheService;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.BaseContent;
 
 public class MetadataRestApi extends RestApiTemplate {
 
   private MetadataService metadataService;
+  private DataCacheService cacheService;
   Vertx vertx;
 
   /*
@@ -27,8 +29,8 @@ public class MetadataRestApi extends RestApiTemplate {
   public MetadataRestApi(Vertx vertx, JsonObject configs) {
     this.configs = configs;
     metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    cacheService = ProxyHelper.createProxy(DataCacheService.class, vertx, DataCacheService.ADDRESS);
     this.vertx = vertx;
-
     /*
      * Initializing Auth Metadata
      */
@@ -119,89 +121,77 @@ public class MetadataRestApi extends RestApiTemplate {
     BaseContent content = new BaseContent();
 
     JsonObject body = new JsonObject();
-    //JsonObject point = new JsonObject();
-    /*
-     * Needed in Case Body is not in json format
-     */
     try {
       body = rc.getBodyAsJson();
     } catch (Exception e) {
-      e.printStackTrace();
+      sendErrorResponse(resp, 400, ErrorMessages.NOT_JSON);
+      return ;
     }
-
-    /*
-     * Verifying the Token is present and is valid
-     */
 
     try {
       System.out.println("body is:" + body);
-
       // check token and sensor is present
-      if (body.containsKey(Auth_meta.userToken)) {
-        String userToken = body.getString(Auth_meta.userToken);
-        // check if this token exists in the HBase, and if it exists, what is the userID
-        String userId = Auth_meta.get_userID(userToken);
-
-        if (!userId.equals(""))// user is present in the system
-        {
-          // token exists and is linked to the valid userId
-          JsonObject point = body.getJsonObject("point");
-          String uuid = UUID.randomUUID().toString();
-          point.put("uuid", uuid);// This is later used by metadataService.createPoint
-          point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
-                                      // userID
-
-          // original function to insert Point
-          // Get the query as JSON.
-          // Call createPoint in metadataService asynchronously.
-          metadataService.createPoint(point, ar -> {
-            // ar is a result object created in metadataService.createPoint
-            // We pass what to do with the result in this format.
-            String cStr;
-            String cLen;
-            if (ar.failed()) {
-              // if the service is failed
-              resp.setStatusCode(400);
-              content.setReason(ar.cause().getMessage());
-              cStr = content.toString();
-            } else {
-
-              // we succeeded
-
-              // inserts the owner token, userId and ds_ID into the hbase metadata table
-              Auth_meta.insert_ds_owner(uuid, userToken, userId);
-
-              // insert the policy for Owner to default "true", no-space-time constraints
-              Auth_meta.insert_policy(uuid, userId, "true");
-
-              // Construct response object.
-              resp.setStatusCode(201);
-              JsonObject pointCreateContent = new JsonObject();
-              pointCreateContent.put("success", true);
-              pointCreateContent.put("uuid", ar.result().toString());
-              cStr = pointCreateContent.toString();
-            }
-            cLen = Integer.toString(cStr.length());
-            resp.putHeader("content-length", cLen).write(cStr);
-          });
-
-        } // end if(!userId.equals(""))
-        else {
-          System.out.println("Token is not Valid");
-          sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");
-
-        } // end else
-
-      } // end if(body.containsKey(Auth_meta.userToken)&&body.containsKey("sensor"))
-
-      else {
-        System.out.println("In MetadataRestApi: Insert data parameters are missing");
-        sendErrorResponse(resp, 400, "Parameters are missing");
+      if (!body.containsKey(Auth_meta.userToken)) {
+        System.out.println("Token is not Valid");
+        sendErrorResponse(resp, 400, ErrorMessages.EMPTY_SEC_TOKEN);
+        return ;
       }
+      String userToken = body.getString(Auth_meta.userToken);
+      // check if this token exists in the HBase, and if it exists, what is the userID
+      String userId = Auth_meta.get_userID(userToken);
+      if (userId.equals("")) {// user is present in the system
+        sendErrorResponse(resp, 400, ErrorMessages.USER_NOT_FOUND);
+        return ;
+      }
+      // token exists and is linked to the valid userId
+      JsonObject point = body.getJsonObject("point");
+      if (!point.containsKey("name")) {
+        sendErrorResponse(resp, 400, ErrorMessages.PARAM_MISSING);
+      }
+      
+      //TODO: Once implemented, add if the point exists in redis cache.
+      
+      String uuid = UUID.randomUUID().toString();
+      point.put("uuid", uuid);// This is later used by metadataService.createPoint
+      point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
+                                  // userID
 
-    } // end try
-    catch (Exception e) {
+      // original function to insert Point
+      // Get the query as JSON.
+      // Call createPoint in metadataService asynchronously.
+      metadataService.createPoint(point, ar -> {
+        // ar is a result object created in metadataService.createPoint
+        // We pass what to do with the result in this format.
+        String cStr;
+        String cLen;
+        if (ar.failed()) {
+          // if the service is failed
+          resp.setStatusCode(400);
+          content.setReason(ar.cause().getMessage());
+          cStr = content.toString();
+        } else {
+
+          // we succeeded
+
+          // inserts the owner token, userId and ds_ID into the hbase metadata table
+          Auth_meta.insert_ds_owner(uuid, userToken, userId);
+
+          // insert the policy for Owner to default "true", no-space-time constraints
+          Auth_meta.insert_policy(uuid, userId, "true");
+
+          // Construct response object.
+          resp.setStatusCode(201);
+          JsonObject pointCreateContent = new JsonObject();
+          pointCreateContent.put("success", true);
+          pointCreateContent.put("uuid", ar.result().toString());
+          cStr = pointCreateContent.toString();
+        }
+        cLen = Integer.toString(cStr.length());
+        resp.putHeader("content-length", cLen).write(cStr);
+      });
+    } catch (Exception e) {
       e.printStackTrace();
+      sendErrorResponse(resp, 500, e.getMessage());
     }
 
     /*

@@ -10,4 +10,5 @@ final public class ErrorMessages {
   public final static String USER_NOT_FOUND = "Can't find the user with the token";
   public final static String PARAM_MISSING = "Parameters are missing";
   public final static String UUIDS_MISSING = "UUIDs are missing";
+  public final static String NOT_JSON = "Body should be in JSON";
 }

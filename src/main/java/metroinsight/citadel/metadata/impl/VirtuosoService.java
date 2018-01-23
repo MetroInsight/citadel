@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
+import org.apache.jena.datatypes.xsd.impl.XSDBaseStringType;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -28,7 +28,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.metadata.MetadataService;
-import metroinsight.citadel.model.Metadata;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
 import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;
@@ -44,9 +43,10 @@ public class VirtuosoService implements MetadataService  {
   final String RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
   final String RDFS = "http://www.w3.org/2000/01/rdf-schema#";
   final String EX = "http://example.com#";
+  final String BIF = "http://www.openlinksw.com/schema/sparql/extensions#";
   
   Map<String, Node> propertyMap;
-  
+  Map<String, String> valPropMap;
   // TODO: Maybe add a map between uesr-prop to rdf property. e.g., "pointType" -> rdf:type.
   
   // Common Variables
@@ -57,12 +57,14 @@ public class VirtuosoService implements MetadataService  {
   //Units
   List<String> units;
   List<String> types;
+  String graphname;
   
   public VirtuosoService(Vertx vertx, String virtHostname, Integer virtPort, String graphname, String username, String password, ServiceDiscovery discovery) {
+    this.graphname = graphname;
     this.vertx = vertx;
     this.discovery = discovery;
     if (graph==null) {
-      graph = new VirtGraph(graphname, String.format("jdbc:virtuoso://%s:%d", virtHostname, virtPort), username, password);
+      graph = new VirtGraph(this.graphname, String.format("jdbc:virtuoso://%s:%d", virtHostname, virtPort), username, password);
     }
     initSchema();
   }
@@ -84,6 +86,10 @@ public class VirtuosoService implements MetadataService  {
     propertyMap.put("unit", NodeFactory.createURI(CITADEL + "unit"));
     propertyMap.put("owner", NodeFactory.createURI(CITADEL + "owner"));
     propertyMap.put("name", NodeFactory.createURI(CITADEL + "name"));
+    valPropMap = new HashMap<String, String>();
+    valPropMap.put("name", "string");
+    valPropMap.put("unit", "citadel");
+    valPropMap.put("pointType", "citadel");
     
     // Init units
     // types
@@ -93,10 +99,25 @@ public class VirtuosoService implements MetadataService  {
       String v = citadelTypes.get(i);
       propertyMap.put(v, NodeFactory.createURI(CITADEL + v));
     }
-
   }
   
-  private Node withPrefix(String id) {
+  private Node withPrefixValue (String prop, String id) {
+    if (valPropMap.containsKey(prop)) {
+      String valType = valPropMap.get(prop);
+      if (valType.equals("string")) {
+        return NodeFactory.createLiteral(id);
+      } else if (valType.equals("citadel")) {
+        return NodeFactory.createURI(CITADEL + id);
+      } else {
+        System.out.println("TODO: Unknown value type");
+        return NodeFactory.createURI(EX + id);
+      }
+    } else {
+      return NodeFactory.createLiteral(id);
+    }
+  }
+  
+  private Node withPrefixProp(String id) {
     return propertyMap.getOrDefault(id, NodeFactory.createURI(EX + id));
   }
   
@@ -107,7 +128,17 @@ public class VirtuosoService implements MetadataService  {
       pss.setNsPrefix("rdf", RDF);
       pss.setNsPrefix("rdfs", RDFS);
       pss.setNsPrefix("citadel", CITADEL);
+      pss.setNsPrefix("bif", "bif:");
       return pss;
+  }
+  
+  private ResultSet findByStringValue(String tag, String value) {
+    ParameterizedSparqlString pss = getDefaultPss();
+    //String qStr = String.format("select ?s WHERE {\n", graphname);
+    String qStr = String.format("select ?s FROM <%s> WHERE {\n", graphname);
+    qStr += String.format("?s citadel:%s ?o . ?o bif:contains \"'%s*'\". }\n", tag, value);
+    pss.setCommandText(qStr);
+    return sparqlQuery(pss.toString());
   }
   
   private ResultSet findByTagValues(List<List<String>> tagValuePairs) {
@@ -219,23 +250,18 @@ public class VirtuosoService implements MetadataService  {
       }
       // Check if the name already exists
       String nameStr = jsonMetadata.getString("name");
-      Node name = NodeFactory.createURI(EX + nameStr); // TODO: Change name to Literal later
-      /*
-      ParameterizedSparqlString pss = getDefaultPss();
-      pss.setCommandText("select ?s where {?s citadel:name ?name .}");
-      pss.setParam("name", name);
-      ResultSet res = sparqlQuery(pss.toString());
-      */
-      ResultSet res = findByTagValues(Arrays.asList(Arrays.asList("name", nameStr)));
+      Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
+      ResultSet res = findByStringValue("name", nameStr);
+//      ResultSet res = findByTagValues(Arrays.asList(Arrays.asList("name", nameStr)));
       if (res.hasNext()) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
         // Create the point
         String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
         Node point = NodeFactory.createURI(EX + uuid);
-        Node pointType = NodeFactory.createURI(CITADEL + jsonMetadata.getString("pointType"));
+        Node pointType = withPrefixValue("pointType", jsonMetadata.getString("pointType"));
         graph.add(new Triple(point, a, pointType));
-        Node unit = NodeFactory.createURI(CITADEL + jsonMetadata.getString("unit"));
+        Node unit = withPrefixValue("unit", jsonMetadata.getString("unit"));
         graph.add(new Triple(point, hasUnit, unit));
         graph.add(new Triple(point, hasName, name));
         Iterator<String> tagIter = jsonMetadata.fieldNames().iterator();
@@ -243,7 +269,7 @@ public class VirtuosoService implements MetadataService  {
           String tag = tagIter.next();
           String value = jsonMetadata.getString(tag);
           if (!tag.equals("unit") && !tag.equals("name") && !tag.equals("uuid") && !tag.equals("pointType")) {
-            graph.add(new Triple(point, withPrefix(tag), withPrefix(value)));
+            graph.add(new Triple(point, withPrefixProp(tag), withPrefixValue(tag, value)));
           }
         }
         resultHandler.handle(Future.succeededFuture(uuid));
@@ -256,19 +282,19 @@ public class VirtuosoService implements MetadataService  {
   @Override
   public void upsertMetadata(String uuid, JsonObject newMetadata, Handler<AsyncResult<Void>> rh) {
     try {
-      Node point = withPrefix(uuid);
+      Node point = withPrefixProp(uuid);
       Iterator<String> keys = newMetadata.fieldNames().iterator();
       while (keys.hasNext()) {
         String key = keys.next();
-        Node prop = withPrefix(key);
+        Node prop = withPrefixProp(key);
         Object value = newMetadata.getValue(key);
         if (value instanceof List) { // TODO: Check this is working. If not working, use try catch.
           Iterator<String> valueIter = ((List<String>) value).iterator();
           while (valueIter.hasNext()) {
-            graph.add(new Triple(point, prop, withPrefix(valueIter.next())));
+            graph.add(new Triple(point, prop, withPrefixProp(valueIter.next())));
           }
         } else if (value instanceof String) {
-          graph.add(new Triple(point, prop, withPrefix((String) value)));
+          graph.add(new Triple(point, prop, withPrefixProp((String) value)));
         }
       }
       rh.handle(Future.succeededFuture());

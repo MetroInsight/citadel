@@ -1,15 +1,13 @@
 package metroinsight.citadel.metadata.impl;
 
+import static org.apache.jena.datatypes.xsd.XSDDatatype.XSDstring;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.jena.datatypes.xsd.impl.XSDBaseStringType;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -18,11 +16,12 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
-
+import org.apache.jena.rdf.model.RDFNode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -106,7 +105,7 @@ public class VirtuosoService implements MetadataService  {
     if (valPropMap.containsKey(prop)) {
       String valType = valPropMap.get(prop);
       if (valType.equals("string")) {
-        return NodeFactory.createLiteral(id);
+        return NodeFactory.createLiteralByValue(id, XSDstring);
       } else if (valType.equals("citadel")) {
         return NodeFactory.createURI(CITADEL + id);
       } else {
@@ -137,7 +136,10 @@ public class VirtuosoService implements MetadataService  {
     ParameterizedSparqlString pss = getDefaultPss();
     //String qStr = String.format("select ?s WHERE {\n", graphname);
     String qStr = String.format("select ?s FROM <%s> WHERE {\n", graphname);
-    qStr += String.format("?s citadel:%s ?o . ?o bif:contains \"'%s*'\". }\n", tag, value);
+    if (value.startsWith("\"") && value.endsWith("\"")) {
+      value = value.substring(1, value.length() - 1);
+    }
+    qStr += String.format("?s citadel:%s ?o . ?o bif:contains \"'%s'\". }\n", tag, value);
     pss.setCommandText(qStr);
     return sparqlQuery(pss.toString());
   }
@@ -177,18 +179,24 @@ public class VirtuosoService implements MetadataService  {
       while (keyIter.hasNext()) {
         key = keyIter.next();
         value = query.getString(key);
+        Node keyNode = withPrefixProp(key);
+        Node valueNode = withPrefixValue(key, value);
+        pss.setIri(i * 2, keyNode.toString());
+        if (valueNode.isLiteral()) {
+          pss.setLiteral(i * 2 + 1, "'test_sensor1'", XSDstring);
+          //pss.setLiteral(i * 2 + 1, valueNode.toString(), XSDstring);
+        } else {
+          pss.setIri(i * 2 + 1, valueNode.toString());
+        }
+        /*
         if (key.equals("pointType")) { // TODO: Use map to organize below.
           key = RDF + "type";
           value = CITADEL + value;
         } else if (key.equals("name")) {
-          key = CITADEL + key;
-          value = EX + value;
         } else {
           key = CITADEL + key;
           value = CITADEL + value;
-        }
-        pss.setIri(i * 2, key);
-        pss.setIri(i * 2 + 1, value);
+        }*/
         i += 1;
       }
       // Run SPARQL query.
@@ -259,11 +267,12 @@ public class VirtuosoService implements MetadataService  {
       ResultSet res = sparqlQuery(pss.toString());
       */
       long startTime = System.nanoTime();
-      ResultSet res = findByStringValue("name", nameStr);
+      Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
+      //ResultSet res = findByStringValue("name", nameStr);
+      ResultSet res = findByStringValue("name", name.toString());
       long endTime = System.nanoTime();
       System.out.println(String.format("Name check time: %f", ((float)endTime - (float)startTime)/1000000));
-      Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
-//      ResultSet res = findByTagValues(Arrays.asList(Arrays.asList("name", nameStr)));
+      //Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
       if (res.hasNext()) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
@@ -325,9 +334,57 @@ public class VirtuosoService implements MetadataService  {
     return vqd.execSelect();
   }
   
+  public void testFunc () {
+    String nameStr = "test_sensor1";
+    String BASE = "http://base.org#";
+    String uuid = "xxxxx";
+    Node name = NodeFactory.createLiteralByValue(nameStr, XSDstring);
+    Node point = NodeFactory.createURI(BASE + uuid);
+    Node hasName = NodeFactory.createURI(BASE + "name");
+    graph.add(new Triple(point, hasName, name));
+    String qStr = 
+        "PREFIX base: <http://base.org#>\n" + 
+        "SELECT ?s WHERE {\n" + 
+        "?s base:name \"test_sensor1\" . \n" + 
+        "}";
+    Query sparql = QueryFactory.create(qStr);
+    VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(sparql, graph);
+    ResultSet results = vqd.execSelect();
+    while (results.hasNext()) {
+      QuerySolution result = results.nextSolution();
+      System.out.println(result.get("s").toString());
+    }
+    System.out.println("Done");
+  }
+  
   public static void main(String[] args) {	
     // Test inserting
-    graph = new VirtGraph("citadel", "jdbc:virtuoso://localhost:1111", "dba", "dba");
+    Vertx vertx = Vertx.vertx();
+    Buffer configBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(configBuffer);
+    /*
+    graph = new VirtGraph("citadel", String.format("jdbc:virtuoso://%s:%d", 
+                                                   configs.getString("metadata.virt.hostname"), 
+                                                   configs.getInteger("metadata.virt.port")), 
+                          configs.getString("metadata.virt.username"), configs.getString("metadata.virt.password"));
+                          */
+    VirtuosoService vs = new VirtuosoService(vertx, 
+                                             configs.getString("metadata.virt.hostname"),
+                                             configs.getInteger("metadata.virt.port"), 
+                                             configs.getString("metadata.virt.graphname"), 
+                                             configs.getString("metadata.virt.username"), 
+                                             configs.getString("metadata.virt.password"), 
+                                             null);
+    vs.testFunc();
+    String nameStr = "test_sensor1";
+    //Node name = vs.withPrefixValue("name", nameStr); // TODO: Change name to Literal later
+    Node name = NodeFactory.createLiteralByValue(nameStr, XSDstring);
+    String uuid = "xxxxx";
+    Node point = NodeFactory.createURI(vs.EX + uuid);
+    String BASE = "http://base.org#";
+    Node hasName = NodeFactory.createURI(BASE + "name");
+    graph.add(new Triple(point, hasName, name));
+    
     //graph.clear();
     Node citadel = NodeFactory.createURI("http://metroinsight.io/citadel/schema");
     Node a = NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
@@ -336,18 +393,42 @@ public class VirtuosoService implements MetadataService  {
     System.out.println(String.format("Entire triples in the graph: %s", graph.getCount()));
 
     // Print everything.
-    String qStr = "select ?s ?p ?o where { ?s ?p ?o .}";
+    //String qStr = "select ?s ?p ?o where { ?s ?p ?o .}";
+    String qStr = 
+        //"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" + 
+        //"PREFIX ex: <http://example.com#>\n" + 
+        //"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" + 
+        //"PREFIX citadel: <http://metroinsight.io/citadel#>\n" + 
+        "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+        "PREFIX bif: <bif:>\n" + 
+        "PREFIX base: <http://base.org#>\n" + 
+        "SELECT ?s WHERE {\n" + 
+        //"SELECT ?s ?p ?o WHERE {\n" + 
+        //"?s citadel:name \"test_sensor1\"^^xsd:string . \n" + 
+        "?s base:name \"test_sensor1\" . \n" + 
+        //"?s citadel:name ?o . ?o bif:contains \"'test_sensor0'\". \n" +
+        //"?s ?p ?o .\n" + 
+        "}";
     Query sparql = QueryFactory.create(qStr);
     VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(sparql, graph);
     ResultSet results = vqd.execSelect();
-    
+
     while (results.hasNext()) {
-          QuerySolution result = results.nextSolution();
-          String s = result.get("s").toString();
-          String p = result.get("p").toString();
-          String o = result.get("o").toString();
-          System.out.println(s +"\t" + p + "\t" + o);
-        }
+      System.out.println("==============================");
+      QuerySolution result = results.nextSolution();
+      String s = result.get("s").toString();
+      String p = result.get("p").toString();
+      String o = result.get("o").toString();
+      /*
+      RDFNode ooo = result.get("o");
+      System.out.println(ooo.isLiteral());
+      System.out.println(ooo.toString());
+      */
+      System.out.println(s +"\t" + p + "\t" + o);
+      //System.out.println(s + "\t" + o);
+      //System.out.println(s);
+    }
+    System.out.println("Done");
   }
 
 }

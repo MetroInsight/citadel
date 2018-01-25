@@ -6,12 +6,19 @@ import java.util.Calendar;
 import java.util.List;
 
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.buffer.Buffer;
 import metroinsight.citadel.data.impl.GeomesaHbase;
+import io.vertx.core.Vertx;
 
 public class GeomesaAloneTest {
   
   public static void main(String[] args) {
-    GeomesaHbase gmh = new GeomesaHbase();
+    Vertx vertx = Vertx.vertx();
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String tableName = configs.getString("data.geomesa.tablename");
+    GeomesaHbase gmh = new GeomesaHbase(tableName);
     String geomField = "loc";
     String dateField = "date";
     Double lat_min = 32.868623;

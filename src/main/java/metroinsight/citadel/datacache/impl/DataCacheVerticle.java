@@ -1,19 +1,21 @@
-package metroinsight.citadel.datacache;
+package metroinsight.citadel.datacache.impl;
 
 import static metroinsight.citadel.datacache.DataCacheService.ADDRESS;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.serviceproxy.ProxyHelper;
+import io.vertx.serviceproxy.ServiceBinder;
 import metroinsight.citadel.common.MicroServiceVerticle;
-import metroinsight.citadel.datacache.impl.RedisDataCacheService;
+import metroinsight.citadel.datacache.DataCacheService;
 
 // probably no need. Keep it until determined.
 public class DataCacheVerticle extends MicroServiceVerticle {
   @Override
   public void start() {
     super.start();
-    DataCacheService service = new RedisDataCacheService(vertx);
-    ProxyHelper.registerService(DataCacheService.class, vertx, service, ADDRESS);
+    String hostname = config().getString("datacache.redis.hostname");
+    DataCacheService service = new RedisDataCacheService(vertx, hostname);
+    new ServiceBinder(vertx)
+      .setAddress(ADDRESS)
+      .register(DataCacheService.class, service);
     
     publishEventBusService("datacahce", ADDRESS, DataCacheService.class, ar -> {
       if (ar.failed()) {
@@ -21,7 +23,6 @@ public class DataCacheVerticle extends MicroServiceVerticle {
       } else {
         System.out.println("Datacache service published");
       }
-      
     });
     
   }

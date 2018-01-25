@@ -50,9 +50,11 @@ mvn clean package
 3. timeseries package is not used for now.
 4. Best practice is to use different verticles for different services and then do port-forwarding to 80. Currently all APIs should be collected in RestApi Verticle.
 
-### (For Dev) Add your module?
-1. If you would like to add a module, add a package with the same structure of metadata and metadata.impl.
+### (For Developers) Add your module?
+1. Citadel is based on [Vert.x](http://vertx.io/). You can add your microservice in any langauge based on JVM easily. The module would be a verticle and communicate with the others through [EventBus](http://vertx.io/docs/vertx-core/java/#_the_event_bus_api). Please refer the structure of metadata pacakge.
 2. RestApi.java routes all functions in the modules in 1. to appropriate URLs. (This is not the best practice but it seems to be a way only with a verticle. Suggestion?)
+3. Please follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html). There is [an eclipse format file](https://github.com/google/styleguide/blob/gh-pages/eclipse-java-google-style.xml).
+4. DO NOT just print and pass inside ``catch`` clauses. Properly handle exceptions. A normal way of handling them is passing as a failed result.
 
 ### Notes
 1. Eclipse may say it includes errors in models package. It complains about the code that should be generated during compile time.

@@ -1,6 +1,7 @@
 package metroinsight.citadel.authorization;
 
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -14,11 +15,11 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.client.Result;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -36,7 +37,7 @@ public class Authorization_MetaData {
   String hbaseSitePath;
 
   public String userToken = "userToken";
-  static TableName table_meta = TableName.valueOf("metadata");
+  static TableName table_meta = TableName.valueOf("metadata4");
   static String family_ds = "ds";
   static String family_user = "user";
   static String family_policy = "policy";// this family will be storing like: userid and policy with it,
@@ -210,14 +211,14 @@ public class Authorization_MetaData {
     System.out.println("In Authorization_MetaData insert_policy");
 
   }// end insert_policy()
-
+  
   /*
    * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),
    * (Policy-Value)
    */
-  public JsonArray get_policy_uuids(String userId) {
-    JsonArray res = new JsonArray();
+  public Map<String, String> get_policy_uuids(String userId) {
     try {
+      Map<String, String> policies = new HashMap<String, String>();
       Scan scan = new Scan();
       // Scanning the required columns
       scan.addColumn(Bytes.toBytes(family_policy), Bytes.toBytes(userId));
@@ -228,27 +229,18 @@ public class Authorization_MetaData {
       for (Result result = scanner.next(); result != null; result = scanner.next()) {
         String DsId = Bytes.toString(result.getRow());
         String policy = Bytes.toString(result.getValue(Bytes.toBytes(family_policy), Bytes.toBytes(userId)));
-
-        System.out.println("DsId :" + DsId + " : " + policy);
-        // System.out.println(policy);
-        // System.out.println("Found row : " + result);
-
-        JsonObject p = new JsonObject();
-        p.put("uuid", DsId);
-        p.put("policy", policy);
-        res.add(p);
+        System.out.println("DsId :" + DsId + " : " + policy); // TODO: Needs to be handled by a logger.
+        policies.put(DsId, policy);
       }
-
       // closing the scanner
       scanner.close();
-
+      return policies;
     } // end try
     catch (Exception e) {
-      e.printStackTrace();
-      return res;
+      e.printStackTrace(); // TODO: IMPORTANT: This needs to be hanlded properly.
+      return null; 
     }
-    return res;
-  }// end public JsonArray get_policy_uuids()
+  }
 
   /*
    * MODEL:rowid (dsId-value),Column(Policy), qualifier(userId-value),

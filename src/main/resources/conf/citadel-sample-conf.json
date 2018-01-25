@@ -1,0 +1,22 @@
+{
+    "hostname": "111.111.11.1",
+    "apidoc.http.port": 1111,
+    "rest.http.port": 1111,
+    "policy.http.port": 1111,
+    "auth.http.port": 1111,
+    "ssl.jks.fspath": "/home/jbkoh/.certs/javakeystore/citadel.jks",
+    "ssl.jks.password": "CitadelTesting",
+    "auth.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml",
+    "data.hbase.sitefile": "/home/jbkoh/repo/citadel/conf/hbase-site.xml",
+    "ssl.type": "jks",
+    "ssl.type_cand1": "jks",
+    "ssl.type_cand2": "pemfile",
+    "ssl.pem.certfile": "xxxxxxxxxxxxx",
+    "ssl.pem.keyfile": "xxxxxxxxxxxxxxx",
+    "metadata.virt.hostname": "111.111.11.1",
+    "metadata.virt.port": 1111,
+    "metadata.virt.graphname": "citadel",
+    "metadata.virt.username": "xxxxxxx",
+    "metadata.virt.password": "xxxxxxx",
+    "data.geomesa.tablename": "Geomesa"
+}

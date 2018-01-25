@@ -57,14 +57,17 @@ public class GeomesaHbase {
   static String simpleFeatureTypeName = "MetroInsight";
   static SimpleFeatureBuilder featureBuilder = null;
   static GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory();
+  String tableName = null;
   Vertx vertx = null;
   
-  public GeomesaHbase (Vertx vertx) {
+  public GeomesaHbase (Vertx vertx, String tableName) {
+    this.tableName = tableName;
     this.vertx = vertx;
     geomesa_initialize();
   }
   
-  public GeomesaHbase() {
+  public GeomesaHbase(String tableName) {
+    this.tableName = tableName;
     geomesa_initialize();
 
   }
@@ -72,7 +75,7 @@ public class GeomesaHbase {
   public void geomesa_initialize() {
       if (dataStore == null) {
         Map<String, Serializable> parameters = new HashMap<>();
-        parameters.put("bigtable.table.name", "Geomesa");
+        parameters.put("bigtable.table.name", tableName);
 
         // DataStoreFinder is from Geotools, returns an indexed datastore if one is
         // available.
@@ -89,62 +92,6 @@ public class GeomesaHbase {
 
   }
 
-  public void geomesa_initialize_backup() {
-      if (dataStore == null) {
-        Map<String, Serializable> parameters = new HashMap<>();
-        parameters.put("bigtable.table.name", "Geomesa");
-//        parameters.put("geomesa.ignore.dtg", true);
-
-        // DataStoreFinder is from Geotools, returns an indexed datastore if one is
-        // available.
-        
-        try {
-          dataStore = DataStoreFinder.getDataStore(parameters);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-
-        SimpleFeatureType simpleFeatureType = null;
-        try {
-        // establish specifics concerning the SimpleFeatureType to store
-          simpleFeatureType = createSimpleFeatureType();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-
-        // write Feature-specific metadata to the destination table in HBase
-        // (first creating the table if it does not already exist); you only
-        // need
-        // to create the FeatureType schema the *first* time you write any
-        // Features
-        // of this type to the table
-        // System.out.println("Creating feature-type (schema): " +
-        // simpleFeatureTypeName);
-        try {
-          dataStore.createSchema(simpleFeatureType);
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        System.out.println("Geomesa connected");
-    } // end if
-
-  }
-
-  static SimpleFeatureType createSimpleFeatureType_dep() throws SchemaException {
-    /*
-     * We use the DataUtilities class from Geotools to create a FeatureType that
-     * will describe the data
-     * 
-     */
-    SimpleFeatureType simpleFeatureType = DataUtilities.createType(simpleFeatureTypeName,
-        "point_loc:Point:srid=4326," +// a Geometry attribute: Point type
-        "uuid:String," +// a String attribute
-        "value:String," +// a String attribute
-        "date:Date"// a date attribute for time
-    );
-    return simpleFeatureType;
-  }
-  
   static SimpleFeatureType createSimpleFeatureType() throws SchemaException {
     SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
     b.setName(simpleFeatureTypeName);
@@ -157,8 +104,9 @@ public class GeomesaHbase {
     sft.getUserData().put("geomesa.mixed.geometries", "true");
     // TODO: Below should work but does not.
     //       When featureWriter is generrated, "Could not read table name from metadata for index xz2:1"
-    sft.getDescriptor("uuid").getUserData().put("index", "join");
-    sft.getDescriptor("uuid").getUserData().put("cardinality", "high");
+    sft.getDescriptor("uuid").getUserData().put("index", "full"); //TODO: Should be full
+    //sft.getDescriptor("uuid").getUserData().put("cardinality", "high"); //TODO: Should be low or removed.
+    //sft.getDescriptor("uuid").getUserData().put("cardinality", "low"); //TODO: Should be low or removed.
     //sft.getUserData().put("geomesa.xz.precision", 14); // Default is 12. Experimental.
     return sft;
   }
@@ -331,9 +279,9 @@ public class GeomesaHbase {
    * With policy
    */
   public JsonArray queryFeatures_Box_Lat_Lng_Time_Range(String geomField, String dateField, Double lat_min,
-	      Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy) throws Exception {
+	      Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policies, Boolean authEnable) throws Exception {
 
-	    System.out.println("Policy is:"+policy);
+	    System.out.println("Policy is:" + policies); //TODO: Use a logger
 	    
 	    JsonArray ja = new JsonArray();
 	    try {
@@ -351,47 +299,41 @@ public class GeomesaHbase {
 	      String cqlDates = "(" + dateField + " during " + date1+"/" + date2+")";
 	      String filter = cqlGeometry+" AND "+cqlDates;
 
-	      Iterator<String> uuidIter = uuids.iterator();
-	      String uuid;
-	      String uuidQuery = "";
-	      while (uuidIter.hasNext()) {
-	        uuid = uuidIter.next();
-	        uuidQuery += "OR uuid = '" + uuid + "' ";
+	      if (!authEnable) {
+	        Iterator<String> uuidIter = uuids.iterator();
+	        String uuidQuery = "";
+	        while (uuidIter.hasNext()) {
+	          uuidQuery += "OR uuid = '" + uuidIter.next() + "' ";
+	        }
+	        if (!uuidQuery.isEmpty()) {
+	          uuidQuery = uuidQuery.substring(2);
+	          filter = filter + " AND (" + uuidQuery + ")";
+	        }
+	      } else {
+            /*
+             * Policy Constraints
+             * At present on Allowed and Denied DsIds
+             * ToDo: Sandeep: integrate Space-Time constraints from Citadel-Sandeep Branch
+             */
+            System.out.println("Filter is:"+filter);
+            
+            String pfilter="";
+            for (int i=0; i<uuids.size(); i++) {
+              String uuid = uuids.get(i);
+              if (policies.containsKey(uuid)) {
+                String policy = policies.get(uuid);
+                pfilter += "OR uuid = '" + uuid + "' ";
+              }
+            }
+            pfilter = pfilter.substring(2);
+            
+            filter = filter + " AND (" + pfilter + ")";
 	      }
-
-	      if (!uuidQuery.isEmpty()) {
-	        uuidQuery = uuidQuery.substring(2);
-	        filter = filter + " AND (" + uuidQuery + ")";
-	      }
-
-	      /*
-	       * Policy Constraints
-	       * At present on Allowed and Denied DsIds
-	       * ToDo: Sandeep: integrate Space-Time constraints from Citadel-Sandeep Branch
-	       */
-	      System.out.println("Filter is:"+filter);
-	      
-	      String pfilter="";
-	      
-	      for(int i=0;i<policy.size();i++) {
-	    	  
-	    	  JsonObject p=policy.getJsonObject(i);
-	    	  String DsId=p.getString("uuid");
-	    	  String pol=p.getString("policy");//use later for S&T policy
-	    	  pfilter += "OR uuid = '" + DsId + "' ";
-	    	    
-	      }//end for(int i=0;i<policy.size();i++)
-	      
-	      pfilter = pfilter.substring(2);
-	      
-	      filter = filter + " AND (" + pfilter + ")";
-	      
 	      System.out.println("Filter is:"+filter);
 	      
 	      /*
 	       * End policy Contraints
 	       */
-	      
 	      
 	      Filter cqlFilter = CQL.toFilter(filter);
 	      Query query = new Query(simpleFeatureTypeName, cqlFilter);
@@ -427,82 +369,6 @@ public class GeomesaHbase {
 	    return ja;
 	  }//end function
 
-  
-  
-  private JsonArray queryFeatures_Box_Lat_Lng_Time_Range_deprecated(String geomField, String dateField,
-      Double lat_min, Double lng_min, Double lat_max, Double lng_max, long timestamp_min, long timestamp_max,
-      List<String> uuids) {
-    JsonArray ja = new JsonArray();
-
-    try {
-      // construct a (E)CQL filter from the search parameters,
-      // and use that as the basis for the query
-      String cqlGeometry = "BBOX(" + geomField + ", " + lng_min + ", " + lat_min + ", " + lng_max + ", " + lat_max
-          + ")";
-      Date datemin = new Date(Long.valueOf(timestamp_min));
-      Date datemax = new Date(Long.valueOf(timestamp_max));
-
-      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-      String date1 = format.format(datemin);
-      String date2 = format.format(datemax);
-
-      String cqlDates = "(" + dateField + " during " + date1 + "/" + date2 + ")";
-      String filter = cqlGeometry + " AND " + cqlDates;
-      Iterator<String> uuidIter = uuids.iterator();
-      String uuid;
-      String uuidQuery = "";
-      while (uuidIter.hasNext()) {
-        uuid = uuidIter.next();
-        uuidQuery += "OR uuid = '" + uuid + "' ";
-      }
-
-      if (!uuidQuery.isEmpty()) {
-        uuidQuery = uuidQuery.substring(2);
-        filter = filter + " AND (" + uuidQuery + ")";
-      }
-      Filter cqlFilter = CQL.toFilter(filter);
-      
-      Query query = new Query(simpleFeatureTypeName, cqlFilter);
-
-
-      // submit the query, and get back an iterator over matching features
-      FeatureReader<SimpleFeatureType, SimpleFeature> reader = dataStore.getFeatureReader(query,
-          Transaction.AUTO_COMMIT);
-
-      // loop through all results
-      while (reader.hasNext()) {
-        Feature feature = reader.next();
-
-        try {
-          JsonObject data = new JsonObject();
-          data.put("uuid", feature.getProperty("uuid").getValue());
-          Date date = (Date) feature.getProperty("date").getValue();
-          data.put("timestamp", date.getTime());
-          Point point = (Point) feature.getProperty("point_loc").getValue();
-          Coordinate cd = point.getCoordinates()[0];// since it a single point
-          JsonArray coordinate = new JsonArray();
-          coordinate.add(cd.x);
-          coordinate.add(cd.y);
-          JsonArray coordinates = new JsonArray();
-          coordinates.add(coordinate);
-          data.put("value", Double.parseDouble((String) feature.getProperty("value").getValue()));
-          data.put("geometryType", "point");
-          data.put("coordinates", coordinates);
-          ja.add(data);
-        } catch (Exception e) {
-          throw e;
-        }
-
-      }
-      reader.close();
-
-    } // end try
-    catch (Exception e) {
-      e.printStackTrace();
-    } // end catch
-    return ja;
-  }// end function
-	
   public JsonArray Query_Box_Lat_Lng(double lat_min, double lat_max, double lng_min, double lng_max) {
     try {
 
@@ -549,7 +415,7 @@ public class GeomesaHbase {
    * With policy
    */
   private JsonArray Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-	      long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy) {
+	      long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policy, Boolean authEnable) {
 	    try {
 
 	      if (dataStore == null) {
@@ -562,7 +428,7 @@ public class GeomesaHbase {
 	      // the point_loc and date should be part of the config
 	      //JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range("point_loc", "date", lat_min, lng_min, lat_max,
 	      JsonArray result = queryFeatures_Box_Lat_Lng_Time_Range("loc", "date", lat_min, lng_min, lat_max, //TODO: Just for testing. Roll back!!!
-	          lng_max, timestamp_min, timestamp_max, uuids,policy);
+	          lng_max, timestamp_min, timestamp_max, uuids, policy, authEnable);
 
 	      return result;
 	    } catch (Exception e) {
@@ -617,10 +483,10 @@ public class GeomesaHbase {
    * With policy
    */
   public void Query_Box_Lat_Lng_Time_Range(Double lat_min, Double lat_max, Double lng_min, Double lng_max,
-	      long timestamp_min, long timestamp_max, List<String> uuids,JsonArray policy, Handler<AsyncResult<JsonArray>> resultHandler) {
+	      long timestamp_min, long timestamp_max, List<String> uuids, Map<String, String> policy, Boolean authEnable, Handler<AsyncResult<JsonArray>> resultHandler) {
 	    JsonArray result = null;
 	    try {
-	      result = Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids,policy);
+	      result = Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policy, authEnable);
 	      resultHandler.handle(Future.succeededFuture(result));
 	    } catch (Exception e) {
 	      resultHandler.handle(Future.failedFuture(e));// in this case the result is empty jsonarray

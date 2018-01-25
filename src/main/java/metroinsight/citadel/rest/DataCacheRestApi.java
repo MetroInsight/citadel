@@ -8,14 +8,19 @@ import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.datacache.DataCacheService;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.model.BaseContent;
+import io.vertx.core.buffer.Buffer;
 
 public class DataCacheRestApi extends RestApiTemplate{
   Vertx vertx = null;
   DataCacheService cacheService = null;
   
+  // TODO: Use the service proxy instead!!
   DataCacheRestApi(Vertx vertx) {
     this.vertx = vertx;
-    cacheService = (DataCacheService) new RedisDataCacheService(vertx);
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String redisHostname = configs.getString("datacache.redis.hostname");
+    cacheService = (DataCacheService) new RedisDataCacheService(vertx, redisHostname);
   }
 
   public void querySimpleBbox(RoutingContext rc) {

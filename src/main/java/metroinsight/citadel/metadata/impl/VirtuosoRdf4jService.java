@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -146,6 +147,7 @@ public class VirtuosoRdf4jService implements MetadataService{
       TupleQuery resultsTable = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
       resultsTable.setIncludeInferred(false);
       TupleQueryResult bindings = resultsTable.evaluate();
+      bindings = QueryResults.distinctResults(bindings);
       return bindings;
     } catch (Exception e) {
       e.printStackTrace();

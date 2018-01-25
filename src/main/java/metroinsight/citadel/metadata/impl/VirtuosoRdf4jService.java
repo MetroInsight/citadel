@@ -214,8 +214,6 @@ public class VirtuosoRdf4jService implements MetadataService{
       Value name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
       //ResultSet res = findByStringValue("name", nameStr);
       JsonArray res = findByStringValue("name", name.stringValue());
-      long endTime = System.nanoTime();
-      System.out.println(String.format("Name check time: %f", ((float)endTime - (float)startTime)/1000000));
       //Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
       if (res.size() > 0) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
@@ -238,10 +236,6 @@ public class VirtuosoRdf4jService implements MetadataService{
             conn.add(point, withPrefixProp(tag), withPrefixValue(tag, value), context);
           }
         }
-        endTime = System.nanoTime();
-        System.out.println(String.format("Virtuoso creation time: %f", ((float)endTime - (float)startTime)/1000000));
-        long totalEndTime = System.nanoTime();
-        System.out.println(String.format("Virtuoso createPoint time: %f", ((float)totalEndTime - (float)totalStartTime)/1000000));
         resultHandler.handle(Future.succeededFuture(uuid));
       }
     } catch (Exception e) {

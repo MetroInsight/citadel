@@ -19,7 +19,8 @@
 		<scala.abi.version>2.11</scala.abi.version>
 		<vertx.version>3.5.0</vertx.version>
 		<hbase.version>1.1.13</hbase.version>
-		<jena.version>3.0.0</jena.version>
+		<jena.version>3.0.1</jena.version>
+		<rdf4j.version>2.1.4</rdf4j.version>
 		<hbase.hadoop.version>2.7.3</hbase.hadoop.version>
 	</properties>
 
@@ -223,6 +224,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.openlinksw.vos</groupId>
+			<artifactId>virt_rdf4j</artifactId>
+			<version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.openlinksw.vos</groupId>
 			<artifactId>virt_jena</artifactId>
 			<version>3.0.0</version>
 		</dependency>
@@ -231,6 +237,14 @@
 			<artifactId>virtjdbc</artifactId>
 			<version>4.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.rdf4j</groupId>
+			<artifactId>rdf4j-runtime</artifactId>
+      <version>${rdf4j.version}</version>
+		</dependency>
+
+
+
 		<!-- end debug pom -->
 
 		<!-- End used in geomesa and Datapoint -->

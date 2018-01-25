@@ -70,7 +70,7 @@ public class RestApiVerticle extends MicroServiceVerticle {
     // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
     router.get("/doc/api").handler(rc -> {
       HttpServerResponse response = rc.response();
-      response.putHeader("Location", String.format("http://%s:%d/api/ui/", hostname, apidocPort)); // TODO: Need to fill this everytime for now.
+      response.putHeader("Location", String.format("https://%s:%d/api/ui/", hostname, apidocPort)); // TODO: Need to fill this everytime for now.
       response.setStatusCode(303);
       response.end();
     });

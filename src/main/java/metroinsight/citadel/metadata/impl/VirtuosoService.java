@@ -339,14 +339,22 @@ public class VirtuosoService implements MetadataService  {
     String BASE = "http://base.org#";
     String uuid = "xxxxx";
     Node name = NodeFactory.createLiteralByValue(nameStr, XSDstring);
+    Node name2 = NodeFactory.createLiteral(nameStr);
+    Node name3 = NodeFactory.createLiteralByValue(nameStr, "en", XSDstring);
+    Node name4= NodeFactory.createURI(nameStr);
     Node point = NodeFactory.createURI(BASE + uuid);
     Node hasName = NodeFactory.createURI(BASE + "name");
-    graph.add(new Triple(point, hasName, name));
+    //graph.add(new Triple(point, hasName, name));
+    graph.add(new Triple(point, hasName, name2));
+    //graph.add(new Triple(point, hasName, name3));
+    //graph.add(new Triple(point, hasName, name4));
     String qStr = 
         "PREFIX base: <http://base.org#>\n" + 
+        "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
         "SELECT ?s WHERE {\n" + 
-        "?s base:name \"test_sensor1\" . \n" + 
+        "?s base:name \"test_sensor1\"^^xsd:string . \n" + 
         "}";
+    qStr = "PREFIX base: <http://base.org#> PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>  SELECT ?s {?s base:name \"test_sensor1\"^^xsd:string}";
     Query sparql = QueryFactory.create(qStr);
     VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(sparql, graph);
     ResultSet results = vqd.execSelect();
@@ -404,8 +412,8 @@ public class VirtuosoService implements MetadataService  {
         "PREFIX base: <http://base.org#>\n" + 
         "SELECT ?s WHERE {\n" + 
         //"SELECT ?s ?p ?o WHERE {\n" + 
-        //"?s citadel:name \"test_sensor1\"^^xsd:string . \n" + 
-        "?s base:name \"test_sensor1\" . \n" + 
+        "?s base:name \"test_sensor1\"^^xsd:string . \n" + 
+        //"?s base:name \"test_sensor1\" . \n" + 
         //"?s citadel:name ?o . ?o bif:contains \"'test_sensor0'\". \n" +
         //"?s ?p ?o .\n" + 
         "}";

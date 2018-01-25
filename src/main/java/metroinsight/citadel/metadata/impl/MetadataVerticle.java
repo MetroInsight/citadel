@@ -13,7 +13,8 @@ public class MetadataVerticle extends MicroServiceVerticle {
   @Override
  public void start() {
     super.start();
-    MetadataService service = new VirtuosoService(vertx, 
+    MetadataService service = new VirtuosoRdf4jService(vertx, 
+//    MetadataService service = new VirtuosoService(vertx, 
                                                   config().getString("metadata.virt.hostname"), 
                                                   config().getInteger("metadata.virt.port"), 
                                                   config().getString("metadata.virt.graphname"),

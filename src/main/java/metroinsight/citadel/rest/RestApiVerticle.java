@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
@@ -49,6 +51,17 @@ public class RestApiVerticle extends MicroServiceVerticle {
     dataCacheRestApi = new DataCacheRestApi(vertx);
 
     Router router = Router.router(vertx);
+
+    router.route().handler(CorsHandler.create(".*")
+        .allowedMethod(HttpMethod.GET)
+        .allowedMethod(HttpMethod.POST)
+        .allowedMethod(HttpMethod.OPTIONS)
+        .allowCredentials(true)
+        .allowedHeader("Access-Control-Allow-Credentials")
+        .allowedHeader("X-PINGARUNER")
+        .allowedHeader("Content-Type")
+        .allowedHeader("authorization"));
+    
     router.route().handler(BodyHandler.create());
     try {
       System.out.println("====================");

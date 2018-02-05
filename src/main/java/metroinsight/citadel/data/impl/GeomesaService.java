@@ -1,6 +1,10 @@
 package metroinsight.citadel.data.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import org.joda.time.DateTime;
@@ -10,6 +14,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.servicediscovery.ServiceDiscovery;
@@ -23,34 +29,21 @@ public class GeomesaService implements DataService {
   static GeomesaHbase gmh;
 
   public GeomesaService(Vertx vertx) {
-    this.vertx = vertx;
-    this.discovery = null;
-    if (gmh==null) {
-      gmh = new GeomesaHbase(vertx);
-      gmh.geomesa_initialize();
-    }
+    this(vertx, null);
   }
   
   public GeomesaService(Vertx vertx, ServiceDiscovery discovery) {
     this.vertx = vertx;
     this.discovery = discovery;
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String tableName = configs.getString("data.geomesa.tablename");
     if (gmh==null) {
-      gmh = new GeomesaHbase(vertx);
+      gmh = new GeomesaHbase(vertx, tableName);
       gmh.geomesa_initialize();
     }
   }
 
-  /*
-  public GeomesaService() {
-	  //initialize the geomesa database
-    if(gmh==null) 
-    {
- 	   gmh = new GeomesaHbase();
- 	   gmh.geomesa_initialize();
-    }
-  }
-  */
-  
   @Override
   public void insertData(JsonArray data, Handler<AsyncResult<Void>> resultHandler) {
 	   // Validate if it complies to the schema. No actual usage
@@ -86,9 +79,20 @@ public class GeomesaService implements DataService {
 		  e.printStackTrace();
 	  }
   }
-  
   @Override
   public void queryData(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+    Map<String, String> emptyPolicies = null;
+    queryData(query, emptyPolicies, false, resultHandler);
+  }
+
+  @Override
+  public void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> resultHandler) {
+    queryData(query, policies, true, resultHandler);
+    
+  }
+  
+  //@Override
+  public void queryData(JsonObject query, Map<String, String> policies, Boolean authEnable, Handler<AsyncResult<JsonArray>> resultHandler) {
   
     try{
       Double lat_max;
@@ -137,14 +141,6 @@ public class GeomesaService implements DataService {
         }
       }
       
-      /*
-       * Adding the policy with the query
-       */
-      JsonArray policy=new JsonArray();
-      if(query.containsKey("policy")) {
-    	  policy=query.getJsonArray("policy");
-      }
-      
       //query is box and range both, other cases need to be implemented too
      /*
       gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, res -> {
@@ -156,7 +152,7 @@ public class GeomesaService implements DataService {
             }
         });
       */
-      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policy, res -> {
+      gmh.Query_Box_Lat_Lng_Time_Range(lat_min, lat_max, lng_min, lng_max, timestamp_min, timestamp_max, uuids, policies, authEnable, res -> {
           if (res.succeeded()) {
             JsonArray resultJson = res.result();
             resultHandler.handle(Future.succeededFuture(resultJson));
@@ -260,7 +256,8 @@ public class GeomesaService implements DataService {
 
       System.out.println(k + " : Query is:" + query);
       millistart = System.currentTimeMillis();
-      GS.queryData(query, ar -> {
+      Map<String, String> policies = new HashMap<String, String>();
+      GS.queryData(query, policies, ar -> {
         if (ar.failed()) {
           System.out.println(ar.cause().getMessage());
         } else {

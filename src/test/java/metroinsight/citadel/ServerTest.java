@@ -72,6 +72,14 @@ public class ServerTest {
     vertx.close(context.asyncAssertSuccess());
   }
 
+  public RedisDataCacheService getRedisService() {
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String hostname = configs.getString("datacache.redis.hostname");
+    return new RedisDataCacheService(vertx, hostname);
+
+  }
+
   //@Test
   public void testCreateSensor(TestContext context){
     final Async async = context.async();
@@ -389,7 +397,7 @@ public class ServerTest {
     String uuid = cacheTestConfig.getString("uuid");
     JsonObject data = cacheTestConfig.getJsonObject("data");
     final Async async = context.async();
-    RedisDataCacheService redisCache = new RedisDataCacheService(vertx);
+    RedisDataCacheService redisCache = getRedisService();
     List<String> indexKeys = new ArrayList<String>(2);
     indexKeys.add(0, "lat");
     indexKeys.add(1, "lng");
@@ -407,7 +415,7 @@ public class ServerTest {
     final Async async = context.async();
     JsonObject testData = getDataTestConfig().getJsonObject(0);
     String uuid = getUuidByName(testData.getString("name"));
-    RedisDataCacheService redisCache = new RedisDataCacheService(vertx);
+    RedisDataCacheService redisCache = getRedisService();
     List<String> fields = new ArrayList<>(Arrays.asList("pointType", "unit", "lng", "lat", "timestamp", "value", "name"));
     redisCache.getData(uuid, fields, rh -> {
       context.assertTrue(rh.succeeded());

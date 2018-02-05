@@ -2,6 +2,8 @@ package metroinsight.citadel;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -22,7 +24,8 @@ public class GeomesaDebug {
   	query.put("timestamp_min", 1388534400000L);
   	query.put("timestamp_max", 1389312000000L);
   	System.out.println("0");
-  	gs.queryData(query, rh->{
+  	Map<String, String> policies = new HashMap<String, String>();
+  	gs.queryData(query, policies, rh->{
   	  if (rh.succeeded()) {
   	    JsonArray res = rh.result();
   	    System.out.println(res);

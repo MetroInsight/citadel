@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import com.google.api.client.json.Json;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
@@ -19,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ProxyHelper;
 import metroinsight.citadel.authorization.Authorization_MetaData;
+import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.DataService;
 import metroinsight.citadel.data.impl.GeomesaService;
@@ -27,8 +27,7 @@ import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.metadata.MetadataService;
 import metroinsight.citadel.model.BaseContent;
 
-
-public class DataRestApi extends RestApiTemplate{
+public class DataRestApi extends RestApiTemplate {
 
   DataCacheService cacheService = null;
   MetadataService metadataService = null;
@@ -36,26 +35,27 @@ public class DataRestApi extends RestApiTemplate{
    * Used to verify that every data operation is validated with UserToken
    */
   Authorization_MetaData Auth_meta_data;
-  
+
   private DataService dataService;
   Vertx vertx;
-  
-  public DataRestApi (Vertx vertx, JsonObject configs) {
+
+  public DataRestApi(Vertx vertx, JsonObject configs) {
     this.configs = configs;
     dataService = new GeomesaService(vertx);
     this.vertx = vertx;
-    cacheService = new RedisDataCacheService(vertx);
-    metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
-    Auth_meta_data=new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
+    cacheService = new RedisDataCacheService(vertx, configs.getString("datacache.redis.hostname"));
+    //metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
+    metadataService = MetadataService.createProxy(vertx, MetadataService.ADDRESS);
+    Auth_meta_data = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
   }
 
-  
   void upsertCache(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh) {
     if (cacheService == null) {
       return;
     }
     JsonObject cache = new JsonObject();
-    // This had better use CachedData structure, but because redis can't store null values, it does not make sense to use default values from CachedData
+    // This had better use CachedData structure, but because redis can't store null
+    // values, it does not make sense to use default values from CachedData
     JsonArray coordinate = data.getJsonArray("coordinates").getJsonArray(0);
     cache.put("lng", coordinate.getDouble(0));
     cache.put("lat", coordinate.getDouble(1));
@@ -73,258 +73,230 @@ public class DataRestApi extends RestApiTemplate{
       }
     });
   }
-  
+
   public void queryData(RoutingContext rc) {
-	JsonObject body = new JsonObject();
-	HttpServerResponse resp = getDefaultResponse(rc);
-	
-	try {
-		body = rc.getBodyAsJson();
-	}
-	catch (Exception e)
-	{
-		e.printStackTrace();
-	}
-	
-	try {//try main code to query data
-	if(body.containsKey("query")&&body.containsKey("userToken")) {
-	
-		String token=body.getString("userToken");
-		String userId=Auth_meta_data.get_userID(token);	//extracting userId for this token
-		
-		if(!userId.equals(""))//this is a valid token for registered user
-		{
-			 /*
-			  * Getting the uuids and policies defined for this user
-			  */
-			 JsonArray policy=Auth_meta_data.get_policy_uuids(userId);
-			 
-			 if(policy.size()>0) {//proceed only if there is atleast uuid available for this user
-				 
-		     JsonObject q = body.getJsonObject("query");
-		     q.put("policy", policy);//will be later used in GeoMesa to restrict the user query
-		     
-		    // HttpServerResponse resp = getDefaultResponse(rc);
-		     BaseContent content = new BaseContent();
-		     dataService.queryData(q, ar -> {
-		      String cStr;
-		      String cLen;
-		      if (ar.failed()) {
-		        content.setReason(ar.cause().getMessage());
-		        cStr = content.toString();
-		        cLen = Integer.toString(cStr.length());
-		        resp.setStatusCode(400);
-		      } else {
-		        content.setSucceess(true);
-		        content.setResults(ar.result());
-		        cStr = content.toString();
-		        cLen = Integer.toString(cStr.length());
-		        resp
-		        .setStatusCode(200);
-		      }
-		      resp
-		        .putHeader("content-length", cLen)
-		        .write(cStr);
-		      });
-			 }//end if(policy.size()>0) //proceed only if there is atleast uuid available for this user
-			 else {
-				 System.out.println("In DataRestApi: Query data user have no uuids available");
-		    	    sendErrorResponse(resp, 400, "You don't have access to any data");	
-			 }
-			 
-		}//end if(!userId.equals(""))//this is a valid token for registered user
-		else
-		{
-			System.out.println("In DataRestApi: Query data user Token is not Valid");
-    	    sendErrorResponse(resp, 400, "Token is not Valid");	
-			
-		}
-	}//end if(body.containsKey("query")&&body.containsKey("userToken"))
-	else {
-		System.out.println("In DataRestApi: Query data parameters are missing");
-    	sendErrorResponse(resp, 400, "Parameters are missing");	
-	}
-	
-	}//end try main code to query data
-	catch(Exception e) {
-		e.printStackTrace();
-    	sendErrorResponse(resp, 400, "Internal server error occured");	
-	}
-	
-  }//end queryData(RoutingContext rc)
-  
+    JsonObject body = new JsonObject();
+    HttpServerResponse resp = getDefaultResponse(rc);
+
+    try {// try main code to query data
+      body = rc.getBodyAsJson();
+      if (!body.containsKey("userToken")) {
+        sendErrorResponse(resp, 401, ErrorMessages.EMPTY_SEC_TOKEN);
+        return ;
+      }
+      String token = body.getString("userToken");
+      if (!body.containsKey("query")) {
+        sendErrorResponse(resp, 400, ErrorMessages.PARAM_MISSING );
+        return ;
+      }
+      JsonObject query = body.getJsonObject("query");
+      /* This was originally needed with refining policies, but I disabled policies check, so not necessary.
+      if (!query.containsKey("uuids")) {
+        sendErrorResponse(resp, 400, ErrorMessages.UUIDS_MISSING);
+        return ;
+      }
+      */
+      String userId = Auth_meta_data.get_userID(token); // extracting userId for this token
+      if (userId.equals("")) {
+        sendErrorResponse(resp, 400, ErrorMessages.USER_NOT_FOUND);
+      }
+      /*
+       * Getting the uuids and policies defined for this user
+       */
+      /*Map<String, String> policies = Auth_meta_data.get_policy_uuids(userId);
+      if (policies.size() == 0) {
+        sendErrorResponse(resp, 401, ErrorMessages.USER_NOT_AUTORIZED);
+        return ;
+        }
+      */
+      // HttpServerResponse resp = getDefaultResponse(rc);
+      BaseContent content = new BaseContent();
+      //dataService.queryData(query, policies, ar -> {
+      dataService.queryData(query, ar -> {
+        String cStr;
+        String cLen;
+        if (ar.failed()) {
+          content.setReason(ar.cause().getMessage());
+          cStr = content.toString();
+          cLen = Integer.toString(cStr.length());
+          resp.setStatusCode(400);
+        } else {
+          content.setSucceess(true);
+          content.setResults(ar.result());
+          cStr = content.toString();
+          cLen = Integer.toString(cStr.length());
+          resp.setStatusCode(200);
+        }
+        resp.putHeader("content-length", cLen).write(cStr);
+        });
+    } catch (Exception e) {
+      e.printStackTrace();
+      sendErrorResponse(resp, 500, e.getMessage());
+    }
+  }// end queryData(RoutingContext rc)
+
   public void getData(RoutingContext rc) {
-    
+
   }
-  
 
   public void insertData(RoutingContext rc) {
     HttpServerResponse resp = getDefaultResponse(rc);
-    JsonObject body=new JsonObject();
-    
-    try {
-    body=rc.getBodyAsJson();
-    }
-    catch (Exception e)
-    {
-    	e.printStackTrace();
-    }
-    
-    
-    try {//Try Block of main insertion logic
-    /*
-     * Verify necessary fields are present in body, validate the user token and then proceed
-     */
-    if(body.containsKey("userToken")&&body.containsKey("data")) {
-    	/*
-    	 * checks which we should do:
-    	 * 1) Data size if greater then 0
-    	 * 2) userToken is not empty
-    	 * 3) For every uuid, userToken is Owner
-    	 */
-    	
-    	
-    JsonArray data = body.getJsonArray("data");
-    //Check userToken is Valid or Not
-    String token=body.getString("userToken");
-    
-    if (data.size() > 0 && !token.equals("")) {
-    	
-    	 //for the token extract the userId, this verifies that token is of valid user
-    	String userId=Auth_meta_data.get_userID(token);
-    	
-    	if(!userId.equals("")) {
-    		
-    		
-		    //// Validate if the UUIDs are valid.
-		    // Extract unique uuids in the data.
-		    Set<String> uuids = new HashSet<String>();
-		    for (int i=0; i < data.size(); i++) {
-		      uuids.add(data.getJsonObject(i).getString("uuid"));
-		    }
-		    
-		    /*
-		     * Validate user is Owner of all the uuids
-		     */
-		    boolean user_validated=true;//true if user is owner of all the data streams
-		    for (String uuid: uuids) {
-		    	
-		    	//extract the DS ownerID for uuid
-		    	String ownerId=Auth_meta_data.get_ds_owner_id(uuid);
-		    	if(!ownerId.equals(userId)){
-		    		user_validated=false;
-		    		break;
-		    	}
-		    		
-		    }//end  for (String uuid: uuids)
-					    
-		    if(user_validated) {
-		    	//user have the required privileges
-		    	
-		    // Check if all uuids exist in metadata db.
-		    List<Future> uuidFutList = new ArrayList<Future>();
-		    for (String uuid: uuids) {
-		      Future<Boolean> uuidFut = Future.future();
-		      metadataService.getPoint(uuid, rh -> {
-		        if (rh.succeeded()) {
-		          uuidFut.complete(true);
-		        } else {
-		          uuidFut.fail(uuid + "does not exist");
-		        }
-		      });
-		      uuidFutList.add(uuidFut);
-		    }
-		
-		    //Update Cache if available.
-		    Future<Void> cacheFuture = Future.future();
-		    if (cacheService != null) {
-		      String uuid;
-		      JsonObject cacheBuffers = new JsonObject();
-		      JsonObject datum;
-		      for (int i = 0; i < data.size(); i++) {
-		      //Buffering for cache
-		        datum = data.getJsonObject(i);
-		        uuid = datum.getString("uuid");
-		        JsonObject buf = null;
-		        if (cacheBuffers.containsKey(uuid)) {
-		          datum = data.getJsonObject(i);
-		          buf = cacheBuffers.getJsonObject(uuid);
-		          if (buf.getDouble("timestamp") < datum.getDouble("timestamp")) {
-		            cacheBuffers.put(uuid, datum);
-		          }
-		        } else {
-		          cacheBuffers.put(uuid, datum);
-		        }
-		      }
-		      Iterator<String> keyIter = cacheBuffers.fieldNames().iterator();
-		      while (keyIter.hasNext()) {
-		        uuid = keyIter.next();
-		        upsertCache(uuid, cacheBuffers.getJsonObject(uuid), ar -> {
-		          if (ar.failed()) {
-		            cacheFuture.fail(ar.cause());
-		          }
-		        });
-		      }
-		    }
-		
-		    // Actual running of uuid checking and then run the insertion.
-		    CompositeFuture.join(uuidFutList).setHandler(uuidAr -> {
-		      BaseContent content = new BaseContent();
-		      if (uuidAr.failed()) {
-		        // If any of uuid does not exist.
-		        sendErrorResponse(resp, 400, uuidAr.cause().getMessage());
-		      } else {
-		        dataService.insertData(data, dataAr -> {
-		          String cStr = "";
-		          String cLen = "";
-		          if (dataAr.failed()) {
-		            // If failed to insert data
-		            content.setReason(dataAr.cause().getMessage());
-		            resp.setStatusCode(400);
-		          } else {
-		            // Succeeded to insert data
-		            resp.setStatusCode(201);
-		            content.setSucceess(true);
-		          }
-		          cStr = content.toString();
-		          cLen = Integer.toString(cStr.length());
-		          resp
-		            .putHeader("content-length", cLen)
-		            .write(cStr);
-		        });
-		        cacheFuture.complete();
-		      }
-		    });
-		    }//if(user_validated)
-		    else {
-		    	System.out.println("In DataRestApi: user is not the owner");
-	        	sendErrorResponse(resp, 400, "Api-Token doesn't have required priveleges");	
-		    }
-    	}//end if(!userId.equals(""))
-    	
-    	else {
-    		System.out.println("In DataRestApi: Token is not valid");
-        	sendErrorResponse(resp, 400, "Token is not Valid");	
-    	}
-    	
-    }//end if(data.size()>0&&!token.equals(""))
-    else {
-    	System.out.println("In DataRestApi: Insert data parameters are missing");
-    	sendErrorResponse(resp, 400, "Parameters are missing");	
-    }
-    
-    }//end if(body.containsKey("userToken")&&body.containsKey("data"))
-    else {
-    	System.out.println("In DataRestApi: Insert data parameters are missing");
-    	sendErrorResponse(resp, 400, "Parameters are missing");	
-    }
-    
-    }//end Try Block of main insertion logic
-    
-    catch(Exception e) {
-    	e.printStackTrace();
-    }
-  }//end public void insertData(RoutingContext rc) 
+    JsonObject body = new JsonObject();
 
+    try {
+      body = rc.getBodyAsJson();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    try {// Try Block of main insertion logic
+      /*
+       * Verify necessary fields are present in body, validate the user token and then
+       * proceed
+       */
+      if (body.containsKey("userToken") && body.containsKey("data")) {
+        /*
+         * checks which we should do: 1) Data size if greater then 0 2) userToken is not
+         * empty 3) For every uuid, userToken is Owner
+         */
+
+        JsonArray data = body.getJsonArray("data");
+        // Check userToken is Valid or Not
+        String token = body.getString("userToken");
+
+        if (data.size() > 0 && !token.equals("")) {
+
+          // for the token extract the userId, this verifies that token is of valid user
+          String userId = Auth_meta_data.get_userID(token);
+
+          if (!userId.equals("")) {
+
+            //// Validate if the UUIDs are valid.
+            // Extract unique uuids in the data.
+            Set<String> uuids = new HashSet<String>();
+            for (int i = 0; i < data.size(); i++) {
+              uuids.add(data.getJsonObject(i).getString("uuid"));
+            }
+
+            /*
+             * Validate user is Owner of all the uuids
+             */
+            boolean user_validated = true;// true if user is owner of all the data streams
+            for (String uuid : uuids) {
+
+              // extract the DS ownerID for uuid
+              String ownerId = Auth_meta_data.get_ds_owner_id(uuid);
+              if (!ownerId.equals(userId)) {
+                user_validated = false;
+                break;
+              }
+
+            } // end for (String uuid: uuids)
+
+            if (user_validated) {
+              // user have the required privileges
+
+              // Check if all uuids exist in metadata db.
+              List<Future> uuidFutList = new ArrayList<Future>();
+              for (String uuid : uuids) {
+                Future<Boolean> uuidFut = Future.future();
+                metadataService.getPoint(uuid, rh -> {
+                  if (rh.succeeded()) {
+                    uuidFut.complete(true);
+                  } else {
+                    uuidFut.fail(uuid + "does not exist");
+                  }
+                });
+                uuidFutList.add(uuidFut);
+              }
+
+              // Update Cache if available.
+              Future<Void> cacheFuture = Future.future();
+              if (cacheService != null) {
+                String uuid;
+                JsonObject cacheBuffers = new JsonObject();
+                JsonObject datum;
+                for (int i = 0; i < data.size(); i++) {
+                  // Buffering for cache
+                  datum = data.getJsonObject(i);
+                  uuid = datum.getString("uuid");
+                  JsonObject buf = null;
+                  if (cacheBuffers.containsKey(uuid)) {
+                    datum = data.getJsonObject(i);
+                    buf = cacheBuffers.getJsonObject(uuid);
+                    if (buf.getDouble("timestamp") < datum.getDouble("timestamp")) {
+                      cacheBuffers.put(uuid, datum);
+                    }
+                  } else {
+                    cacheBuffers.put(uuid, datum);
+                  }
+                }
+                Iterator<String> keyIter = cacheBuffers.fieldNames().iterator();
+                while (keyIter.hasNext()) {
+                  uuid = keyIter.next();
+                  upsertCache(uuid, cacheBuffers.getJsonObject(uuid), ar -> {
+                    if (ar.failed()) {
+                      cacheFuture.fail(ar.cause());
+                    }
+                  });
+                }
+              }
+
+              // Actual running of uuid checking and then run the insertion.
+              CompositeFuture.join(uuidFutList).setHandler(uuidAr -> {
+                BaseContent content = new BaseContent();
+                if (uuidAr.failed()) {
+                  // If any of uuid does not exist.
+                  sendErrorResponse(resp, 400, uuidAr.cause().getMessage());
+                } else {
+                  dataService.insertData(data, dataAr -> {
+                    String cStr = "";
+                    String cLen = "";
+                    if (dataAr.failed()) {
+                      // If failed to insert data
+                      content.setReason(dataAr.cause().getMessage());
+                      resp.setStatusCode(400);
+                    } else {
+                      // Succeeded to insert data
+                      resp.setStatusCode(201);
+                      content.setSucceess(true);
+                    }
+                    cStr = content.toString();
+                    cLen = Integer.toString(cStr.length());
+                    resp.putHeader("content-length", cLen).write(cStr);
+                  });
+                  cacheFuture.complete();
+                }
+              });
+            } // if(user_validated)
+            else {
+              System.out.println("In DataRestApi: user is not the owner");
+              sendErrorResponse(resp, 400, "Api-Token doesn't have required priveleges");
+            }
+          } // end if(!userId.equals(""))
+
+          else {
+            System.out.println("In DataRestApi: Token is not valid");
+            sendErrorResponse(resp, 400, "Token is not Valid");
+          }
+
+        } // end if(data.size()>0&&!token.equals(""))
+        else {
+          System.out.println("In DataRestApi: Insert data parameters are missing");
+          sendErrorResponse(resp, 400, "Parameters are missing");
+        }
+
+      } // end if(body.containsKey("userToken")&&body.containsKey("data"))
+      else {
+        System.out.println("In DataRestApi: Insert data parameters are missing");
+        sendErrorResponse(resp, 400, "Parameters are missing");
+      }
+
+    } // end Try Block of main insertion logic
+
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  }// end public void insertData(RoutingContext rc)
 
 }

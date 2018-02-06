@@ -18,6 +18,7 @@
 		<gt.version>18.0</gt.version>
 		<scala.abi.version>2.11</scala.abi.version>
 		<vertx.version>3.5.0</vertx.version>
+    <pgclient.version>0.5.0</pgclient.version>
 		<hbase.version>1.1.13</hbase.version>
 		<jena.version>3.0.1</jena.version>
 		<rdf4j.version>2.1.4</rdf4j.version>
@@ -25,6 +26,11 @@
 	</properties>
 
 	<dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>2.12.4</version>
+    </dependency>
 
 		<dependency>
 			<groupId>org.locationtech.geomesa</groupId>
@@ -205,6 +211,15 @@
 			<artifactId>vertx-web-client</artifactId>
 			<version>${vertx.version}</version>
 		</dependency>
+    
+    
+    <!-- PostgreSQL-->
+    <dependency>
+      <groupId>com.julienviet</groupId>
+      <artifactId>reactive-pg-client</artifactId>
+			<version>${pgclient.version}</version>
+    </dependency>
+
 
 		<!-- Other -->
 		<!-- <dependency> <groupId>de.flapdoodle.embed</groupId> <artifactId>de.flapdoodle.embed.mongo</artifactId> 

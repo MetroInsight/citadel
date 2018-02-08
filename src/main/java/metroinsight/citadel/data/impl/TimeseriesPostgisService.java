@@ -40,6 +40,8 @@ public class TimeseriesPostgisService implements DataService {
   PgPool client;
   int paginationSize = 100;
   SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSSX");
+  int DEFAULT_LIMIT = 1000;
+  int DEFAULT_OFFSET = 0;
 
   public TimeseriesPostgisService(Vertx vertx, ServiceDiscovery discovery, String host, int port, String user,
       String password) {
@@ -245,6 +247,20 @@ public class TimeseriesPostgisService implements DataService {
           String q = "SELECT time, ST_AsGeoJson(location), uuid, value \n" + "FROM " + TABLE_NAME
               + "\n" + "WHERE \n";
           String whereQ = "";
+          int limit;
+          if (query.containsKey("limit")) {
+            limit = query.getInteger("limit");
+          } else {
+            limit = DEFAULT_LIMIT;
+          }
+
+          int offset;
+          if (query.containsKey("offset")) {
+            offset = query.getInteger("offset");
+          } else {
+            offset = DEFAULT_OFFSET;
+          }
+          
           if (query.containsKey("lat_max")) {
             assert query.containsKey("lat_min");
             assert query.containsKey("lng_max");
@@ -279,7 +295,7 @@ public class TimeseriesPostgisService implements DataService {
             whereQ += String.format("uuid IN (%s)\n", uuidSetStr);
           }
 
-          q += whereQ + ";";
+          q += whereQ + String.format(" LIMIT %d OFFSET %d;", limit, offset);
           PgConnection conn = res0.result();
           conn.query(q, res -> {
             if (res.succeeded()) {

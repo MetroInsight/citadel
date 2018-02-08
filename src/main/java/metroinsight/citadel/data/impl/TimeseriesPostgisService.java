@@ -2,6 +2,8 @@ package metroinsight.citadel.data.impl;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,7 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import java.util.TimeZone;
 import com.julienviet.pgclient.PgClient;
 import com.julienviet.pgclient.PgConnection;
 import com.julienviet.pgclient.PgPool;
@@ -18,7 +20,6 @@ import com.julienviet.pgclient.PgPoolOptions;
 import com.julienviet.pgclient.PgResult;
 import com.julienviet.pgclient.Row;
 import com.julienviet.pgclient.Tuple;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -162,7 +163,12 @@ public class TimeseriesPostgisService implements DataService {
           for (int i=0; i<data.size(); i++) {
             JsonObject datum = data.getJsonObject(i);
             Datapoint dp = datum.mapTo(Datapoint.class);
-            batch.add(Tuple.of(dateFormatter.format(new Date(dp.getTimestamp())),
+            //Date d = new Date(dp.getTimestamp());
+            LocalDateTime date =
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(dp.getTimestamp()), TimeZone
+                .getDefault().toZoneId());
+            batch.add(Tuple.of(date,
+//            batch.add(Tuple.of(dateFormatter.format(new Date(dp.getTimestamp())),
                                geomlist2ewktstr(dp.getGeometryType(), dp.getCoordinates()),
                                dp.getUuid(), 
                                dp.getValue()));
@@ -173,6 +179,7 @@ public class TimeseriesPostgisService implements DataService {
             if (res.succeeded()) {
               rh.handle(Future.succeededFuture());
             } else {
+              Throwable ress = res.cause();
               rh.handle(Future.failedFuture(res.cause()));
             }
             conn.close();
@@ -189,7 +196,6 @@ public class TimeseriesPostgisService implements DataService {
 
   @Override
   public void insertData(JsonArray data, Handler<AsyncResult<Void>> rh) {
-    // TODO: Use below
     try {
       String q = "";
       int currIdx = 1;
@@ -202,14 +208,12 @@ public class TimeseriesPostgisService implements DataService {
         String ewkt = geomlist2ewktstr(dp.getGeometryType(), dp.getCoordinates());
         String dateStr = dateFormatter.format(new Date(dp.getTimestamp()));
         q += String.format("('%s', %s, '%s'::uuid, %f),\n", dateStr,
-            // String.format("ST_GeogFromText('SRID=4326;%s')", ewkt),
             String.format("ST_GeomFromEWKT('SRID=4326;%s')", ewkt),
-            // String.format("ST_GeomFromEWKT('SRID=4269;%s')", ewkt),
             dp.getUuid(), dp.getValue());
         if ((i % paginationSize == 0 && i != 0) || i == data.size() - 1) {
           q = q.substring(0, q.length() - 2) + "\n" + "ON CONFLICT (time,location,uuid) DO UPDATE\n"
               + "SET value = excluded.value;";
-          // ";";
+          //q = q.substring(0, q.length() -2) + ";";
           client.query(q, res -> {
             Throwable ress = res.cause();
             if (res.failed()) {
@@ -233,57 +237,74 @@ public class TimeseriesPostgisService implements DataService {
   }
 
   @Override
-  public void queryData(JsonObject query, Map<String, String> policies, Handler<AsyncResult<JsonArray>> rh) {
+  public void queryData(JsonObject query, Map<String, String> policies,
+      Handler<AsyncResult<JsonArray>> rh) {
     try {
-      String q = "SELECT time, ST_AsGeoJson(location), uuid, value \n" + "FROM " + TABLE_NAME + "\n" + "WHERE \n";
-      if (query.containsKey("lat_max")) {
-        assert query.containsKey("lat_min");
-        assert query.containsKey("lng_max");
-        assert query.containsKey("lng_min");
-        double lngMin = query.getDouble("lng_min");
-        double lngMax = query.getDouble("lng_max");
-        double latMin = query.getDouble("lat_min");
-        double latMax = query.getDouble("lat_max");
-        q += "location && " + String.format("ST_MakeEnvelope (%f, %f, %f, %f, 4326) \n", lngMin, latMin, lngMax, latMax);
-      }
-      if (query.containsKey("timestamp_min")) {
-        assert query.containsKey("timestamp_max");
-        q += String.format("AND time >= '%s'\n", dateFormatter.format(new Date(query.getLong("timestamp_min")))) +
-             String.format("AND time < '%s'\n", dateFormatter.format(new Date(query.getLong("timestamp_max"))));
-      }
-      if (query.containsKey("uuids")) {
-        String uuidSetStr = "";
-        Iterator<Object> iter = query.getJsonArray("uuids").iterator();
-        while (iter.hasNext()) {
-          uuidSetStr += String.format("'%s', ", (String) iter.next());
-        }
-        uuidSetStr = uuidSetStr.substring(0, uuidSetStr.length() - 2);
-        q += String.format("AND uuid IN (%s)\n", uuidSetStr);
-      }
-      
-      q += ";";
-      client.query(q, res -> {
-        try {
-          if (res.succeeded()) {
-            JsonArray jsonRes = new JsonArray();
-            PgResult<Row> result = res.result();
-            for (Row row : result) {
-              JsonObject oneRes = new JsonObject();
-              oneRes.put("timestamp", Timestamp.valueOf(row.getLocalDateTime(0)).getTime());
-              oneRes.put("uuid", row.getString(2));
-              oneRes.put("value", row.getDouble(3));
-              JsonObject loc = new JsonObject(row.getString(1));
-              oneRes.put("coordinates", loc.getJsonArray("coordinates")); // TODO: Implement parsing the locStr.
-              oneRes.put("geometryType", loc.getString("type")); // TODO: Implement parsing the locStr.
-              jsonRes.add(oneRes);
-            }
-            rh.handle(Future.succeededFuture(jsonRes));
-          } else {
-            System.out.println("query failed!!!");
-            rh.handle(Future.failedFuture(res.cause()));
+      client.getConnection(res0 -> {
+        if (res0.succeeded()) {
+          String q = "SELECT time, ST_AsGeoJson(location), uuid, value \n" + "FROM " + TABLE_NAME
+              + "\n" + "WHERE \n";
+          String whereQ = "";
+          if (query.containsKey("lat_max")) {
+            assert query.containsKey("lat_min");
+            assert query.containsKey("lng_max");
+            assert query.containsKey("lng_min");
+            double lngMin = query.getDouble("lng_min");
+            double lngMax = query.getDouble("lng_max");
+            double latMin = query.getDouble("lat_min");
+            double latMax = query.getDouble("lat_max");
+            whereQ += "location && " + String.format("ST_MakeEnvelope (%f, %f, %f, %f, 4326) \n",
+                lngMin, latMin, lngMax, latMax);
           }
-        } catch (Exception e) {
-          rh.handle(Future.failedFuture(e.getMessage()));
+          if (query.containsKey("timestamp_min")) {
+            assert query.containsKey("timestamp_max");
+            if (whereQ.length() != 0) {
+              whereQ += "AND ";
+            }
+            whereQ += String.format("time >= '%s'\n",
+                dateFormatter.format(new Date(query.getLong("timestamp_min"))))
+                + String.format("AND time < '%s'\n",
+                    dateFormatter.format(new Date(query.getLong("timestamp_max"))));
+          }
+          if (query.containsKey("uuids")) {
+            String uuidSetStr = "";
+            Iterator<Object> iter = query.getJsonArray("uuids").iterator();
+            while (iter.hasNext()) {
+              uuidSetStr += String.format("'%s', ", (String) iter.next());
+            }
+            uuidSetStr = uuidSetStr.substring(0, uuidSetStr.length() - 2);
+            if (whereQ.length() != 0) {
+              whereQ += "AND ";
+            }
+            whereQ += String.format("uuid IN (%s)\n", uuidSetStr);
+          }
+
+          q += whereQ + ";";
+          PgConnection conn = res0.result();
+          conn.query(q, res -> {
+            if (res.succeeded()) {
+              JsonArray jsonRes = new JsonArray();
+              PgResult<Row> result = res.result();
+              for (Row row : result) {
+                JsonObject oneRes = new JsonObject();
+                oneRes.put("timestamp", Timestamp.valueOf(row.getLocalDateTime(0)).getTime());
+                oneRes.put("uuid", row.getString(2));
+                oneRes.put("value", row.getDouble(3));
+                JsonObject loc = new JsonObject(row.getString(1));
+                oneRes.put("coordinates", loc.getJsonArray("coordinates")); // TODO: Implement
+                                                                            // parsing the locStr.
+                oneRes.put("geometryType", loc.getString("type")); // TODO: Implement parsing the
+                                                                   // locStr.
+                jsonRes.add(oneRes);
+              }
+              rh.handle(Future.succeededFuture(jsonRes));
+            } else {
+              System.out.println("query failed!!!");
+              rh.handle(Future.failedFuture(res.cause()));
+            }
+          });
+        } else {
+          rh.handle(Future.failedFuture(res0.cause()));
         }
       });
     } catch (Exception e) {
@@ -303,31 +324,32 @@ public class TimeseriesPostgisService implements DataService {
     options.setBlockedThreadCheckInterval(100000000);
     Vertx vertx = Vertx.vertx(options);
     ServiceDiscovery discovery = null;
-    String host = "132.239.10.190";
+    String host = "10.0.0.17";
     int port = 5432;
-    String user = "citadel";
-    String pw = "citadel!";
+    String user = "citadeluser";
+    String pw = "bs4[hMNjdf1";
     TimeseriesPostgisService tsService = new TimeseriesPostgisService(vertx, discovery, host, port, user, pw);
-    double value = new Random().nextDouble() * 100;
-    // long millis = System.currentTimeMillis();
     Long ts = 1517791709000L;
 
     double lng = -117.232959;
-    double lat = 32.881607;
+    double lat = 32.881603;
     String uuid = "a178d9f2-36cb-41f6-9c8a-1af17fb51b99";
     JsonArray data = new JsonArray();
-    JsonObject datum = new JsonObject();
-    datum.put("uuid", uuid);
-    datum.put("timestamp", ts);
-    datum.put("value", value);
-    ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
-    ArrayList<Double> coordinate = new ArrayList<Double>();
-    coordinate.add(lng);
-    coordinate.add(lat);
-    coordinates.add(coordinate);
-    datum.put("geometryType", "point");
-    datum.put("coordinates", coordinates);
-    data.add(datum);
+    for (int i=0; i < 3; i++) {
+      JsonObject datum = new JsonObject();
+      datum.put("uuid", uuid);
+      datum.put("value", new Random().nextDouble() * 100);
+      ArrayList<ArrayList<Double>> coordinates = new ArrayList<ArrayList<Double>>();
+      ArrayList<Double> coordinate = new ArrayList<Double>();
+      coordinate.add(lng);
+      coordinate.add(lat);
+      coordinates.add(coordinate);
+      datum.put("geometryType", "point");
+      datum.put("coordinates", coordinates);
+      datum.put("timestamp", ts + 100000 * i);
+      data.add(datum);
+    }
+    System.out.println(data);
     tsService.insertData(data, ar -> {
       if (ar.failed()) {
         System.out.println("FAILED");

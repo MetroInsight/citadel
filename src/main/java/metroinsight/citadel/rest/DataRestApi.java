@@ -22,6 +22,7 @@ import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.DataService;
 import metroinsight.citadel.data.impl.GeomesaService;
+import metroinsight.citadel.data.impl.TimeseriesPostgisService;
 import metroinsight.citadel.datacache.DataCacheService;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
 import metroinsight.citadel.metadata.MetadataService;
@@ -41,7 +42,12 @@ public class DataRestApi extends RestApiTemplate {
 
   public DataRestApi(Vertx vertx, JsonObject configs) {
     this.configs = configs;
-    dataService = new GeomesaService(vertx);
+    //dataService = new GeomesaService(vertx);
+    dataService = new TimeseriesPostgisService(vertx, null, 
+        configs.getString("data.postgresql.hostname"), 
+        configs.getInteger("data.postgresql.port"), 
+        configs.getString("data.postgresql.user"),
+        configs.getString("data.postgresql.password"));
     this.vertx = vertx;
     cacheService = new RedisDataCacheService(vertx, configs.getString("datacache.redis.hostname"));
     //metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
@@ -112,7 +118,7 @@ public class DataRestApi extends RestApiTemplate {
       // HttpServerResponse resp = getDefaultResponse(rc);
       BaseContent content = new BaseContent();
       //dataService.queryData(query, policies, ar -> {
-      dataService.queryData(query, ar -> {
+      dataService.queryData(query, null, ar -> {
         String cStr;
         String cLen;
         if (ar.failed()) {

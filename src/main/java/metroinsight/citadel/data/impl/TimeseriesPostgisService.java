@@ -261,14 +261,14 @@ public class TimeseriesPostgisService implements DataService {
             offset = DEFAULT_OFFSET;
           }
           
-          if (query.containsKey("lat_max")) {
-            assert query.containsKey("lat_min");
-            assert query.containsKey("lng_max");
-            assert query.containsKey("lng_min");
-            double lngMin = query.getDouble("lng_min");
-            double lngMax = query.getDouble("lng_max");
-            double latMin = query.getDouble("lat_min");
-            double latMax = query.getDouble("lat_max");
+          if (query.containsKey("max_lat")) {
+            assert query.containsKey("min_lat");
+            assert query.containsKey("max_lng");
+            assert query.containsKey("min_lng");
+            double lngMin = query.getDouble("min_lng");
+            double lngMax = query.getDouble("max_lng");
+            double latMin = query.getDouble("min_lat");
+            double latMax = query.getDouble("max_lat");
             whereQ += "location && " + String.format("ST_MakeEnvelope (%f, %f, %f, %f, 4326) \n",
                 lngMin, latMin, lngMax, latMax);
           }
@@ -375,10 +375,10 @@ public class TimeseriesPostgisService implements DataService {
       }
     });
     JsonObject queryJson = new JsonObject()
-        .put("lng_min", lng - 1)
-        .put("lng_max", lng + 1)
-        .put("lat_min", lat - 1)
-        .put("lat_max", lat + 1)
+        .put("min_lng", lng - 1)
+        .put("max_lng", lng + 1)
+        .put("min_lat", lat - 1)
+        .put("max_lat", lat + 1)
         .put("timestamp_min", ts - 1000000)
         .put("timestamp_max", ts + 1000000)
         .put("uuids",  new JsonArray().add(uuid));

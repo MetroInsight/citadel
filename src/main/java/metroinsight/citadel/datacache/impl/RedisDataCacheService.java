@@ -151,11 +151,11 @@ public class RedisDataCacheService implements DataCacheService {
   }
   
   public void getDatum(String uuid, Handler<AsyncResult<JsonObject>> rh) {
-    redis.hgetall(uuid, redisRh -> {
-      if (redisRh.succeeded()) {
-        rh.handle(Future.succeededFuture(redisRh.result()));
+    redis.hgetall(uuid, res -> {
+      if (res.succeeded()) {
+        rh.handle(Future.succeededFuture(res.result()));
       } else {
-        rh.handle(Future.failedFuture(redisRh.cause()));
+        rh.handle(Future.failedFuture(res.cause()));
       }
     });
   }
@@ -228,5 +228,28 @@ public class RedisDataCacheService implements DataCacheService {
       }
     });
   }
+
+  private String getUserServiceUuid(String identity, String serviceName) {
+    return identity + "." + serviceName;
+  }
+
+  @Override
+  public void getUserServiceInfo(String identity, String serviceName, Handler<AsyncResult<JsonObject>> rh) {
+    String uuid = getUserServiceUuid(identity, serviceName);
+    getDatum(uuid, rh);
+  }
   
+  @Override
+  public void setUserServiceInfo(String identity, String serviceName, JsonObject data, Handler<AsyncResult<Void>> rh) {
+    String uuid = getUserServiceUuid(identity, serviceName);
+    redis.hmset(uuid, data, res -> {
+      if (res.failed()) {
+        rh.handle(Future.failedFuture(res.cause()));
+      }
+    });
+  }
+  
+  public static void main(String[] args) {
+    
+  }
 }

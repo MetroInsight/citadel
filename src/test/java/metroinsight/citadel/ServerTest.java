@@ -47,18 +47,14 @@ public class ServerTest {
   
   @Before
   public void setUp(TestContext context) throws IOException{
-    ServerSocket socket = null;
-    socket = new ServerSocket(0);
-    port = 8080; //socket.getLocalPort();
-    socket.close();
-    
-    DeploymentOptions options = new DeploymentOptions()
-        .setConfig(new JsonObject().put("http.port", port)
-            );
+    vertx = Vertx.vertx();
+    Buffer confBuffer = vertx.fileSystem().readFileBlocking("/home/jbkoh/repo/citadel_postgres/src/main/resources/conf/citadel-conf.json");
+    JsonObject jsonConfig = new JsonObject(confBuffer);
+    DeploymentOptions options = new DeploymentOptions().setConfig(jsonConfig);
     System.out.println("Deploy options: ");
     System.out.println(options.toJson());
-    vertx = Vertx.vertx();
-    //vertx.deployVerticle(RestApiVerticle.class.getName(),
+    vertx.deployVerticle(MainVerticle.class, options);
+    /*
     vertx.deployVerticle(MetadataVerticle.class.getName(),
         context.asyncAssertSuccess());
     //vertx.deployVerticle(DataVerticle.class.getName(),
@@ -66,6 +62,7 @@ public class ServerTest {
     vertx.deployVerticle(RestApiVerticle.class.getName(),
         options,
         context.asyncAssertSuccess());
+    */
   }
   @After
   public void tearDown(TestContext context) {

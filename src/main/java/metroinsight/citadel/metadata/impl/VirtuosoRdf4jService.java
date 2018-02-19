@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
@@ -180,7 +181,11 @@ public class VirtuosoRdf4jService implements MetadataService{
       }
       String qStr = queryPrefix + 
                     "SELECT ?s FROM <" + context + "> WHERE {\n" +
-                    String.format("?s citadel:%s ?o . ?o bif:contains \"'%s'\". }\n", tag, value);
+                    String.format("?s citadel:%s ?o .\n", tag) +
+                    String.format("?o bif:contains \"'%s'\". \n", value) + 
+                    String.format("FILTER (?o=\"'%s'\")\n", value) +
+                    //String.format("\"'%s'\" bif:contains ?o. \n", value)  +
+                    "}";
       TupleQueryResult res = doTupleQuery(qStr);
       JsonArray results = new JsonArray();
       while (res.hasNext()) {
@@ -197,35 +202,27 @@ public class VirtuosoRdf4jService implements MetadataService{
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
-      long totalStartTime = System.nanoTime();
-      if (jsonMetadata.getString("name").contains(" ")) {
+      /*if (jsonMetadata.getString("name").contains(" ")) {
         throw new Exception("Empty space is not allowed in name.");
       }
       else if (jsonMetadata.getString("unit").contains(" ")) {
         throw new Exception("Empty space is not allowed in unit.");
-      }
+      }*/
       // Check if the name already exists
       String nameStr = jsonMetadata.getString("name");
-      /*
-      ParameterizedSparqlString pss = getDefaultPss();
-      pss.setCommandText("select ?s where {?s citadel:name ?name .}");
-      pss.setParam("name", name);
-      ResultSet res = sparqlQuery(pss.toString());
-      */
       long startTime = System.nanoTime();
       Value name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
-      //ResultSet res = findByStringValue("name", nameStr);
       JsonArray res = findByStringValue("name", name.stringValue());
-      //Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
       if (res.size() > 0) {
         resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
       } else {
         // Create the point
         startTime = System.nanoTime();
-        String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
+        //String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
         IRI point = factory.createIRI(EX, uuid);
         Value pointType = withPrefixValue("pointType", jsonMetadata.getString("pointType"));
-        conn.add(point, a, pointType);
+        conn.add(point, a, pointType, context);
         Value unit = withPrefixValue("unit", jsonMetadata.getString("unit"));
         conn.add(point,  hasUnit, unit, context);
         conn.add(point,  hasName, name, context);
@@ -271,7 +268,7 @@ public class VirtuosoRdf4jService implements MetadataService{
       resultHandler.handle(Future.failedFuture(e));
     }
   }
-
+  
   @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
     try {

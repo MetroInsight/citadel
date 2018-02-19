@@ -224,8 +224,8 @@ public class MetadataRestApi extends RestApiTemplate {
       
       //TODO: Once implemented, add if the point exists in redis cache.
       
-      String uuid = UUID.randomUUID().toString();
-      point.put("uuid", uuid);// This is later used by metadataService.createPoint
+      //String uuid = UUID.randomUUID().toString();
+      //point.put("uuid", uuid);// This is later used by metadataService.createPoint
       point.put("userId", userId);// This can be later used by metadataService.createPoint to link a point to
                                   // userID
 
@@ -245,6 +245,7 @@ public class MetadataRestApi extends RestApiTemplate {
         } else {
 
           // we succeeded
+          String uuid = ar.result();
 
           // inserts the owner token, userId and ds_ID into the hbase metadata table
           Auth_meta.insert_ds_owner(uuid, userToken, userId);

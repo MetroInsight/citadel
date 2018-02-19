@@ -21,7 +21,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
 /*
@@ -37,7 +38,7 @@ public class Authorization_MetaData {
   String hbaseSitePath;
 
   public String userToken = "userToken";
-  static TableName table_meta = TableName.valueOf("metadata4");
+  static TableName table_meta;
   static String family_ds = "ds";
   static String family_user = "user";
   static String family_policy = "policy";// this family will be storing like: userid and policy with it,
@@ -51,6 +52,10 @@ public class Authorization_MetaData {
   Table table = null;
 
   public Authorization_MetaData(String hbaseSitePath) {
+    Buffer confBuffer = Vertx.vertx().fileSystem().readFileBlocking("./src/main/resources/conf/citadel-conf.json");
+    JsonObject configs = new JsonObject(confBuffer);
+    String tableName = configs.getString("auth.hbase.tablename");
+    table_meta = TableName.valueOf(tableName);
     this.hbaseSitePath = hbaseSitePath;
     create_connection();
     create_table();

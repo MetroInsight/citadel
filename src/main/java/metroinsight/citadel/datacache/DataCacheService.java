@@ -32,4 +32,8 @@ public interface DataCacheService {
   
   void upsertIndex(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh);
   
+  void getUserServiceInfo(String identity, String serviceName, Handler<AsyncResult<JsonObject>> rh);
+  
+  void setUserServiceInfo(String identity, String serviceName, JsonObject data, Handler<AsyncResult<Void>> rh);
+  
 }

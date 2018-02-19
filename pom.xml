@@ -23,7 +23,7 @@
 		<jena.version>3.0.1</jena.version>
 		<rdf4j.version>2.1.4</rdf4j.version>
 		<hbase.hadoop.version>2.7.3</hbase.hadoop.version>
-    <maven.test.skip>true</maven.test.skip>
+    <maven.test.skip>false</maven.test.skip>
 	</properties>
 
 	<dependencies>

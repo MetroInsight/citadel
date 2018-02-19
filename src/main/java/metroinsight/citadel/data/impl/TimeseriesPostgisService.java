@@ -44,11 +44,13 @@ public class TimeseriesPostgisService implements DataService {
   int DEFAULT_OFFSET = 0;
 
   public TimeseriesPostgisService(Vertx vertx, ServiceDiscovery discovery, String host, int port, String user,
-      String password) {
+      String password, String dbName, String tableName) {
+    TABLE_NAME = tableName;
+    DB_NAME = dbName;
     this.vertx = vertx;
     this.discovery = discovery;
 
-    PgPoolOptions options = new PgPoolOptions().setPort(5432).setHost(host).setDatabase(DB_NAME).setUsername(user)
+    PgPoolOptions options = new PgPoolOptions().setPort(port).setHost(host).setDatabase(DB_NAME).setUsername(user)
         .setPassword(password).setSsl(false).setMaxSize(10);
     client = PgClient.pool(this.vertx, options);
     createTable(tableRes -> {
@@ -92,23 +94,22 @@ public class TimeseriesPostgisService implements DataService {
                             rh.handle(Future.succeededFuture());
                             conn.close();
                           } else {
-                            rh.handle(Future.failedFuture(res4.cause()));
+                            rh.handle(Future.failedFuture(res4.cause().getMessage()));
                             conn.close();
                           }
                         });
                       } else {
-                        rh.handle(Future.failedFuture(res3.cause()));
+                        rh.handle(Future.failedFuture(res3.cause().getMessage()));
                         conn.close();
                       }
                       });
                     } else {
-                      Throwable aaa = res2.cause();
-                      rh.handle(Future.failedFuture(res2.cause()));
+                      rh.handle(Future.failedFuture(res2.cause().getMessage()));
                       conn.close();
                     }
                     });
               } else {
-                rh.handle(Future.failedFuture(res1.cause()));
+                rh.handle(Future.failedFuture(res1.cause().getMessage()));
                 conn.close();
               }
             });
@@ -119,13 +120,13 @@ public class TimeseriesPostgisService implements DataService {
               rh.handle(Future.succeededFuture());
               conn.close();
             } else {
-              rh.handle(Future.failedFuture(res0.cause()));
+              rh.handle(Future.failedFuture(res0.cause().getMessage()));
               conn.close();
             }
           }
         });
       } else {
-        rh.handle(Future.failedFuture(connRes.cause()));
+        rh.handle(Future.failedFuture(connRes.cause().getMessage()));
       }
     });
   }
@@ -181,14 +182,13 @@ public class TimeseriesPostgisService implements DataService {
             if (res.succeeded()) {
               rh.handle(Future.succeededFuture());
             } else {
-              Throwable ress = res.cause();
-              rh.handle(Future.failedFuture(res.cause()));
+              rh.handle(Future.failedFuture(res.cause().getMessage()));
             }
             conn.close();
           });
           }
         } else {
-          rh.handle(Future.failedFuture(r0.cause()));
+          rh.handle(Future.failedFuture(r0.cause().getMessage()));
         }
       });
     } catch (Exception e) {
@@ -217,10 +217,8 @@ public class TimeseriesPostgisService implements DataService {
               + "SET value = excluded.value;";
           //q = q.substring(0, q.length() -2) + ";";
           client.query(q, res -> {
-            Throwable ress = res.cause();
             if (res.failed()) {
-              String reason = res.cause().getMessage();
-              rh.handle(Future.failedFuture(res.cause()));
+              rh.handle(Future.failedFuture(res.cause().getMessage()));
             }
           });
           q = "";
@@ -316,11 +314,11 @@ public class TimeseriesPostgisService implements DataService {
               rh.handle(Future.succeededFuture(jsonRes));
             } else {
               System.out.println("query failed!!!");
-              rh.handle(Future.failedFuture(res.cause()));
+              rh.handle(Future.failedFuture(res.cause().getMessage()));
             }
           });
         } else {
-          rh.handle(Future.failedFuture(res0.cause()));
+          rh.handle(Future.failedFuture(res0.cause().getMessage()));
         }
       });
     } catch (Exception e) {
@@ -344,7 +342,7 @@ public class TimeseriesPostgisService implements DataService {
     int port = 5432;
     String user = "citadeluser";
     String pw = "bs4[hMNjdf1";
-    TimeseriesPostgisService tsService = new TimeseriesPostgisService(vertx, discovery, host, port, user, pw);
+    TimeseriesPostgisService tsService = new TimeseriesPostgisService(vertx, discovery, host, port, user, pw, "citadel", "measurements");
     Long ts = 1517791709000L;
 
     double lng = -117.232959;

@@ -47,7 +47,9 @@ public class DataRestApi extends RestApiTemplate {
         configs.getString("data.postgresql.hostname"), 
         configs.getInteger("data.postgresql.port"), 
         configs.getString("data.postgresql.user"),
-        configs.getString("data.postgresql.password"));
+        configs.getString("data.postgresql.password"),
+        configs.getString("data.postgresql.dbname"),
+        configs.getString("data.postgresql.tablename"));
     this.vertx = vertx;
     cacheService = new RedisDataCacheService(vertx, configs.getString("datacache.redis.hostname"));
     //metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);

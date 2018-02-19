@@ -4,6 +4,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import metroinsight.citadel.federation.impl.MesoWest.MesoWestConnector;
 
 public class TestServerRunner {
 

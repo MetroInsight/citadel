@@ -27,6 +27,11 @@ This is a Maven project. You can use any mvn commands.
 
    (1) [Install](https://redis.io/topics/quickstart)
 
+6. Install PostgreSQL, TimescaleDB, PostGIS
+   (1) [PostgreSQL](https://gist.github.com/alistairewj/8aaea0261fe4015333ddf8bed5fe91f8) 
+   (2) [TimescaleDB](https://github.com/timescale/timescaledb/issues/111#issuecomment-361797406)
+   (3) Install PostGIS from apt repository.
+
 
 
 ### Set up dev env.

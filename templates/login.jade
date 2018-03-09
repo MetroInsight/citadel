@@ -1,10 +1,16 @@
 doctype html
 html(lang="en")
   head 
-    title Citadel 
+    title= "Citadel"
+    meta(charset='utf-8')
+    meta(content="text/html;charset=utf-8")
     meta(name="google-signin-scope", content="profile email")
-    meta(name="google-signin-client_id", content="647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com")
+    meta(name="google-signin-client_id", content=cid)
     script(src="https://apis.google.com/js/platform.js?onload=onLoad",async defer)
+    script.
+      port="#{port}";
+    script.
+      ipaddress="#{ipaddress}";
     script(type='text/javascript',src="/scripts/login.js")
   body
     div(align="center")

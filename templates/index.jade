@@ -2,8 +2,12 @@ doctype html
 html 
  head
   title Citadel
-  meta(name="google-signin-client_id", content="647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com")
+  meta(charset='utf-8')
+  meta(content="text/html;charset=utf-8")
+  meta(name="google-signin-client_id", content=cid)
   script(src="https://apis.google.com/js/platform.js?onload=onLoad",async defer)
+  script.
+    ipaddress="#{ipaddress}";
   script(type='text/javascript',src="/scripts/login.js")
   link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js")

@@ -1,11 +1,9 @@
-//var ipaddress='https://citadel.westus.cloudapp.azure.com';
-var ipaddress='https://localhost';
 
  function SendToken(token)
     {
     	 //console.log("ID Token: " + id_token);
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', ipaddress+':8088/api/token');
+        xhr.open('POST', ipaddress+':' + port + '/api/token');
         
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.onload = function() {
@@ -35,7 +33,7 @@ function onSignIn(googleUser) {
         console.log("Sending ID Token: " + id_token);
         SendToken(id_token); 
         setTimeout(function(){
-	     window.location= ipaddress+":8088/index";
+	     window.location= ipaddress+":"+port+"/index";
         },50);
         
       }
@@ -47,7 +45,7 @@ function onSignIn(googleUser) {
 
     	   var xhr = new XMLHttpRequest();
            
-            xhr.open('POST', ipaddress+':8088/logout');
+            xhr.open('POST', ipaddress+':'+port+'/logout');
             //xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
               console.log('Signed out called: ' + xhr.responseText);
@@ -57,7 +55,7 @@ function onSignIn(googleUser) {
             
             gapi.auth2.getAuthInstance().signOut().then(function () {
     	      console.log('User signed out.');
-    	      window.location= ipaddress+":8088/login";
+    	      window.location= ipaddress+":"+port+"/login";
     	    }).catch(function(error){
     	    	console.log('Error occured in signed out.');
     	    	console.log(error.message);

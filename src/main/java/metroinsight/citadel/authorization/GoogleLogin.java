@@ -1,17 +1,8 @@
 package metroinsight.citadel.authorization;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mongo.MongoClient;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.Session;
-import io.vertx.ext.web.templ.JadeTemplateEngine;
-
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
@@ -21,16 +12,30 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
+import de.neuland.jade4j.JadeConfiguration;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.Session;
+import io.vertx.ext.web.templ.JadeTemplateEngine;
+
 public class GoogleLogin {
 
   // String usergmail="";
   // String username="";
   private final Vertx vertx;
   private JsonObject configs;
+  String googleCid;
+  Map<String, Object> frontConfig;
 
   public GoogleLogin(Vertx vertx, JsonObject configs) {
     this.vertx = vertx;
     this.configs = configs;
+    googleCid = configs.getString("auth.google.cid");
+    frontConfig = new HashMap<String, Object>();
+    frontConfig.put("ipaddress", configs.getString("auth.google.hostname"));
+    frontConfig.put("port", configs.getInteger("auth.http.port").toString());
+    frontConfig.put("cid", googleCid);
   }
 
   public void DisplayToken(RoutingContext rc) {
@@ -62,7 +67,7 @@ public class GoogleLogin {
     HttpTransport transport = new NetHttpTransport();
 
     GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-        .setAudience(Collections.singletonList(configs.getString("auth.google.cid")))
+        .setAudience(Collections.singletonList(googleCid))
         //.setAudience(Collections.singletonList("647740225111-42ei85rkp2o7pes54unj9lm9kqc2hvpg.apps.googleusercontent.com"))
         // Or, if multiple clients access the backend:
         // .setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
@@ -122,10 +127,9 @@ public class GoogleLogin {
       System.out.println("Session id in DisplayLoginJade:" + session.id());
 
       try {
-
         System.out.println("Testing:" + session.data());
-
-        login = session.get("login");
+        //login = session.get("login");
+        login = false;
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -136,6 +140,8 @@ public class GoogleLogin {
 
     JadeTemplateEngine engine = JadeTemplateEngine.create();
     // and now delegate to the engine to render it.
+    JadeConfiguration jadeConfig = engine.getJadeConfiguration();
+    jadeConfig.setSharedVariables(frontConfig);
 
     if (login == false) {
       System.out.println("User is not logged in DisplayLoginJade");
@@ -196,7 +202,8 @@ public class GoogleLogin {
     // end check
 
     JadeTemplateEngine engine = JadeTemplateEngine.create();
-    // and now delegate to the engine to render it.
+    JadeConfiguration jadeConfig = engine.getJadeConfiguration();
+    jadeConfig.setSharedVariables(frontConfig);
 
     if (login == false) {
 
@@ -231,30 +238,6 @@ public class GoogleLogin {
        */
 
       try {
-        /*
-         * Deosn't work in jar, don't know why. It works fine in the Eclipse, Dependency
-         * problem of jackson.core.JsonGenerator.writeStartObject
-         */
-
-        // MongoService metadataService=new MongoService (vertx);
-        // JsonObject query= new JsonObject();
-        /*
-         * metadataService.queryPoint2(query,email, ar -> { if (ar.failed()) {
-         * System.out.println(ar.cause().getMessage()); } else {
-         * 
-         * JsonArray pointResult = ar.result(); //String
-         * pointResult2=pointResult.toString()+"<br><br>";
-         * System.out.println("User Sensors:"+pointResult);
-         * 
-         * rc.put("userSensors",pointResult.toString());
-         * 
-         * engine.render(rc, "templates/index.jade", res2 -> { if (res2.succeeded()) {
-         * rc.response().end(res2.result()); } else { rc.fail(res2.cause()); } });
-         * 
-         * }//end else
-         * 
-         * });
-         */
 
         engine.render(rc, "templates/index.jade", res2 -> {
           if (res2.succeeded()) {

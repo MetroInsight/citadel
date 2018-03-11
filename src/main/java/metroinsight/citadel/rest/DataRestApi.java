@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import io.vertx.core.AsyncResult;
@@ -16,12 +15,11 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.serviceproxy.ProxyHelper;
-import metroinsight.citadel.authorization.Authorization_MetaData;
+import metroinsight.citadel.authorization.authmetadata.AuthorizationMetadata;
+import metroinsight.citadel.authorization.authmetadata.impl.AuthMetadataMongodb;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.data.DataService;
-import metroinsight.citadel.data.impl.GeomesaService;
 import metroinsight.citadel.data.impl.TimeseriesPostgisService;
 import metroinsight.citadel.datacache.DataCacheService;
 import metroinsight.citadel.datacache.impl.RedisDataCacheService;
@@ -35,7 +33,7 @@ public class DataRestApi extends RestApiTemplate {
   /*
    * Used to verify that every data operation is validated with UserToken
    */
-  Authorization_MetaData Auth_meta_data;
+  AuthorizationMetadata authMetadata;
 
   private DataService dataService;
   Vertx vertx;
@@ -54,7 +52,7 @@ public class DataRestApi extends RestApiTemplate {
     cacheService = new RedisDataCacheService(vertx, configs.getString("datacache.redis.hostname"));
     //metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
     metadataService = MetadataService.createProxy(vertx, MetadataService.ADDRESS);
-    Auth_meta_data = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
+    authMetadata = new AuthMetadataMongodb();
   }
 
   void upsertCache(String uuid, JsonObject data, Handler<AsyncResult<Void>> rh) {
@@ -104,22 +102,11 @@ public class DataRestApi extends RestApiTemplate {
         return ;
       }
       */
-      String userId = Auth_meta_data.get_userID(token); // extracting userId for this token
+      String userId = authMetadata.getUserId(token); // extracting userId for this token
       if (userId.equals("")) {
         sendErrorResponse(resp, 400, ErrorMessages.USER_NOT_FOUND);
       }
-      /*
-       * Getting the uuids and policies defined for this user
-       */
-      /*Map<String, String> policies = Auth_meta_data.get_policy_uuids(userId);
-      if (policies.size() == 0) {
-        sendErrorResponse(resp, 401, ErrorMessages.USER_NOT_AUTORIZED);
-        return ;
-        }
-      */
-      // HttpServerResponse resp = getDefaultResponse(rc);
       BaseContent content = new BaseContent();
-      //dataService.queryData(query, policies, ar -> {
       dataService.queryData(query, null, ar -> {
         String cStr;
         String cLen;
@@ -172,12 +159,12 @@ public class DataRestApi extends RestApiTemplate {
         // Check userToken is Valid or Not
         String token = body.getString("userToken");
 
-        if (data.size() > 0 && !token.equals("")) {
+        if (data.size() > 0 && token != null) {
 
           // for the token extract the userId, this verifies that token is of valid user
-          String userId = Auth_meta_data.get_userID(token);
+          String userId = authMetadata.getUserId(token);
 
-          if (!userId.equals("")) {
+          if (userId != null) {
 
             //// Validate if the UUIDs are valid.
             // Extract unique uuids in the data.
@@ -193,7 +180,7 @@ public class DataRestApi extends RestApiTemplate {
             for (String uuid : uuids) {
 
               // extract the DS ownerID for uuid
-              String ownerId = Auth_meta_data.get_ds_owner_id(uuid);
+              String ownerId = authMetadata.getDsOwnerId(uuid);
               if (!ownerId.equals(userId)) {
                 user_validated = false;
                 break;

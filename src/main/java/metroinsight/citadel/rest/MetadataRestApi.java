@@ -1,14 +1,13 @@
 package metroinsight.citadel.rest;
 
-import java.util.UUID;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.serviceproxy.ProxyHelper;
-import metroinsight.citadel.authorization.Authorization_MetaData;
+import metroinsight.citadel.authorization.authmetadata.AuthorizationMetadata;
+import metroinsight.citadel.authorization.authmetadata.impl.AuthMetadataMongodb;
 import metroinsight.citadel.common.ErrorMessages;
 import metroinsight.citadel.common.RestApiTemplate;
 import metroinsight.citadel.datacache.DataCacheService;
@@ -21,21 +20,15 @@ public class MetadataRestApi extends RestApiTemplate {
   private DataCacheService cacheService;
   Vertx vertx;
 
-  /*
-   * Used to validate user token is valid in every operation on MetaData
-   */
-  Authorization_MetaData Auth_meta;
+  AuthorizationMetadata authMetadata;
+
 
   public MetadataRestApi(Vertx vertx, JsonObject configs) {
+    this.vertx = vertx;
     this.configs = configs;
+    authMetadata = new AuthMetadataMongodb();
     metadataService = ProxyHelper.createProxy(MetadataService.class, vertx, MetadataService.ADDRESS);
     cacheService = ProxyHelper.createProxy(DataCacheService.class, vertx, DataCacheService.ADDRESS);
-    this.vertx = vertx;
-    /*
-     * Initializing Auth Metadata
-     */
-    Auth_meta = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
-
   }
 
   public void queryPoint(RoutingContext rc) {
@@ -70,15 +63,14 @@ public class MetadataRestApi extends RestApiTemplate {
     }
     JsonObject metadata = body.getJsonObject("metadata");
     String userToken = body.getString("userToken");
-    String userId = Auth_meta.get_userID(userToken);
+    String userId = authMetadata.getUserId(userToken);
     // TOOD: IMPORTANT: Check if the user has the right level of permission.
     if (metadata.containsKey("owner")) {
       // This transfers ownership currently. TODO: Maybe just add owner?
       // TODO: Need to remove previous relevant metadata and policy.
       String newOwnerId = metadata.getString("owner");
-      String newOwnerToken = Auth_meta.get_userID(newOwnerId);
-      Auth_meta.insert_ds_owner(uuid, newOwnerToken, newOwnerId);
-      Auth_meta.insert_policy(uuid, newOwnerId, "true");
+      authMetadata.insertDsOwner(uuid, newOwnerId);
+      authMetadata.insert_policy(uuid, newOwnerId, "true");
     }
     // TODO: Evaluate if the keys/values are valid.
     metadataService.upsertMetadata(uuid, metadata, ar -> {
@@ -204,19 +196,16 @@ public class MetadataRestApi extends RestApiTemplate {
         System.out.println("In MetadataRestApi: Insert data parameters are missing");
         sendErrorResponse(resp, 400, "Parameters are missing");
         */
-      if (!body.containsKey(Auth_meta.userToken)) {
-        System.out.println("Token is not Valid");
+      if (!body.containsKey("userToken")) {
         sendErrorResponse(resp, 400, ErrorMessages.EMPTY_SEC_TOKEN);
         return ;
       }
-      String userToken = body.getString(Auth_meta.userToken);
-      // check if this token exists in the HBase, and if it exists, what is the userID
-      String userId = Auth_meta.get_userID(userToken);
-      if (userId.equals("")) {// user is present in the system
+      String token = body.getString("userToken");
+      String userId = authMetadata.getUserId(token);
+      if (userId == null) {
         sendErrorResponse(resp, 400, ErrorMessages.USER_NOT_FOUND);
         return ;
       }
-      // token exists and is linked to the valid userId
       JsonObject point = body.getJsonObject("point");
       if (!point.containsKey("name")) {
         sendErrorResponse(resp, 400, ErrorMessages.PARAM_MISSING);
@@ -248,10 +237,10 @@ public class MetadataRestApi extends RestApiTemplate {
           String uuid = ar.result();
 
           // inserts the owner token, userId and ds_ID into the hbase metadata table
-          Auth_meta.insert_ds_owner(uuid, userToken, userId);
+          authMetadata.insertDsOwner(uuid, userId);
 
           // insert the policy for Owner to default "true", no-space-time constraints
-          Auth_meta.insert_policy(uuid, userId, "true");
+          authMetadata.insert_policy(uuid, userId, "true");
 
           // Construct response object.
           resp.setStatusCode(201);

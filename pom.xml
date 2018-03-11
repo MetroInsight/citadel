@@ -19,14 +19,22 @@
 		<scala.abi.version>2.11</scala.abi.version>
 		<vertx.version>3.5.0</vertx.version>
     <pgclient.version>0.5.0</pgclient.version>
-		<hbase.version>1.1.13</hbase.version>
 		<jena.version>3.0.1</jena.version>
-		<rdf4j.version>2.1.4</rdf4j.version>
+    <!--
 		<hbase.hadoop.version>2.7.3</hbase.hadoop.version>
-    <maven.test.skip>false</maven.test.skip>
+		<hbase.version>1.1.13</hbase.version>
+    -->
+    <rdf4j.version>2.1.4</rdf4j.version>
+    <mongo.version>3.6.3</mongo.version>
+    <maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${mongo.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
@@ -41,6 +49,7 @@
 
 		<!-- HBase -->
 
+    <!--
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
 			<artifactId>hbase-client</artifactId>
@@ -69,6 +78,7 @@
 			<version>${hbase.hadoop.version}</version>
 			<scope>compile</scope>
 		</dependency>
+    -->
 
 		<!-- GeoMesa -->
 
@@ -223,8 +233,6 @@
 
 
 		<!-- Other -->
-		<!-- <dependency> <groupId>de.flapdoodle.embed</groupId> <artifactId>de.flapdoodle.embed.mongo</artifactId> 
-			<version>1.50.0</version> <scope>test</scope> </dependency> -->
 
 		<!-- Jena and Virtuoso -->
 
@@ -252,14 +260,12 @@
 			<groupId>com.openlinksw.vos</groupId>
 			<artifactId>virtjdbc</artifactId>
 			<version>4.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-runtime</artifactId>
       <version>${rdf4j.version}</version>
-		</dependency>
-
-
+    </dependency>
 
 		<!-- end debug pom -->
 

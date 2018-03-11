@@ -36,6 +36,12 @@ public class VirtuosoRdf4jService implements MetadataService{
   ValueFactory factory;
   RepositoryConnection conn;
 
+  // public static final String VIRTUOSO_INSTANCE = "mc64";
+  //public static final String VIRTUOSO_INSTANCE = "localhost";
+  //public static final int VIRTUOSO_PORT = 1111;
+  //public static final String VIRTUOSO_USERNAME = "dba";
+  //public static final String VIRTUOSO_PASSWORD = "dba";
+
   // Prefixes
   final String CITADEL = "http://metroinsight.io/citadel#";
   final String RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -133,11 +139,6 @@ public class VirtuosoRdf4jService implements MetadataService{
     return propertyMap.getOrDefault(id, factory.createIRI(EX, id));
   }
 
-  // public static final String VIRTUOSO_INSTANCE = "mc64";
-  public static final String VIRTUOSO_INSTANCE = "localhost";
-  public static final int VIRTUOSO_PORT = 1111;
-  public static final String VIRTUOSO_USERNAME = "dba";
-  public static final String VIRTUOSO_PASSWORD = "dba";
 
   public static void log(String mess) {
     System.out.println("   " + mess);

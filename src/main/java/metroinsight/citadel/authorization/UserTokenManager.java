@@ -9,48 +9,40 @@ import javax.crypto.spec.SecretKeySpec;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.vertx.core.json.JsonObject;
+import metroinsight.citadel.authorization.authmetadata.AuthorizationMetadata;
+import metroinsight.citadel.authorization.authmetadata.impl.AuthMetadataMongodb;
 
 public class UserTokenManager {
 
-  //static Authorization_MetaData hmetadata = new Authorization_MetaData();
-  static Authorization_MetaData hmetadata = null;
-  static byte[] keyJWT = null;
-  static SecretKey secretKeyJWT = null;
-  static JsonObject configs;
+  AuthorizationMetadata authMetadata;
+  byte[] keyJWT = null;
+  SecretKey secretKeyJWT = null;
+  JsonObject configs;
 
-  public static void initialize(JsonObject importedConfigs) {
+  public UserTokenManager(JsonObject importedConfigs) {
     configs = importedConfigs;
-    
-    hmetadata = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
-
-    // System.out.println("initialize() called");
-    if (hmetadata.connection == null) {
-      hmetadata.create_connection();
-      // called only during once when connection is null
-      hmetadata.create_table();// will create table only if not already exist.
-    } // end if
+    authMetadata = new AuthMetadataMongodb();
     if (keyJWT == null) {
       keyJWT = Base64.getDecoder().decode("E1ECdGKpx5elfSMyoFLzlQ==");/* Loading from the conf file */
       secretKeyJWT = new SecretKeySpec(keyJWT, 0, keyJWT.length, "AES");
-    } // end if
+    }
+  }
 
-  }// end initialize()
-
-  public static String generateToken(String email) {
-    String token = hmetadata.get_token(email);// email is the userID
-
-    if (token.equals(""))// empty token, user is logging first time.
-    {
-      token = getJWT();// generate a unique JWT token for user
-
-      System.out.println("Creating New Token");
-      token = hmetadata.insert_token(email, token);
-    } // end if
-
+  private String generateToken(String userId) {
+    String token = getJWT();
+    authMetadata.insertToken(userId, token);
     return token;
-  }// end generateToken()
+  }
+  
+  public String getToken(String email) {
+    String token = authMetadata.getToken(email);
+    if (token == null) {
+      token = generateToken(email);
+    }
+    return token;
+  }
 
-  public static String getJWT() {
+  private String getJWT() {
     String id = UUID.randomUUID().toString();
     String compactJws = Jwts.builder()
         // .setSubject("sub")/*Use in future*/

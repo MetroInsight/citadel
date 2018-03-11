@@ -9,22 +9,23 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
-import metroinsight.citadel.authorization.Authorization_MetaData;
-import metroinsight.citadel.common.RestApiTemplate;
-import metroinsight.citadel.model.BaseContent;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import metroinsight.citadel.authorization.authmetadata.AuthorizationMetadata;
+import metroinsight.citadel.authorization.authmetadata.impl.AuthMetadataMongodb;
+import metroinsight.citadel.common.RestApiTemplate;
+import metroinsight.citadel.model.BaseContent;
 
 public class PolicyRestApi extends RestApiTemplate {
 
-  Authorization_MetaData Auth_meta_data_policy; // Authorization_MetaData class contains functions of authorization and
+  AuthorizationMetadata authMetadata;
                                                 // access control
 
   public PolicyRestApi(JsonObject configs) {
     this.configs = configs;
-    Auth_meta_data_policy = new Authorization_MetaData(configs.getString("auth.hbase.sitefile"));
+    authMetadata = new AuthMetadataMongodb();
   }
 
   /*
@@ -68,9 +69,9 @@ public class PolicyRestApi extends RestApiTemplate {
         System.out.println("userToken is:" + userToken);
 
         if (proceed && !userToken.equals(""))
-          ownerId = Auth_meta_data_policy.get_userID(userToken);
+          ownerId = authMetadata.getUserId(userToken);
 
-        if (proceed && ownerId.equals("")) {
+        if (proceed && ownerId == null) {
           System.out.println("Token is not valid");
           sendErrorResponse(resp, 400, "Api-Token doesn't exist or it doesn't have required priveleges");
           proceed = false;
@@ -93,10 +94,10 @@ public class PolicyRestApi extends RestApiTemplate {
           // Given the DsID fetch the ownerId
           String ownerId_ds = "";
           if (proceed)
-            ownerId_ds = Auth_meta_data_policy.get_ds_owner_id(ds_id);
+            ownerId_ds = authMetadata.getDsOwnerId(ds_id);
 
           // ownerId_ds.equals("") means ds_id is not a valid ds_id
-          if (proceed && (ownerId_ds.equals("") || !ownerId_ds.equals(ownerId))) {
+          if (proceed && (ownerId_ds == null || !ownerId_ds.equals(ownerId))) {
             owner_verified = false; // if one of the datastream is not owner's datastream we don't proceed ahead,
                                     // May be change this behavior in future
             System.out.println(
@@ -130,12 +131,12 @@ public class PolicyRestApi extends RestApiTemplate {
 
             // check is userId exist in Citadel
             // given a userId check if its token exist in the Citadel
-            String user_token = "";
+            String user_token = null;
 
             if (proceed)
-              user_token = Auth_meta_data_policy.get_token(userId);
+              user_token = authMetadata.getToken(userId);
 
-            if (proceed && user_token.equals("")) {
+            if (proceed && user_token == null) {
               System.out.println("userID: " + userId + " doesn't exist in Citadel");
               users_verified = false;
               sendErrorResponse(resp, 400, users.getString(i) + " : doesn't exist in Citadel");
@@ -386,7 +387,7 @@ public class PolicyRestApi extends RestApiTemplate {
                 // correct policy
                 if (proceed) {
                   // everything is correct, let us insert this policy
-                  Auth_meta_data_policy.insert_policy(dsId, userId, PolicyString);// this is default policy with
+                  authMetadata.insert_policy(dsId, userId, PolicyString);// this is default policy with
                                                                                   // no-space time constraints, with
                                                                                   // constraints we need to update this
                 } // end if(proceed)

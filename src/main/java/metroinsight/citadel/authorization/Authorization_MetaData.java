@@ -37,7 +37,7 @@ public class Authorization_MetaData {
   // String
   String hbaseSitePath;
 
-  public String userToken = "userToken";
+  public final String userToken = "userToken";
   static TableName table_meta;
   static String family_ds = "ds";
   static String family_user = "user";

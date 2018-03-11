@@ -61,7 +61,6 @@ public class AuthMetadataMongodb implements AuthorizationMetadata {
     Document doc = new Document()
         .append("userId", userId)
         .append("token", token);
-    //UpdateResult res = userColl.replaceOne(query, doc, new UpdateOptions().upsert(true));
     if (!userColl.replaceOne(query, doc, new UpdateOptions().upsert(true)).wasAcknowledged()) {
       throw new java.lang.Error("Failed at insertion");
     }
@@ -89,7 +88,6 @@ public class AuthMetadataMongodb implements AuthorizationMetadata {
 
   @Override
   public String getDsOwnerId(String dsId) {
-    // TODO Auto-generated method stub
     BasicDBObject query = new BasicDBObject("dsId", dsId);
     Document ds = dsColl.find(query).first();
     String ownerId = (String) getValueOrNull(ds, "owner");

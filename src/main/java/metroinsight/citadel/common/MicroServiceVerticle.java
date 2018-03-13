@@ -45,7 +45,10 @@ public class MicroServiceVerticle extends AbstractVerticle {
     } else if (sslType.equals("pemfile")) {
       httpOptions.setPemKeyCertOptions(new PemKeyCertOptions().setCertPath(configs.getString("ssl.pem.certfile"))
           .setKeyPath(configs.getString("ssl.pem.keyfile")));
+    } else if (sslType.equals("nossl")){
+      httpOptions.setSsl(false);
     } else {
+      System.out.println("SSL Type is incorrectly specified as: " + sslType);
       httpOptions.setSsl(false);
     }
     return httpOptions;

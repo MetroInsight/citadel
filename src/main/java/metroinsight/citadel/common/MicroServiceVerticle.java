@@ -35,7 +35,10 @@ public class MicroServiceVerticle extends AbstractVerticle {
 
   protected HttpServerOptions getBaseHttpOptions() {
     JsonObject configs = config();
-    HttpServerOptions httpOptions = new HttpServerOptions().setSsl(true);
+    HttpServerOptions httpOptions = new HttpServerOptions()
+    		.setSsl(true)
+    		.setTcpKeepAlive(true)
+    		.setIdleTimeout(90);
     String sslType = configs.getString("ssl.type", "nossl");
     if (sslType.equals("jks")) {
       httpOptions.setKeyStoreOptions(

@@ -184,7 +184,7 @@ public class VirtuosoRdf4jService implements MetadataService{
                     "SELECT ?s FROM <" + context + "> WHERE {\n" +
                     String.format("?s citadel:%s ?o .\n", tag) +
                     String.format("?o bif:contains \"'%s'\". \n", value) + 
-                    String.format("FILTER (?o=\"'%s'\")\n", value) +
+                    //String.format("FILTER (?o=\"'%s'\")\n", value) +
                     //String.format("\"'%s'\" bif:contains ?o. \n", value)  +
                     "}";
       TupleQueryResult res = doTupleQuery(qStr);

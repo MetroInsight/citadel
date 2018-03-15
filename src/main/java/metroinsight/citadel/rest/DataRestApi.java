@@ -122,7 +122,7 @@ public class DataRestApi extends RestApiTemplate {
           cLen = Integer.toString(cStr.length());
           resp.setStatusCode(200);
         }
-        resp.putHeader("content-length", cLen).write(cStr);
+        resp.putHeader("content-length", cLen).write(cStr).end();
         });
     } catch (Exception e) {
       e.printStackTrace();
@@ -258,7 +258,7 @@ public class DataRestApi extends RestApiTemplate {
                     }
                     cStr = content.toString();
                     cLen = Integer.toString(cStr.length());
-                    resp.putHeader("content-length", cLen).write(cStr);
+                    resp.putHeader("content-length", cLen).write(cStr).end();
                   });
                   cacheFuture.complete();
                 }

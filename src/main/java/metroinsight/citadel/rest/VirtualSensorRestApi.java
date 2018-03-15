@@ -41,7 +41,8 @@ public class VirtualSensorRestApi extends RestApiTemplate {
       String cLen = Integer.toString(cStr.length());
       resp
         .putHeader("content-length", cLen)
-        .write(cStr);
+        .write(cStr)
+        .end();
       });
   }
 

@@ -103,7 +103,7 @@ public class MetadataRestApi extends RestApiTemplate {
         }
         String cStr = content.toString();
         String cLen = Integer.toString(cStr.length());
-        resp.putHeader("content-length", cLen).write(cStr);
+        resp.putHeader("content-length", cLen).write(cStr).end();
       });
     }
   }
@@ -250,7 +250,8 @@ public class MetadataRestApi extends RestApiTemplate {
           cStr = pointCreateContent.toString();
         }
         cLen = Integer.toString(cStr.length());
-        resp.putHeader("content-length", cLen).write(cStr);
+        resp.putHeader("content-length", cLen).write(cStr).end();
+        sendSuccesResponse(resp, 201, new JsonArray());
       });
     } catch (Exception e) {
       e.printStackTrace();

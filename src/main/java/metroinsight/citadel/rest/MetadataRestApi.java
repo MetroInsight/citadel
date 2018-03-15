@@ -251,7 +251,6 @@ public class MetadataRestApi extends RestApiTemplate {
         }
         cLen = Integer.toString(cStr.length());
         resp.putHeader("content-length", cLen).write(cStr).end();
-        sendSuccesResponse(resp, 201, new JsonArray());
       });
     } catch (Exception e) {
       e.printStackTrace();

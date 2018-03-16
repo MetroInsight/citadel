@@ -206,7 +206,6 @@ public class DataRestApi extends RestApiTemplate {
               }
 
               // Update Cache if available.
-              Future<Void> cacheFuture = Future.future();
               if (cacheService != null) {
                 String uuid;
                 JsonObject cacheBuffers = new JsonObject();
@@ -231,11 +230,14 @@ public class DataRestApi extends RestApiTemplate {
                   uuid = keyIter.next();
                   upsertCache(uuid, cacheBuffers.getJsonObject(uuid), ar -> {
                     if (ar.failed()) {
-                      cacheFuture.fail(ar.cause());
+                      if (!ar.cause().toString().contains("MISCONF Redis is configured to save RDB snapshots")) {
+                        System.out.println("ERROR: Cache is unavailable, reason: " + ar.cause().toString());
+                      }
                     }
                   });
                 }
               }
+              Future<Void> cacheFuture = Future.future();
 
               // Actual running of uuid checking and then run the insertion.
               CompositeFuture.join(uuidFutList).setHandler(uuidAr -> {

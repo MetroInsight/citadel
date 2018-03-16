@@ -1,6 +1,7 @@
 package metroinsight.citadel.metadata.impl;
 
 import static org.apache.jena.datatypes.xsd.XSDDatatype.XSDstring;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
@@ -17,6 +20,7 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.RDFNode;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -30,6 +34,8 @@ import metroinsight.citadel.metadata.MetadataService;
 import virtuoso.jena.driver.VirtGraph;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
 import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;
+import virtuoso.jena.driver.VirtuosoUpdateFactory;
+import virtuoso.jena.driver.VirtuosoUpdateRequest;
 
 public class VirtuosoService implements MetadataService  {
   private final Vertx vertx;
@@ -106,6 +112,7 @@ public class VirtuosoService implements MetadataService  {
       String valType = valPropMap.get(prop);
       if (valType.equals("string")) {
         return NodeFactory.createLiteralByValue(id, XSDstring);
+//        return NodeFactory.createLiteralByValue(id, XSDstring);
       } else if (valType.equals("citadel")) {
         return NodeFactory.createURI(CITADEL + id);
       } else {
@@ -139,7 +146,10 @@ public class VirtuosoService implements MetadataService  {
     if (value.startsWith("\"") && value.endsWith("\"")) {
       value = value.substring(1, value.length() - 1);
     }
-    qStr += String.format("?s citadel:%s ?o . ?o bif:contains \"'%s'\". }\n", tag, value);
+    qStr += String.format("?s citadel:%s ?o . \n" + 
+                          "?o bif:contains \"%s\". \n" + 
+                          String.format("FILTER (?o=\"%s\")\n", value) + 
+                          "}\n", tag, value);
     pss.setCommandText(qStr);
     return sparqlQuery(pss.toString());
   }
@@ -159,9 +169,52 @@ public class VirtuosoService implements MetadataService  {
     pss.setCommandText(qStr);
     return sparqlQuery(pss.toString());
   }
-  
+
   @Override
   public void queryPoint(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
+    try {
+      // Construct a SPARQL query.
+      ParameterizedSparqlString pss = getDefaultPss();
+      Set<String> keys = query.fieldNames();
+      String qStr = "SELECT ?s WHERE {\n";
+      for (String key : keys) {
+        String value = query.getString(key);
+        Node keyNode = withPrefixProp(key);
+        Node valueNode = withPrefixValue(key, value);
+        if (valueNode.isLiteral()) {
+          //pss.setLiteral(i * 2 + 1, valueNode.toString(), XSDstring);
+          if (valueNode.getLiteralDatatype() == XSDstring) {
+            qStr += "?s <" + keyNode.toString() + "> " + valueNode.toString() + " .\n";
+          } else {
+            qStr += "?s <" + keyNode.toString() + "> " + valueNode.toString() + "^^" + valueNode.getLiteralDatatype().toString() + " .\n";
+            //TODO: Validate the above statement, especially the datatype in the string.
+          }
+        } else {
+          //pss.setIri(i * 2 + 1, valueNode.toString());
+          qStr += "?s <" + keyNode.toString() + "> <" + valueNode.toString() + "> .\n";
+        }
+      }
+      qStr += "?s ?p ?o .\n}";
+      VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(qStr, graph);
+      ResultSet results = vqd.execSelect();
+      
+      // Get UUIDs from the result.
+      HashSet<String> uuidSet = new HashSet<String>();
+      while (results.hasNext()) {
+        String ent = results.nextSolution().get("s").toString();
+        if (ent.contains(EX)) {
+          String uuid = ent.split("#")[1];
+          uuidSet.add(uuid);
+        }
+      }
+      JsonArray uuids = new JsonArray(new ArrayList<String>(uuidSet));
+      resultHandler.handle(Future.succeededFuture(uuids));
+    }catch (Exception e) {
+      resultHandler.handle(Future.failedFuture(e));
+    }
+  }
+  
+  public void queryPoint_deprecated(JsonObject query, Handler<AsyncResult<JsonArray>> resultHandler) {
     try {
       // Construct a SPARQL query.
       ParameterizedSparqlString pss = getDefaultPss();
@@ -183,20 +236,11 @@ public class VirtuosoService implements MetadataService  {
         Node valueNode = withPrefixValue(key, value);
         pss.setIri(i * 2, keyNode.toString());
         if (valueNode.isLiteral()) {
-          pss.setLiteral(i * 2 + 1, "'test_sensor1'", XSDstring);
-          //pss.setLiteral(i * 2 + 1, valueNode.toString(), XSDstring);
+          //pss.setLiteral(i * 2 + 1, "'test_sensor1'", XSDstring);
+          pss.setLiteral(i * 2 + 1, valueNode.toString(), XSDstring);
         } else {
           pss.setIri(i * 2 + 1, valueNode.toString());
         }
-        /*
-        if (key.equals("pointType")) { // TODO: Use map to organize below.
-          key = RDF + "type";
-          value = CITADEL + value;
-        } else if (key.equals("name")) {
-        } else {
-          key = CITADEL + key;
-          value = CITADEL + value;
-        }*/
         i += 1;
       }
       // Run SPARQL query.
@@ -234,7 +278,13 @@ public class VirtuosoService implements MetadataService  {
         while (results.hasNext()) {
           QuerySolution result = results.nextSolution();
           String p = result.get("p").toString().split("#")[1];
-          String o = result.get("o").toString().split("#")[1];
+          RDFNode oNode = result.get("o");
+          String o = null;
+          if (oNode.isLiteral()) {
+            o = oNode.toString();
+          } else {
+            o = result.get("o").toString().split("#")[1];
+          }
           if (p.equals("type")) {
             p = "pointType";
           }
@@ -247,9 +297,79 @@ public class VirtuosoService implements MetadataService  {
       resultHandler.handle(Future.failedFuture(e));
     }
   }
-
+  
+  private String getTripleStr(Node s, Node p, Node o) {
+    String tripleStr = String.format("<%s> <%s> ", s.toString(), p.toString());
+    if (o.isLiteral()) {
+      if (o.getLiteralDatatype() == XSDstring) {
+        tripleStr += String.format("%s ", o.toString());
+      } else {
+        tripleStr += String.format("%s^^%s ", o.toString(), o.getLiteralDatatype().toString());
+      }
+    } else {
+      tripleStr += String.format("<%s> ", o.toString());
+    }
+    
+    tripleStr += ". \n";
+    
+    return tripleStr;
+  }
+  
   @Override
   public void createPoint(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
+    try {
+      long totalStartTime = System.nanoTime();
+      if (jsonMetadata.getString("name").contains(" ")) {
+        throw new Exception("Empty space is not allowed in name.");
+      }
+      else if (jsonMetadata.getString("unit").contains(" ")) {
+        throw new Exception("Empty space is not allowed in unit.");
+      }
+      // Check if the name already exists
+      String nameStr = jsonMetadata.getString("name");
+      long startTime = System.nanoTime();
+      Node name = withPrefixValue("name", nameStr); // TODO: Change name to Literal later
+      //ResultSet res = findByStringValue("name", nameStr);
+      ResultSet res = findByStringValue("name", name.toString());
+      long endTime = System.nanoTime();
+      System.out.println(String.format("Name check time: %f", ((float)endTime - (float)startTime)/1000000));
+      if (res.hasNext()) {
+        resultHandler.handle(Future.failedFuture(ErrorMessages.EXISTING_POINT_NAME));
+      } else {
+        String qstr = String.format("INSERT INTO GRAPH <%s> {\n", graphname);
+        // Create the point
+        String uuid = UUID.randomUUID().toString();
+        Node point = NodeFactory.createURI(EX + uuid);
+        Node pointType = withPrefixValue("pointType", jsonMetadata.getString("pointType"));
+        Node unit = withPrefixValue("unit", jsonMetadata.getString("unit"));
+        qstr += getTripleStr(point, withPrefixProp("name"), name);
+        qstr += getTripleStr(point, withPrefixProp("pointType"), pointType);
+        qstr += getTripleStr(point, withPrefixProp("unit"), unit);
+        
+        Iterator<String> tagIter = jsonMetadata.fieldNames().iterator();
+        while (tagIter.hasNext()) {
+          String tag = tagIter.next();
+          String value = jsonMetadata.getString(tag);
+          if (!tag.equals("unit") && !tag.equals("name") && !tag.equals("uuid") && !tag.equals("pointType")) {
+            qstr += getTripleStr(point, withPrefixProp(tag), withPrefixValue(tag, value));
+          }
+        }
+        qstr += "}\n";
+        VirtuosoUpdateRequest vur = VirtuosoUpdateFactory.create(qstr, graph);
+        vur.exec();
+        endTime = System.nanoTime();
+        System.out.println(String.format("Virtuoso creation time: %f", ((float)endTime - (float)startTime)/1000000));
+        long totalEndTime = System.nanoTime();
+        System.out.println(String.format("Virtuoso createPoint time: %f", ((float)totalEndTime - (float)totalStartTime)/1000000));
+        resultHandler.handle(Future.succeededFuture(uuid));
+      }
+    } catch (Exception e) {
+      resultHandler.handle(Future.failedFuture(e));
+    }
+  }
+
+  //@Override
+  public void createPoint_dep(JsonObject jsonMetadata, Handler<AsyncResult<String>> resultHandler) {
     try {
       long totalStartTime = System.nanoTime();
       if (jsonMetadata.getString("name").contains(" ")) {
@@ -278,7 +398,8 @@ public class VirtuosoService implements MetadataService  {
       } else {
         // Create the point
         startTime = System.nanoTime();
-        String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
+        //String uuid = jsonMetadata.getString("uuid");//UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
         Node point = NodeFactory.createURI(EX + uuid);
         Node pointType = withPrefixValue("pointType", jsonMetadata.getString("pointType"));
         graph.add(new Triple(point, a, pointType));

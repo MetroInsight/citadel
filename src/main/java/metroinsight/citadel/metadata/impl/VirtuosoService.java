@@ -147,7 +147,7 @@ public class VirtuosoService implements MetadataService  {
       value = value.substring(1, value.length() - 1);
     }
     qStr += String.format("?s citadel:%s ?o . \n" + 
-                          "?o bif:contains \"%s\". \n" + 
+                          "?o bif:contains \"'%s'\". \n" + 
                           String.format("FILTER (?o=\"%s\")\n", value) + 
                           "}\n", tag, value);
     pss.setCommandText(qStr);

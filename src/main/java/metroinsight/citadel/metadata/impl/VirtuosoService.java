@@ -450,8 +450,7 @@ public class VirtuosoService implements MetadataService  {
   }
 
   private ResultSet sparqlQuery(String qStr) {
-    Query sparql = QueryFactory.create(qStr);
-    VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(sparql, graph);
+    VirtuosoQueryExecution vqd = VirtuosoQueryExecutionFactory.create(qStr, graph);
     return vqd.execSelect();
   }
   

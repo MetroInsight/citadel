@@ -156,21 +156,6 @@ public class GoogleLogin {
       System.out.println("User is logged in DisplayLoginJade");
 
       DisplayIndexJade(rc);
-
-      /*
-       * //below statement should not return null, if login is true String
-       * email=session.get("usergmail");
-       * 
-       * 
-       * 
-       * String userToken=UserTokenManager.generateToken(email);
-       * 
-       * rc.put("username", email); rc.put("tokens",userToken);
-       * 
-       * //asking user to login in case session is null engine.render(rc,
-       * "templates/index.jade", res -> { if (res.succeeded()) {
-       * rc.response().end(res.result()); } else { rc.fail(res.cause()); } });
-       */
     }
 
   }// end DisplayIndexJade
@@ -233,6 +218,8 @@ public class GoogleLogin {
 
       try {
 
+        jadeConfig = engine.getJadeConfiguration();
+        jadeConfig.setSharedVariables(frontConfig);
         engine.render(rc, "templates/index.jade", res2 -> {
           if (res2.succeeded()) {
             rc.response().end(res2.result());
@@ -248,6 +235,8 @@ public class GoogleLogin {
         /*
          * Show index page even after exception
          */
+        jadeConfig = engine.getJadeConfiguration();
+        jadeConfig.setSharedVariables(frontConfig);
         engine.render(rc, "templates/index.jade", res2 -> {
           if (res2.succeeded()) {
             rc.response().end(res2.result());

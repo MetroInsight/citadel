@@ -11,10 +11,15 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CookieHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.SessionHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.sstore.LocalSessionStore;
+import io.vertx.ext.web.sstore.SessionStore;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
+import metroinsight.citadel.authorization.GoogleLogin;
 import metroinsight.citadel.common.MicroServiceVerticle;
 
 public class RestApiVerticle extends MicroServiceVerticle {
@@ -23,6 +28,46 @@ public class RestApiVerticle extends MicroServiceVerticle {
   DataRestApi dataRestApi;
   VirtualSensorRestApi vsRestApi;
   DataCacheRestApi dataCacheRestApi;
+  
+  void setAuthRoutes(Router router) {
+    JsonObject configs = config();
+    GoogleLogin googlelogin = new GoogleLogin(configs);
+    router.route("/login").handler(CookieHandler.create());
+    router.route("/logout").handler(CookieHandler.create());
+    router.route("/index").handler(CookieHandler.create());
+    router.route("/scripts").handler(CookieHandler.create());
+    router.route("/api/token").handler(CookieHandler.create());
+    router.route().handler(CookieHandler.create());
+    // Create a clustered session store using defaults
+    SessionStore store = LocalSessionStore.create(vertx);
+    SessionHandler sessionHandler = SessionHandler.create(store);
+    // Make sure all requests are routed through the session handler too
+
+    router.route().handler(sessionHandler);
+    router.route("/login*").handler(BodyHandler.create());
+    router.route("/login").handler(googlelogin::DisplayLoginJade);
+
+    router.route("/index*").handler(BodyHandler.create());
+    router.route("/index").handler(googlelogin::DisplayIndexJade);
+
+    // Bind "/" to our hello message - so we are still compatible.
+    router.route("/").handler(routingContext -> {
+      HttpServerResponse response = routingContext.response();
+      response.putHeader("content-type", "text/html").end("<h1>Welcome to Citadel Authorization</h1>");
+    });
+
+    // Serve static resources from the /assets directory
+    // router.route("/assets/*").handler(StaticHandler.create("assets"));
+    router.route("/scripts/*").handler(StaticHandler.create("scripts"));
+
+    // REST API routing for accepting google token
+    router.route("/api/token*").handler(BodyHandler.create());
+    router.post("/api/token").handler(googlelogin::DisplayToken);
+
+    // Routing to display index page
+    router.route("/logout*").handler(BodyHandler.create());
+    router.post("/logout").handler(googlelogin::LogOut);
+  }
 
   @Override
   public void start(Future<Void> fut) {
@@ -78,12 +123,12 @@ public class RestApiVerticle extends MicroServiceVerticle {
           + "<h1><a href=\"http://metroinsight.westus.cloudapp.azure.com/doc/api/\">API Documentation</a></h1>");
     });
 
-    router.route("/api/").handler(StaticHandler.create("static/apidoc.html"));
-
     router.route("/*").handler(BodyHandler.create());
+    
+    router.route("/api/ui").handler(StaticHandler.create("static/apidoc.html"));
 
-    // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
     /*
+    // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
     router.get("/doc/api").handler(rc -> {
       HttpServerResponse response = rc.response();
       response.putHeader("Location", String.format("https://%s:%d/api/ui/", hostname, apidocPort)); // TODO: Need to fill this everytime for now.
@@ -107,12 +152,15 @@ public class RestApiVerticle extends MicroServiceVerticle {
     //       Better use Microservice archictecture.
 
     // REST API for auth
+    /*
     router.get("/login").handler(rc -> {
       HttpServerResponse response = rc.response();
       response.putHeader("Location", String.format("https://%s:%d/login/", hostname, authPort));
       response.setStatusCode(303);
       response.end();
     });
+    */
+    setAuthRoutes(router);
 
     // REST API for policy
     router.post("/api/registerPolicy").handler(rc -> {

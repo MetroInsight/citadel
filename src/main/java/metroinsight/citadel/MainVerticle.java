@@ -24,7 +24,7 @@ public class MainVerticle extends AbstractVerticle {
     vertx.deployVerticle(VirtualSensorVerticle.class.getName(), options);
 
     vertx.deployVerticle(PolicyVerticle.class.getName(), options);
-    vertx.deployVerticle(AuthorizationVerticle.class.getName(), options);
+    //vertx.deployVerticle(AuthorizationVerticle.class.getName(), options);
 
     options.setWorker(true);
 

@@ -21,7 +21,7 @@ public class AuthorizationVerticle extends MicroServiceVerticle {
     // Create a router object.
     JsonObject configs = config();
     Router router = Router.router(vertx);
-    GoogleLogin googlelogin = new GoogleLogin(vertx, configs);
+    GoogleLogin googlelogin = new GoogleLogin(configs);
     router.route().handler(CookieHandler.create());
     // Create a clustered session store using defaults
     SessionStore store = LocalSessionStore.create(vertx);

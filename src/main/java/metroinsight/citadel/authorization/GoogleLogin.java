@@ -25,7 +25,7 @@ public class GoogleLogin {
   Map<String, Object> frontConfig;
   UserTokenManager tokenManager;
 
-  public GoogleLogin(Vertx vertx, JsonObject configs) {
+  public GoogleLogin(JsonObject configs) {
     tokenManager= new UserTokenManager(configs);
     googleCid = configs.getString("auth.google.cid");
     frontConfig = new HashMap<String, Object>();

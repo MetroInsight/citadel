@@ -51,7 +51,7 @@ public class AuthMetadataMongodb implements AuthorizationMetadata {
   public String getToken(String userId) {
     BasicDBObject query = new BasicDBObject("userId", userId);
     Document user = userColl.find(query).first();
-    String token = (String) getValueOrNull(user, "userId");
+    String token = (String) getValueOrNull(user, "token");
     return token;
   }
 

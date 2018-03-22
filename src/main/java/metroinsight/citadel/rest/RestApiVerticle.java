@@ -78,15 +78,19 @@ public class RestApiVerticle extends MicroServiceVerticle {
           + "<h1><a href=\"http://metroinsight.westus.cloudapp.azure.com/doc/api/\">API Documentation</a></h1>");
     });
 
+    router.route("/api/").handler(StaticHandler.create("static/apidoc.html"));
+
     router.route("/*").handler(BodyHandler.create());
 
     // Redirection to API Doc (TODO: Swagger should be tightly integrated.)
+    /*
     router.get("/doc/api").handler(rc -> {
       HttpServerResponse response = rc.response();
       response.putHeader("Location", String.format("https://%s:%d/api/ui/", hostname, apidocPort)); // TODO: Need to fill this everytime for now.
       response.setStatusCode(303);
       response.end();
     });
+    */
 
     // REST API routing for MetaData
     router.post("/api/point").blockingHandler(metadataRestApi::createPoint);
